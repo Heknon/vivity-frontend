@@ -1,0 +1,1 @@
+String abstractLogoIcon = "assets/icons/abstract_logo.svg";
