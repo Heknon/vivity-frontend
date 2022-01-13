@@ -13,15 +13,17 @@ class ShoppingCart extends StatefulWidget {
 
 class _ShoppingCartState extends State<ShoppingCart> with TickerProviderStateMixin {
   late AnimationController _animationController;
-  Offset widgetContextOffset = const Offset(1000, 1000); // initial large value to ensure out of screen
-  bool initializedContextOffset = false;
+  late Tween<double> _animationTween;
+  late Animation<double> _animation;
   double heightOffsetFactor = 0.4;
 
   @override
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+    _animationTween = Tween(begin: 0.0, end: 1.0);
+    _animation = _animationTween.animate(_animationController);
   }
 
   @override
@@ -46,9 +48,9 @@ class _ShoppingCartState extends State<ShoppingCart> with TickerProviderStateMix
         );
 
         return AnimatedBuilder(
-          animation: _animationController,
+          animation: _animation,
           builder: (ctx, staticWidget) => Transform.translate(
-            offset: Offset(-_animationController.value * cartViewBox.constraints.maxWidth, 0),
+            offset: Offset(-_animation.value * cartViewBox.constraints.maxWidth, 0),
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -78,6 +80,7 @@ class _ShoppingCartState extends State<ShoppingCart> with TickerProviderStateMix
       top: constraints.maxHeight * heightOffsetFactor - sliderSize.height,
       child: GestureDetector(
         onTap: toggle,
+        onHorizontalDragStart: (details) => _onHorizontalDragStart(details, sliderSize, constraints),
         onHorizontalDragUpdate: (details) => _onHorizontalDragUpdate(details, constraints),
         onHorizontalDragEnd: (details) => _onHorizontalDragEnd(details, constraints),
         child: SideTab(sliderSize: sliderSize, icon: icon),
@@ -86,14 +89,24 @@ class _ShoppingCartState extends State<ShoppingCart> with TickerProviderStateMix
   }
 
   void toggle() {
-    _animationController.isCompleted ? _animationController.reverse() : _animationController.forward();
+    if (_animationController.isCompleted) {
+      _animation = _animationTween.animate(CurvedAnimation(parent: _animationController, curve: Curves.bounceIn));
+      _animationController.reverse();
+    } else {
+      _animation = _animationTween.animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutQuart));
+      _animationController.forward();
+    }
   }
 
-  _onHorizontalDragUpdate(DragUpdateDetails details, BoxConstraints constraints) {
+  void _onHorizontalDragStart(DragStartDetails details, Size sliderSize, BoxConstraints viewConstraints) {
+    _animation = _animationTween.animate(_animationController);
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details, BoxConstraints constraints) {
     _animationController.value -= details.primaryDelta! / constraints.maxWidth;
   }
 
-  _onHorizontalDragEnd(DragEndDetails details, BoxConstraints constraints) {
+  void _onHorizontalDragEnd(DragEndDetails details, BoxConstraints constraints) {
     double _kMinFlingVelocity = 365.0;
 
     if (_animationController.isDismissed || _animationController.isCompleted) {

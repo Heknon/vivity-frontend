@@ -5,7 +5,6 @@ import 'package:vivity/widgets/appbar/appbar.dart';
 import 'explore.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,15 +13,15 @@ class HomePage extends StatelessWidget {
       child: Scaffold(
         appBar: VivityAppBar(
           bottom: const TabBar(
-            tabs: [Tab(text: "Explore"), Tab(text: "Feed")],
+            tabs: [Tab(text: "Feed"), Tab(text: "Explore")],
             indicatorColor: Colors.white,
           ),
         ),
         body: TabBarView(
           physics: const NeverScrollableScrollPhysics(),
           children: [
-            Explore(),
             Feed(),
+            Explore(),
           ],
         ),
       ),

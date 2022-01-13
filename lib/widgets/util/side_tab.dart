@@ -14,19 +14,23 @@ class SideTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: sliderSize.width,
-      height: sliderSize.height,
-      child: Padding(
-        padding: EdgeInsets.only(left: sliderSize.width - icon.width! * 1.5),
-        child: FittedBox(
-          child: icon,
-          fit: BoxFit.scaleDown,
-        ),
+    return Material(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(30), bottomLeft: Radius.circular(30)),
       ),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), bottomLeft: Radius.circular(30)),
+      elevation: 7,
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        width: sliderSize.width,
+        height: sliderSize.height,
         color: Theme.of(context).primaryColor,
+        child: Padding(
+          padding: EdgeInsets.only(left: sliderSize.width - icon.width! * 1.5),
+          child: FittedBox(
+            child: icon,
+            fit: BoxFit.scaleDown,
+          ),
+        ),
       ),
     );
   }
