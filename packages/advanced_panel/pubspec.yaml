@@ -1,0 +1,11 @@
+name: advanced_panel
+description: A utility to allow easy creation sliding panels.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.1 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter

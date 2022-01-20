@@ -3,23 +3,31 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
-import 'package:vivity/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:vivity/utils/services/location_service.dart';
-import 'package:vivity/widgets/map/map_widget.dart';
+import 'package:map/location_service.dart';
+
+import 'map_widget.dart';
 
 class MapGui extends StatefulWidget {
-  MapGui({Key? key, this.useMapBox = true, this.constraints}) : super(key: key);
+  MapGui(
+      {Key? key,
+      this.useMapBox = true,
+      this.constraints,
+      required this.mapBoxToken,
+      this.flags = InteractiveFlag.doubleTapZoom |
+          InteractiveFlag.drag |
+          InteractiveFlag.pinchZoom |
+          InteractiveFlag.pinchMove |
+          InteractiveFlag.flingAnimation})
+      : super(key: key);
 
   final bool useMapBox;
   final BoxConstraints? constraints;
+  final String mapBoxToken;
+  final int flags;
 
   @override
   MapGuiState createState() => MapGuiState();
-
-  void test() {
-    print(key);
-  }
 }
 
 class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
@@ -34,7 +42,7 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
     fallbackLocation = LatLng(32.0668, 34.7649);
-    getPosition(getCountryIfFail: true).then((loc) {
+    LocationService().getPosition(getCountryIfFail: true).then((loc) {
       positionFutureImpl.complete(loc);
 
       controllerFutureImpl.future.then((controller) {
@@ -94,12 +102,12 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
         maxZoom: 20,
         minZoom: 4,
         rotationThreshold: 0,
-        interactiveFlags: InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
+        interactiveFlags: widget.flags,
       ),
       layers: [
         TileLayerOptions(
           urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
-          additionalOptions: {'accessToken': mapBoxToken},
+          additionalOptions: {'accessToken': widget.mapBoxToken},
           maxNativeZoom: 18,
           maxZoom: 20,
           minZoom: 4,

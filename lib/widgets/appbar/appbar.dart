@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vivity/config/themes/themes_config.dart';
-import 'package:vivity/utils/helpers/ui_helpers.dart';
+import '../../helpers/ui_helpers.dart';
 
 class VivityAppBar extends PreferredSize {
   VivityAppBar({Key? key, double height = 120, this.bottom, this.elevation = 7}) : super(key: key, preferredSize: Size.fromHeight(height), child: Container());

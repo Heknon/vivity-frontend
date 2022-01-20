@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:vivity/widgets/map/map_gui.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:vivity/widgets/map/map_widget.dart';
+
+import 'map_gui.dart';
+import 'map_widget.dart';
 
 class WidgetedMap extends StatelessWidget {
-  WidgetedMap({Key? key, useMapBox = true, this.constraints}) : super(key: key) {
+  WidgetedMap({Key? key, useMapBox = true, this.constraints, required String mapBoxToken}) : super(key: key) {
     _mapKey = GlobalKey<MapGuiState>(debugLabel: "Map GUI | Explore");
     _mapGui = MapGui(
       useMapBox: useMapBox,
       constraints: constraints,
-      key: _mapKey,
+      key: _mapKey, mapBoxToken: mapBoxToken,
     );
   }
 

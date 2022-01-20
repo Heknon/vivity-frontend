@@ -41,11 +41,16 @@ dependencies:
   flutter_svg: ^1.0.0
   cached_network_image: ^3.2.0
   path_provider: ^2.0.8
-  geolocator: ^8.0.1
-  flutter_map: ^0.14.0
   proj4dart: any
   tuple: ^2.0.0
-  sizer: ^2.0.15
+  sizer: ^2.0.1
+  google_fonts: ^2.2.0
+
+  advanced_panel:
+    path: ./packages/advanced_panel
+
+  map:
+    path: ./packages/map
 
 
 dev_dependencies:
@@ -78,6 +83,41 @@ flutter:
     - assets/icons/
     - assets/fonts/
     - assets/i18n/
+
+  fonts:
+    - family: Hezaedrus
+      fonts:
+        - asset: assets/fonts/hezaedrus/Hezaedrus-Black.ttf
+          weight: 900
+          style: normal
+        - asset: assets/fonts/hezaedrus/Hezaedrus-BlackItalic.ttf
+          weight: 900
+          style: italic
+        - asset: assets/fonts/hezaedrus/Hezaedrus-Bold.ttf
+          weight: 700
+          style: normal
+        - asset: assets/fonts/hezaedrus/Hezaedrus-BoldItalic.ttf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/hezaedrus/Hezaedrus-Italic.ttf
+          style: italic
+        - asset: assets/fonts/hezaedrus/Hezaedrus-Light.ttf
+          weight: 300
+          style: normal
+        - asset: assets/fonts/hezaedrus/Hezaedrus-LightItalic.ttf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/hezaedrus/Hezaedrus-Medium.ttf
+          weight: 500
+          style: normal
+        - asset: assets/fonts/hezaedrus/Hezaedrus-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/hezaedrus/Hezaedrus-Regular.ttf
+    - family: Futura
+      fonts:
+        - asset: assets/fonts/futura/FuturaMedium.ttf
+        - asset: assets/fonts/futura/FuturaBold.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
