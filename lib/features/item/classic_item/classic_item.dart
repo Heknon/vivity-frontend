@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:auto_scroll/auto_scroll.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -30,9 +31,9 @@ class ClassicItem extends StatelessWidget {
                 backgroundColor: const Color(0xfff8f1f1),
               ),
             ),
-            buildItemDataView(),
+            buildItemDataView(constraints),
             buildItemCostText(),
-            Rating.fromReviews(itemModel.reviews),
+            Rating.fromReviews(itemModel.reviews)
           ],
         ),
       ),
@@ -50,23 +51,32 @@ class ClassicItem extends StatelessWidget {
     );
   }
 
-  Row buildItemDataView() {
-    return Row(
-      children: [
-        Text(
-          itemModel.itemStoreFormat.title,
-          style: GoogleFonts.outfit(fontWeight: FontWeight.normal, fontSize: 13.sp),
-        ),
-        const Spacer(),
-        Text(
-          itemModel.businessName,
-          style: TextStyle(
-            fontFamily: "Hezaedrus",
-            fontSize: 10.sp,
-            color: Colors.grey[600],
+  Widget buildItemDataView(BoxConstraints constraints) {
+    return SizedBox(
+      width: constraints.maxWidth,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: AutoScroll(
+              axis: Axis.horizontal,
+              child: Text(
+                itemModel.itemStoreFormat.title,
+                style: GoogleFonts.outfit(fontWeight: FontWeight.normal, fontSize: 13.sp),
+              ),
+            ),
           ),
-        )
-      ],
+          const Spacer(),
+          Text(
+            itemModel.businessName,
+            style: TextStyle(
+              fontFamily: "Hezaedrus",
+              fontSize: 10.sp,
+              color: Colors.grey[600],
+            ),
+          )
+        ],
+      ),
     );
   }
 

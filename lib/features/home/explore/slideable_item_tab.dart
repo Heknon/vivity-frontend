@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/app_constants.dart';
-import '../../item/widgets/classic_item.dart';
+import '../../item/classic_item/classic_item.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vivity/features/item/models/item_model.dart';
@@ -19,8 +19,8 @@ class SlideableItemTab extends StatelessWidget {
         Size itemViewSize = Size(tabSize.width, constraints.maxHeight * 0.9 - tabSize.height);
 
         return SlidingUpPanel(
-          minSize: tabSize.height,
-          maxSize: itemViewSize.height + tabSize.height,
+          panelSize: tabSize.height,
+          contentSize: itemViewSize.height + tabSize.height,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(18.0),
             topRight: Radius.circular(18.0),
@@ -42,8 +42,9 @@ class SlideableItemTab extends StatelessWidget {
   }
 
   Widget buildContent(Size itemViewSize, BoxConstraints constraints, ScrollController sc) {
-    Size itemSize = Size(itemViewSize.width * 0.45, itemViewSize.height / 2);
+    Size itemSize = Size(itemViewSize.width * 0.45, itemViewSize.height * 0.6);
 
+    print(itemSize.height);
     return Positioned(
       bottom: 1,
       width: itemViewSize.width,
@@ -52,21 +53,22 @@ class SlideableItemTab extends StatelessWidget {
         child: ListView.builder(
           controller: sc,
           itemCount: 5,
-          itemBuilder: (ctx, i) => buildItemCoupling(itemModelDemo, itemModelDemo, itemSize),
+          itemExtent: itemSize.height + 10,
+          itemBuilder: (ctx, i) => buildItemCoupling(itemModelDemo, itemModelDemo2, itemSize),
         ),
       ),
     );
   }
 
-  Row buildItemCoupling(ItemModel modelLeft, ItemModel modelRight, Size itemSize) {
+  Widget buildItemCoupling(ItemModel modelLeft, ItemModel modelRight, Size itemSize) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Container(
+        ConstrainedBox(
           child: ClassicItem(itemModel: modelLeft),
           constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
         ),
-        Container(
+        ConstrainedBox(
           child: ClassicItem(itemModel: modelRight),
           constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
         ),

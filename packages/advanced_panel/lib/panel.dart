@@ -41,15 +41,15 @@ class SlidingUpPanel extends StatefulWidget {
   final Widget Function(ScrollController sc) contentBuilder;
 
   /// The height of the sliding panel when fully collapsed.
-  final double minSize;
+  final double panelSize;
 
   /// The height of the sliding panel when fully open.
-  final double maxSize;
+  final double contentSize;
 
-  /// A point between [minSize] and [maxSize] that the panel snaps to
+  /// A point between [panelSize] and [contentSize] that the panel snaps to
   /// while animating. A fast swipe on the panel will disregard this point
   /// and go directly to the open/close position. This value is represented as a
-  /// percentage of the total animation distance ([maxSize] - [minSize]),
+  /// percentage of the total animation distance ([contentSize] - [panelSize]),
   /// so it must be between 0.0 and 1.0, exclusive.
   final double? snapPoint;
 
@@ -134,8 +134,8 @@ class SlidingUpPanel extends StatefulWidget {
     Key? key,
     required this.panel,
     required this.contentBuilder,
-    this.minSize = 100.0,
-    this.maxSize = 500.0,
+    this.panelSize = 100.0,
+    this.contentSize = 500.0,
     this.snapPoint,
     this.border,
     this.borderRadius,
@@ -320,7 +320,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                             rewrapPositioned(
                               child: child,
                               builder: (ch) => Transform.translate(
-                                offset: getAnimatedOffsetBasedSlideDirection(_ac.value * (widget.maxSize - widget.minSize)),
+                                offset: getAnimatedOffsetBasedSlideDirection(_ac.value * (widget.contentSize - widget.panelSize)),
                                 child: GestureDetector(
                                   onTap: () => _onGestureTap(null),
                                   child: ch,
@@ -332,8 +332,8 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                               includeHeight: !isVerticalSlide,
                               includeWidth: !isHorizontalSlide,
                               builder: (ch) => Container(
-                                height: isVerticalSlide ? _ac.value * (widget.maxSize - widget.minSize) : null,
-                                width: isHorizontalSlide ? _ac.value * (widget.maxSize - widget.minSize) : null,
+                                height: isVerticalSlide ? _ac.value * (widget.contentSize - widget.panelSize) : null,
+                                width: isHorizontalSlide ? _ac.value * (widget.contentSize - widget.panelSize) : null,
                                 child: ch,
                               ),
                             ),
@@ -346,13 +346,81 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                 : AnimatedBuilder(
                     animation: _ac,
                     builder: (context, child) {
+                      if (_isPanelClosed) {
+                        return Transform.translate(
+                          offset: getAnimatedOffsetBasedSlideDirection(-widget.contentSize),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              rewrapPositioned(
+                                child: child,
+                                builder: (ch) => Transform.translate(
+                                  offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
+                                  child: _gestureHandler(child: ch),
+                                ),
+                              ),
+                              rewrapPositioned(
+                                child: widget.contentBuilder(_sc),
+                                includeHeight: !isVerticalSlide,
+                                includeWidth: !isHorizontalSlide,
+                                builder: (ch) => Opacity(
+                                  opacity: 1,
+                                  child: ch,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (_isPanelOpen) {
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            rewrapPositioned(
+                              child: child,
+                              builder: (ch) => Transform.translate(
+                                offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
+                                child: _gestureHandler(child: ch),
+                              ),
+                            ),
+                            rewrapPositioned(
+                              child: widget.contentBuilder(_sc),
+                              includeHeight: !isVerticalSlide,
+                              includeWidth: !isHorizontalSlide,
+                              builder: (ch) => ch,
+                            ),
+                          ],
+                        );
+                      } else {
+                        return Transform.translate(
+                          offset: getAnimatedOffsetBasedSlideDirection(_ac.value * widget.contentSize - widget.contentSize),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              rewrapPositioned(
+                                child: widget.contentBuilder(_sc),
+                                includeHeight: !isVerticalSlide,
+                                includeWidth: !isHorizontalSlide,
+                                builder: (ch) => ch,
+                              ),
+                              rewrapPositioned(
+                                child: child,
+                                builder: (ch) => Transform.translate(
+                                  offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
+                                  child: _gestureHandler(child: ch),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
                           rewrapPositioned(
                             child: child,
                             builder: (ch) => Transform.translate(
-                              offset: getAnimatedOffsetBasedSlideDirection(_ac.value * (widget.maxSize - widget.minSize)),
+                              offset: getAnimatedOffsetBasedSlideDirection(_ac.value * (widget.contentSize - widget.panelSize)),
                               child: _gestureHandler(child: ch),
                             ),
                           ),
@@ -361,8 +429,8 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                             includeHeight: !isVerticalSlide,
                             includeWidth: !isHorizontalSlide,
                             builder: (ch) => Container(
-                              height: isVerticalSlide ? _ac.value * (widget.maxSize - widget.minSize) : null,
-                              width: isHorizontalSlide ? _ac.value * (widget.maxSize - widget.minSize) : null,
+                              height: isVerticalSlide ? _ac.value * (widget.contentSize - widget.panelSize) : null,
+                              width: isHorizontalSlide ? _ac.value * (widget.contentSize - widget.panelSize) : null,
                               child: ch,
                             ),
                           ),
@@ -454,11 +522,11 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
   // handles the sliding gesture
   void _onGestureSlide(Offset axialChange) {
     // only slide the panel if scrolling is not enabled
-    if (!_scrollingEnabled) {
+    if (!_scrollingEnabled || widget.gestureDetectOnlyPanel) {
       if (isVerticalSlide) {
-        _ac.value -= adjustForSlideDirection(axialChange.dy / (widget.maxSize));
+        _ac.value -= adjustForSlideDirection(axialChange.dy / (widget.contentSize + widget.panelSize));
       } else {
-        _ac.value -= adjustForSlideDirection(axialChange.dx / (widget.maxSize));
+        _ac.value -= adjustForSlideDirection(axialChange.dx / (widget.contentSize + widget.panelSize));
       }
     }
 
@@ -490,7 +558,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
 
     //check if the velocity is sufficient to constitute fling to end
     double axialPixelsPerSecond = getOffsetBasedSlideDirection(v.pixelsPerSecond);
-    double visualVelocity = -axialPixelsPerSecond / (widget.maxSize - widget.minSize);
+    double visualVelocity = -axialPixelsPerSecond / (widget.contentSize);
 
     // reverse visual velocity to account for slide direction
     visualVelocity = adjustForSlideDirection(visualVelocity);

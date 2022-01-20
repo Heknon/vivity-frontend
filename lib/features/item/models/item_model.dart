@@ -1,3 +1,36 @@
+class CartItemModel {
+  final String previewImage;
+  final String title;
+  final Iterable<ModificationButtonDataHost> chosenData;
+  final double price;
+  int quantity;
+
+  CartItemModel({
+    required this.previewImage,
+    required this.title,
+    required this.chosenData,
+    required this.quantity,
+    required this.price,
+  });
+
+  /// dataChosen: Key is ModificationButton index value are the indices of the data chosen.
+  factory CartItemModel.fromItemModel({required ItemModel model, required int quantity, required Map<int, List<int>> dataChosen}) {
+    List<ModificationButtonDataHost> chosenData = List.empty(growable: true);
+
+    dataChosen.forEach(
+      (key, value) => chosenData.add(ModificationButtonDataHost.fromModificationButton(model.itemStoreFormat.modificationButtons[key], value)),
+    );
+
+    return CartItemModel(
+      previewImage: model.images[model.previewImageIndex],
+      title: model.itemStoreFormat.title,
+      chosenData: chosenData,
+      quantity: quantity,
+      price: model.price,
+    );
+  }
+}
+
 class ItemModel {
   final String businessName;
   final double price;
@@ -46,6 +79,26 @@ class ItemStoreFormat {
 enum ModificationButtonSide { left, center, right }
 
 enum ModificationButtonDataType { text, color, image }
+
+class ModificationButtonDataHost {
+  final String name;
+  final ModificationButtonDataType dataType;
+  final List<Object> dataChosen;
+
+  ModificationButtonDataHost({required this.name, required this.dataType, required this.dataChosen});
+
+  factory ModificationButtonDataHost.fromModificationButton(ModificationButton button, List<int> chosenIndices) {
+    int dataLength = button.data.length;
+    List<Object> chosenData = List.generate(chosenIndices.length, (index) {
+      int _index = chosenIndices[index];
+      if (_index >= dataLength) throw IndexError(_index, dataLength, "Chosen indices passed an index out of the data's range!");
+
+      return button.data[_index];
+    });
+
+    return ModificationButtonDataHost(name: button.name, dataType: button.dataType, dataChosen: chosenData);
+  }
+}
 
 class ModificationButton {
   final String name;

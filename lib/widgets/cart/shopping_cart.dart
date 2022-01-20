@@ -5,6 +5,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/constants/app_constants.dart';
+import 'package:vivity/features/item/cart_item/cart_item.dart';
+import 'package:vivity/features/item/models/item_model.dart';
 import 'cart_view.dart';
 import 'side_tab.dart';
 
@@ -30,8 +33,8 @@ class ShoppingCart extends StatelessWidget {
           slideDirection: SlideDirection.LEFT,
           panel: buildCartSliderButton(sliderSize, constraints, icon),
           contentBuilder: (sc) => buildSlidedBody(cartViewSize, sliderSize, constraints, sc),
-          minSize: sliderSize.width,
-          maxSize: cartViewSize.width + sliderSize.width,
+          panelSize: sliderSize.width,
+          contentSize: cartViewSize.width,
           departCurve: Curves.easeOutQuart,
           returnCurve: Curves.bounceOut,
           departDuration: const Duration(milliseconds: 900),
@@ -49,16 +52,19 @@ class ShoppingCart extends StatelessWidget {
     );
   }
 
-  Widget buildSlidedBody(Size size, Size sliderSize, BoxConstraints constraints, ScrollController? sc) {
+  List<CartItemModel> models = [cartItemModel, cartItemModel2];
+  Widget buildSlidedBody(Size cartSize, Size sliderSize, BoxConstraints constraints, ScrollController? sc) {
     return Positioned(
       right: 0,
-      top: constraints.maxHeight * heightOffsetFactor - sliderSize.height / 2 - size.height / 2,
+      top: constraints.maxHeight * heightOffsetFactor - sliderSize.height / 2 - cartSize.height / 2,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: size.width,
-          maxHeight: size.height,
+          maxWidth: cartSize.width,
+          minWidth: cartSize.width,
+          maxHeight: cartSize.height,
+          minHeight: cartSize.height
         ),
-        child: CartView(scrollController: sc),
+        child: CartView(scrollController: sc, itemModels: List.generate(5, (index) => models[index % 2]),),
       ),
     );
   }
