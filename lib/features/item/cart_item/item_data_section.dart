@@ -30,12 +30,10 @@ class ItemDataSection extends StatelessWidget {
           children: [
             Container(
               width: this.contextWidth * 0.3,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Text(
-                  itemModel.title,
-                  style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp),
-                ),
+              child: Text(
+                itemModel.title,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp),
               ),
             ),
             ...itemDataTexts,

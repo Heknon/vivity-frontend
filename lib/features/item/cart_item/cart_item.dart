@@ -49,31 +49,42 @@ class CartItem extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
                   child: buildPreviewImage(),
                 ),
-                ItemDataSection(
-                  itemModel: itemModel,
-                  contextWidth: usedWidth,
-                  contextHeight: usedHeight,
+                Expanded(
+                  flex: 2,
+                  child: ItemDataSection(
+                    itemModel: itemModel,
+                    contextWidth: usedWidth,
+                    contextHeight: usedHeight,
+                  ),
                 ),
-                Spacer(),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        '\$${itemModel.price.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
-                      ),
-                      Spacer(),
-                      Quantity(
-                        initialCount: itemModel.quantity,
-                        color: Theme.of(context).primaryColor,
-                        onDecrement: onQuantityUpdate,
-                        onIncrement: onQuantityUpdate,
-                        onDelete: onQuantityDelete,
-                        id: id,
-                      )
-                    ],
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          '\$${itemModel.price.toStringAsFixed(2)}',
+                          style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
+                        ),
+                        Spacer(),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: constraints.maxWidth * 0.3,
+                            maxHeight: constraints.maxWidth * 0.3 / 3
+                          ),
+                          child: Quantity(
+                            initialCount: itemModel.quantity,
+                            color: Theme.of(context).primaryColor,
+                            onDecrement: onQuantityUpdate,
+                            onIncrement: onQuantityUpdate,
+                            onDelete: onQuantityDelete,
+                            id: id,
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 )
               ],

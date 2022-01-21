@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:auto_scroll/auto_scroll.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -31,51 +30,39 @@ class ClassicItem extends StatelessWidget {
                 backgroundColor: const Color(0xfff8f1f1),
               ),
             ),
-            buildItemDataView(constraints),
-            buildItemCostText(),
-            Rating.fromReviews(itemModel.reviews)
-          ],
-        ),
-      ),
-    );
-  }
-
-  Text buildItemCostText() {
-    return Text(
-      "\$${itemModel.price.toStringAsFixed(2)}",
-      style: TextStyle(
-        fontSize: 12.sp,
-        fontFamily: "Hezaedrus",
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-
-  Widget buildItemDataView(BoxConstraints constraints) {
-    return SizedBox(
-      width: constraints.maxWidth,
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: AutoScroll(
-              axis: Axis.horizontal,
+            Container(
+              padding: EdgeInsets.only(top: 5),
+              height: 12.sp * 2 + 5,
               child: Text(
                 itemModel.itemStoreFormat.title,
-                style: GoogleFonts.outfit(fontWeight: FontWeight.normal, fontSize: 13.sp),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.normal,
+                  height: 1,
+                  fontSize: 12.sp,
+                ),
               ),
             ),
-          ),
-          const Spacer(),
-          Text(
-            itemModel.businessName,
-            style: TextStyle(
-              fontFamily: "Hezaedrus",
-              fontSize: 10.sp,
-              color: Colors.grey[600],
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 5.0),
+                  child: Text(
+                    "\$${itemModel.price.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      fontFamily: "Hezaedrus",
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Spacer(),
+                Rating.fromReviews(itemModel.reviews)
+              ],
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

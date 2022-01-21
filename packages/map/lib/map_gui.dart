@@ -37,17 +37,24 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   final Completer<LatLng> positionFutureImpl = Completer();
   late Completer<MapControllerImpl> controllerFutureImpl = Completer();
+  bool initializedLocation = false;
 
   @override
   void initState() {
     super.initState();
     fallbackLocation = LatLng(32.0668, 34.7649);
     LocationService().getPosition(getCountryIfFail: true).then((loc) {
+      // move to BLOC initialized when program starts.
+
+      if (initializedLocation) return;
+
       positionFutureImpl.complete(loc);
 
       controllerFutureImpl.future.then((controller) {
         if (loc != fallbackLocation) controller.move(loc, 13);
       });
+
+      initializedLocation = true;
     });
   }
 

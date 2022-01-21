@@ -56,22 +56,26 @@ class _QuantityState extends State<Quantity> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: widget.color),
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-      ),
-      width: 90,
-      height: 30,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          buildIcon(Icons.remove, false),
-          Text(currentQuantity.toStringAsFixed(0)),
-          buildIcon(Icons.add, true),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: widget.color),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+          ),
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              buildIcon(Icons.remove, false),
+              Text(currentQuantity.toStringAsFixed(0)),
+              buildIcon(Icons.add, true),
+            ],
+          ),
+        );
+      }
     );
   }
 

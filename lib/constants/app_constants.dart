@@ -60,7 +60,7 @@ const ItemModel itemModelDemo2 = ItemModel(
     ),
   ],
   itemStoreFormat: ItemStoreFormat(
-    title: "Hanes Hoodie - EcoSmart",
+    title: "Hanes Hoodie - EcoSmart fdsf dsfdsfdsjfdoi",
     subtitle: "Ooooo subtitle",
     description: "A very lengthy description",
     modificationButtons: [

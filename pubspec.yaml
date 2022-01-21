@@ -52,10 +52,6 @@ dependencies:
   map:
     path: ./packages/map
 
-  auto_scroll:
-    path: ./packages/auto_scroll
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
