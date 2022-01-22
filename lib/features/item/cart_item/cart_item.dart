@@ -34,7 +34,7 @@ class CartItem extends StatelessWidget {
         double usedWidth = width ?? constraints.maxWidth;
         double usedHeight = height ?? constraints.maxHeight;
 
-        return Container(
+        return SizedBox(
           width: usedWidth,
           height: usedHeight,
           child: SimpleCard(
@@ -68,7 +68,7 @@ class CartItem extends StatelessWidget {
                           '\$${itemModel.price.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         ConstrainedBox(
                           constraints: BoxConstraints(
                             maxWidth: constraints.maxWidth * 0.3,

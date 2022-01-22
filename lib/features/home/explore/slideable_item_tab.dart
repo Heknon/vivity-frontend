@@ -44,7 +44,6 @@ class SlideableItemTab extends StatelessWidget {
   Widget buildContent(Size itemViewSize, BoxConstraints constraints, ScrollController sc) {
     Size itemSize = Size(itemViewSize.width * 0.45, itemViewSize.height * 0.6);
 
-    print(itemSize.height);
     return Positioned(
       bottom: 1,
       width: itemViewSize.width,

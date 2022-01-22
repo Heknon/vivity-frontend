@@ -10,6 +10,7 @@ class HomePage extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: VivityAppBar(
           bottom: const TabBar(
             tabs: [

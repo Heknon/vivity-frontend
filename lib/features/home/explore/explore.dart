@@ -5,10 +5,15 @@ import 'package:map/map_widget.dart';
 import 'package:map/widgeted_map.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vivity/features/search_filter/filter_bar.dart';
+import 'package:vivity/features/search_filter/filter_side_bar.dart';
+import 'package:vivity/features/search_filter/widget_swapper.dart';
 import 'package:vivity/widgets/cart/shopping_cart.dart';
 import 'slideable_item_tab.dart';
 
+  final controller = WidgetSwapperController();
 class Explore extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -26,10 +31,13 @@ class Explore extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: Container(
                     color: Colors.white,
-                    child: const Center(
-                      child: Text(
-                        "₪200",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                    child: Center(
+                      child: InkWell(
+                        onTap: () => controller.toggle(),
+                        child: const Text(
+                          "₪200",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
@@ -46,6 +54,23 @@ class Explore extends StatelessWidget {
             child: ConstrainedBox(
               child: const SlideableItemTab(),
               constraints: constraints,
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: 50,
+                maxWidth: MediaQuery.of(context).size.width,
+                minHeight: 50,
+                maxHeight: 120
+              ),
+              child: WidgetSwapper(
+                filterViewController: controller,
+                bar: FilterBar(controller: controller,),
+                sideBar: FilterSideBar(controller: controller,),
+              ),
             ),
           )
         ],
