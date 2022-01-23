@@ -53,6 +53,7 @@ class ShoppingCart extends StatelessWidget {
   }
 
   List<CartItemModel> models = [cartItemModel, cartItemModel2];
+
   Widget buildSlidedBody(Size cartSize, Size sliderSize, BoxConstraints constraints, ScrollController? sc) {
     return Positioned(
       right: 0,
@@ -62,9 +63,12 @@ class ShoppingCart extends StatelessWidget {
           maxWidth: cartSize.width,
           minWidth: cartSize.width,
           maxHeight: cartSize.height,
-          minHeight: cartSize.height
+          minHeight: cartSize.height,
         ),
-        child: CartView(scrollController: sc, itemModels: List.generate(5, (index) => models[index % 2]),),
+        child: CartView(
+          scrollController: sc,
+          itemModels: List.generate(3, (index) => models[index % 2].copyWith()),
+        ),
       ),
     );
   }

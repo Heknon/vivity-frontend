@@ -9,28 +9,29 @@ import 'package:map/location_service.dart';
 import 'map_widget.dart';
 
 class MapGui extends StatefulWidget {
-  MapGui(
-      {Key? key,
-      this.useMapBox = true,
-      this.constraints,
-      required this.mapBoxToken,
-      this.flags = InteractiveFlag.doubleTapZoom |
-          InteractiveFlag.drag |
-          InteractiveFlag.pinchZoom |
-          InteractiveFlag.pinchMove |
-          InteractiveFlag.flingAnimation})
-      : super(key: key);
-
   final bool useMapBox;
   final BoxConstraints? constraints;
   final String mapBoxToken;
   final int flags;
+  final MapGuiController? controller;
+
+  MapGui({
+    Key? key,
+    this.useMapBox = true,
+    this.constraints,
+    required this.mapBoxToken,
+    this.flags =
+        InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
+    this.controller,
+  }) : super(key: key);
+
+
 
   @override
-  MapGuiState createState() => MapGuiState();
+  _MapGuiState createState() => _MapGuiState();
 }
 
-class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
+class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   late LatLng fallbackLocation;
 
   final Set<MapWidget> _mapWidgets = {};
@@ -38,6 +39,8 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   final Completer<LatLng> positionFutureImpl = Completer();
   late Completer<MapControllerImpl> controllerFutureImpl = Completer();
   bool initializedLocation = false;
+
+  late MapGuiController _mapGuiController;
 
   @override
   void initState() {
@@ -56,6 +59,9 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
       initializedLocation = true;
     });
+
+    _mapGuiController = widget.controller ?? MapGuiController();
+    _mapGuiController._setState(this);
   }
 
   @override
@@ -69,32 +75,40 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   }
 
   void addWidgetToMap(MapWidget mapWidget) {
-    setState(() {
-      _mapWidgets.add(mapWidget);
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      setState(() {
+        _mapWidgets.add(mapWidget);
+      });
     });
   }
 
   void addWidgetsToMap(Iterable<MapWidget> mapWidgets) {
-    setState(() {
-      _mapWidgets.addAll(mapWidgets);
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      setState(() {
+        _mapWidgets.addAll(mapWidgets);
+      });
     });
   }
 
   void removeWidgetFromMap(LatLng position) {
-    setState(() {
-      _mapWidgets.remove(position);
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      setState(() {
+        _mapWidgets.remove(position);
+      });
     });
   }
 
   void removeWidgetsFromMap(Iterable<LatLng> positions) {
-    setState(() {
-      _mapWidgets.removeAll(positions);
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      setState(() {
+        _mapWidgets.removeAll(positions);
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    //super.build(context);
 
     return buildMapContents();
   }
@@ -136,4 +150,28 @@ class MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class MapGuiController {
+  late _MapGuiState _state;
+
+  void _setState(_MapGuiState state) {
+    _state = state;
+  }
+
+  void addWidgetToMap(MapWidget mapWidget) {
+    _state.addWidgetToMap(mapWidget);
+  }
+
+  void addWidgetsToMap(Iterable<MapWidget> mapWidgets) {
+    _state.addWidgetsToMap(mapWidgets);
+  }
+
+  void removeWidgetFromMap(LatLng position) {
+    _state.removeWidgetFromMap(position);
+  }
+
+  void removeWidgetsFromMap(Iterable<LatLng> positions) {
+    _state.removeWidgetsFromMap(positions);
+  }
 }

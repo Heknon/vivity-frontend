@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sizer/sizer.dart';
 
 class Quantity extends StatefulWidget {
   final int initialCount;
@@ -70,7 +71,7 @@ class _QuantityState extends State<Quantity> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               buildIcon(Icons.remove, false),
-              Text(currentQuantity.toStringAsFixed(0)),
+              Text(currentQuantity.toStringAsFixed(0),style: TextStyle(fontSize: 9.5.sp)),
               buildIcon(Icons.add, true),
             ],
           ),
@@ -88,6 +89,7 @@ class _QuantityState extends State<Quantity> {
         child: Icon(
           icon,
           color: widget.color,
+          size: 16.sp,
         ),
       ),
     );

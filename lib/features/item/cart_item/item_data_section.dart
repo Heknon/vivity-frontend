@@ -28,13 +28,11 @@ class ItemDataSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: this.contextWidth * 0.3,
-              child: Text(
-                itemModel.title,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp),
-              ),
+            Text(
+              itemModel.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp),
             ),
             ...itemDataTexts,
           ],
@@ -116,8 +114,8 @@ class ItemDataSection extends StatelessWidget {
           ),
         ),
         child: Container(
-          width: 12,
-          height: 12,
+          width: 10.5.sp,
+          height: 10.5.sp,
           color: color,
         ),
       ),
@@ -136,7 +134,7 @@ class ItemDataSection extends StatelessWidget {
           ),
         ),
         child: CircleAvatar(
-          radius: 6,
+          radius: 5.25.sp,
           foregroundImage: prov,
         ),
       ),

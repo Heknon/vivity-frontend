@@ -52,6 +52,9 @@ dependencies:
   map:
     path: ./packages/map
 
+  fade_in_widget:
+    path: ./packages/fade_in_widget
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

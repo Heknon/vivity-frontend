@@ -57,34 +57,31 @@ class CartItem extends StatelessWidget {
                     contextHeight: usedHeight,
                   ),
                 ),
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          '\$${itemModel.price.toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        '\$${itemModel.price.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
+                      ),
+                      const Spacer(),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth * 0.25,
+                          maxHeight: constraints.maxWidth * 0.25 / 3
                         ),
-                        const Spacer(),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: constraints.maxWidth * 0.3,
-                            maxHeight: constraints.maxWidth * 0.3 / 3
-                          ),
-                          child: Quantity(
-                            initialCount: itemModel.quantity,
-                            color: Theme.of(context).primaryColor,
-                            onDecrement: onQuantityUpdate,
-                            onIncrement: onQuantityUpdate,
-                            onDelete: onQuantityDelete,
-                            id: id,
-                          ),
-                        )
-                      ],
-                    ),
+                        child: Quantity(
+                          initialCount: itemModel.quantity,
+                          color: Theme.of(context).primaryColor,
+                          onDecrement: onQuantityUpdate,
+                          onIncrement: onQuantityUpdate,
+                          onDelete: onQuantityDelete,
+                          id: id,
+                        ),
+                      )
+                    ],
                   ),
                 )
               ],

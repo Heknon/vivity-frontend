@@ -29,6 +29,27 @@ class CartItemModel {
       price: model.price,
     );
   }
+
+  CartItemModel copyWith({
+    String? previewImage,
+    String? title,
+    Iterable<ModificationButtonDataHost>? chosenData,
+    double? price,
+    int? quantity,
+  }) {
+    return CartItemModel(
+      previewImage: previewImage ?? this.previewImage,
+      title: title ?? this.title,
+      chosenData: chosenData ?? this.chosenData.map((e) => e.copyWith()),
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $chosenData, price: $price, quantity: $quantity}';
+  }
 }
 
 class ItemModel {
@@ -55,6 +76,37 @@ class ItemModel {
     required this.tags,
     required this.stock,
   });
+
+  @override
+  String toString() {
+    return 'ItemModel{businessName: $businessName, price: $price, images: $images, previewImageIndex: $previewImageIndex, reviews: $reviews, itemStoreFormat: $itemStoreFormat, brand: $brand, category: $category, tags: $tags, stock: $stock}';
+  }
+
+  ItemModel copyWith({
+    String? businessName,
+    double? price,
+    List<String>? images,
+    int? previewImageIndex,
+    List<Review>? reviews,
+    ItemStoreFormat? itemStoreFormat,
+    String? brand,
+    String? category,
+    List<String>? tags,
+    int? stock,
+  }) {
+    return ItemModel(
+      businessName: businessName ?? this.businessName,
+      price: price ?? this.price,
+      images: images ?? this.images,
+      previewImageIndex: previewImageIndex ?? this.previewImageIndex,
+      reviews: reviews ?? this.reviews,
+      itemStoreFormat: itemStoreFormat ?? this.itemStoreFormat.copyWith(),
+      brand: brand ?? this.brand,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      stock: stock ?? this.stock,
+    );
+  }
 }
 
 class Review {
@@ -65,6 +117,27 @@ class Review {
   final List<String> imageUrls;
 
   const Review({required this.posterName, required this.pfpImage, required this.rating, required this.textContent, required this.imageUrls});
+
+  @override
+  String toString() {
+    return 'Review{posterName: $posterName, pfpImage: $pfpImage, rating: $rating, textContent: $textContent, imageUrls: $imageUrls}';
+  }
+
+  Review copyWith({
+    String? posterName,
+    String? pfpImage,
+    double? rating,
+    String? textContent,
+    List<String>? imageUrls,
+  }) {
+    return Review(
+      posterName: posterName ?? this.posterName,
+      pfpImage: pfpImage ?? this.pfpImage,
+      rating: rating ?? this.rating,
+      textContent: textContent ?? this.textContent,
+      imageUrls: imageUrls ?? this.imageUrls,
+    );
+  }
 }
 
 class ItemStoreFormat {
@@ -74,11 +147,38 @@ class ItemStoreFormat {
   final List<ModificationButton> modificationButtons;
 
   const ItemStoreFormat({required this.title, this.subtitle, this.description, this.modificationButtons = const []});
+
+  @override
+  String toString() {
+    return 'ItemStoreFormat{title: $title, subtitle: $subtitle, description: $description, modificationButtons: $modificationButtons}';
+  }
+
+  ItemStoreFormat copyWith({
+    String? title,
+    String? subtitle,
+    String? description,
+    List<ModificationButton>? modificationButtons,
+  }) {
+    return ItemStoreFormat(
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      description: description ?? this.description,
+      modificationButtons: modificationButtons ?? this.modificationButtons.map((e) => e.copyWith()).toList(),
+    );
+  }
 }
 
-enum ModificationButtonSide { left, center, right }
+enum ModificationButtonSide {
+  left,
+  center,
+  right,
+}
 
-enum ModificationButtonDataType { text, color, image }
+enum ModificationButtonDataType {
+  text,
+  color,
+  image,
+}
 
 class ModificationButtonDataHost {
   final String name;
@@ -98,6 +198,23 @@ class ModificationButtonDataHost {
 
     return ModificationButtonDataHost(name: button.name, dataType: button.dataType, dataChosen: chosenData);
   }
+
+  @override
+  String toString() {
+    return 'ModificationButtonDataHost{name: $name, dataType: $dataType, dataChosen: $dataChosen}';
+  }
+
+  ModificationButtonDataHost copyWith({
+    String? name,
+    ModificationButtonDataType? dataType,
+    List<Object>? dataChosen,
+  }) {
+    return ModificationButtonDataHost(
+      name: name ?? this.name,
+      dataType: dataType ?? this.dataType,
+      dataChosen: dataChosen ?? this.dataChosen,
+    );
+  }
 }
 
 class ModificationButton {
@@ -114,4 +231,25 @@ class ModificationButton {
     this.multiSelect = false,
     required this.modificationButtonSide,
   });
+
+  @override
+  String toString() {
+    return 'ModificationButton{name: $name, modificationButtonSide: $modificationButtonSide, data: $data, dataType: $dataType, multiSelect: $multiSelect}';
+  }
+
+  ModificationButton copyWith({
+    String? name,
+    ModificationButtonSide? modificationButtonSide,
+    List<Object>? data,
+    ModificationButtonDataType? dataType,
+    bool? multiSelect,
+  }) {
+    return ModificationButton(
+      name: name ?? this.name,
+      modificationButtonSide: modificationButtonSide ?? this.modificationButtonSide,
+      data: data ?? this.data,
+      dataType: dataType ?? this.dataType,
+      multiSelect: multiSelect ?? this.multiSelect,
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:fade_in_widget/fade_in_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +18,8 @@ class CartView extends StatefulWidget {
   State<CartView> createState() => _CartViewState();
 }
 
+FadeInController controller = FadeInController();
+
 class _CartViewState extends State<CartView> {
   late List<CartItemModel> _itemModels;
   late double _priceSum = 0;
@@ -30,13 +33,15 @@ class _CartViewState extends State<CartView> {
       _priceSum += element.quantity * element.price;
       _itemModels.add(element);
     }
+
+    print(_itemModels.length);
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (ctx, constraints) {
-        double itemsToFitInList = 3;
+        double itemsToFitInList = 2.7;
         double listPadding = 15;
         double itemsPadding = 25;
         Size listSize = Size(constraints.maxWidth * 0.9, constraints.maxHeight * 0.8);
@@ -59,7 +64,7 @@ class _CartViewState extends State<CartView> {
                 height: listSize.height,
                 width: listSize.width,
                 child: ListView.builder(
-                  itemCount: 5,
+                  itemCount: _itemModels.length,
                   controller: widget.scrollController,
                   itemBuilder: (ctx, i) => Padding(
                     padding: i != 0 ? EdgeInsets.only(top: itemsPadding) : const EdgeInsets.only(),
@@ -84,7 +89,7 @@ class _CartViewState extends State<CartView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
+                      padding: EdgeInsets.only(left: 8),
                       child: TextButton(
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.primary),
@@ -96,7 +101,14 @@ class _CartViewState extends State<CartView> {
                           ),
                           splashFactory: InkSplash.splashFactory,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          controller.pushWidgetToAnimation(
+                            Text(
+                              'Total: \$' + _priceSum.toStringAsFixed(2),
+                              style: GoogleFonts.raleway(fontSize: 18.sp),
+                            ),
+                          );
+                        },
                         child: Text(
                           'Checkout',
                           style: TextStyle(
@@ -110,9 +122,31 @@ class _CartViewState extends State<CartView> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
-                      child: Text(
-                        'Total: \$' + _priceSum.toStringAsFixed(2),
-                        style: GoogleFonts.raleway(fontSize: 18.sp),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: 18.sp + 8, minHeight: 18.sp + 8),
+                        child: NotificationListener(
+                          onNotification: (SizeChangedLayoutNotification notification) {
+                            WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                              controller.swapCurrentWidget(
+                                Text(
+                                  'Total: \$' + _priceSum.toStringAsFixed(2),
+                                  style: GoogleFonts.raleway(fontSize: 18.sp),
+                                ),
+                              );
+                            });
+                            return true;
+                          },
+                          child: SizeChangedLayoutNotifier(
+                            child: FadeInWidget(
+                              duration: Duration(milliseconds: 500),
+                              controller: controller,
+                              initialWidget: Text(
+                                'Total: \$' + _priceSum.toStringAsFixed(2),
+                                style: GoogleFonts.raleway(fontSize: 18.sp),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     )
                   ],
@@ -125,17 +159,11 @@ class _CartViewState extends State<CartView> {
     );
   }
 
-  void addItemModel(CartItemModel itemModel) {
+  void addItemModel(CartItemModel itemModel) {}
 
-  }
+  void removeItemModel(int index) {}
 
-  void removeItemModel(int index) {
-
-  }
-
-  void removeItemModelByModel(CartItemModel model) {
-
-  }
+  void removeItemModelByModel(CartItemModel model) {}
 
   void onQuantityUpdate(QuantityController quantityController, int? id) {
     setState(() {
@@ -143,5 +171,12 @@ class _CartViewState extends State<CartView> {
       _itemModels[id].quantity = quantityController.quantity;
       _priceSum += _itemModels[id].quantity * _itemModels[id].price;
     });
+
+    controller.gracefullySwapCurrentAnimatedWidget(
+      Text(
+        'Total: \$' + _priceSum.toStringAsFixed(2),
+        style: GoogleFonts.raleway(fontSize: 18.sp),
+      ),
+    );
   }
 }
