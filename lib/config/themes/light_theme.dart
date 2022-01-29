@@ -4,10 +4,16 @@ import '../../helpers/color_helpers.dart';
 
 ThemeData lightTheme = ThemeData.light().copyWith(
     primaryColor: createMaterialColor(primaryColor),
-    colorScheme: ColorScheme.light(primary: primaryColor, secondary: primaryComplementaryColor, primaryVariant: primaryColorVariant),
+    colorScheme: ColorScheme.light(
+      primary: primaryColor,
+      secondaryVariant: fillerColor,
+      secondary: primaryComplementaryColor,
+      primaryVariant: primaryColorVariant,
+    ),
     dialogBackgroundColor: const Color(0xfff5f5f5),
     textTheme: Typography.blackCupertino.copyWith(
-      subtitle2: TextStyle(fontFamily: "Hezaedrus", fontSize: 10, color: Colors.grey[600]),
+      subtitle1: TextStyle(fontFamily: "Hezaedrus", fontSize: 10, color: Colors.grey[400]),
+      subtitle2: TextStyle(fontFamily: "Hezaedrus", fontSize: 10, color: Colors.grey[700]),
       headline4: TextStyle(
         fontFamily: "Hezaedrus",
         fontSize: 12,

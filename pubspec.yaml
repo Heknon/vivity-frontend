@@ -45,6 +45,10 @@ dependencies:
   tuple: ^2.0.0
   sizer: ^2.0.1
   google_fonts: ^2.2.0
+  carousel_slider: ^4.0.0
+  equatable: ^2.0.3
+  flutter_bloc: ^8.0.1
+  bloc: ^8.0.2
 
   advanced_panel:
     path: ./packages/advanced_panel

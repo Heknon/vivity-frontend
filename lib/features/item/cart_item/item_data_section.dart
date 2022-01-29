@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-
-import '../../../widgets/preview_dialog.dart';
+import 'package:vivity/helpers/item_data_helper.dart';
 
 class ItemDataSection extends StatelessWidget {
   final double contextWidth;
@@ -74,70 +73,6 @@ class ItemDataSection extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  Iterable<Widget> buildImageDataType(ModificationButtonDataHost e) {
-    return e.dataChosen.map(
-      (d) => Padding(
-        padding: const EdgeInsets.only(left: 3.0),
-        child: buildImageCircle(e.name, d as String),
-      ),
-    );
-  }
-
-  Iterable<Widget> buildColoredDataType(BuildContext context, ModificationButtonDataHost e) {
-    return e.dataChosen.map(
-      (d) => Padding(
-        padding: const EdgeInsets.only(left: 3.0),
-        child: buildColoredCircle(context, e.name, Color(d as int)),
-      ),
-    );
-  }
-
-  Widget buildColoredCircle(BuildContext ctx, String title, Color color) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(100)),
-      child: InkWell(
-        onTap: () => showDialog(
-          context: ctx,
-          builder: (ctx) => PreviewDialog(
-            title: title,
-            content: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.all(Radius.circular(8))
-              ),
-            ),
-          ),
-        ),
-        child: Container(
-          width: 10.5.sp,
-          height: 10.5.sp,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget buildImageCircle(String title, String url) {
-    return CachedNetworkImage(
-      imageUrl: url,
-      imageBuilder: (ctx, prov) => InkWell(
-        onTap: () => showDialog(
-          context: ctx,
-          builder: (ctx) => PreviewDialog(
-            title: title,
-            content: Image(image: prov),
-          ),
-        ),
-        child: CircleAvatar(
-          radius: 5.25.sp,
-          foregroundImage: prov,
-        ),
-      ),
     );
   }
 }

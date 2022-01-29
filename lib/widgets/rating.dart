@@ -4,11 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
-
 class Rating extends StatelessWidget {
   final double rating;
+  final Color color;
 
-  const Rating({Key? key, required this.rating})
+  const Rating({Key? key, required this.rating, this.color = Colors.white})
       : assert(rating >= 0 && rating <= 5),
         super(key: key);
 
@@ -37,7 +37,10 @@ class Rating extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 3.0, top: 2),
-          child: Text(ratingStr.toString(), style: GoogleFonts.roboto(fontWeight: FontWeight.w500),),
+          child: Text(
+            ratingStr.toString(),
+            style: GoogleFonts.roboto(fontWeight: FontWeight.w500).copyWith(color: color),
+          ),
         )
       ],
     );

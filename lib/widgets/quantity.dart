@@ -71,7 +71,7 @@ class _QuantityState extends State<Quantity> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               buildIcon(Icons.remove, false),
-              Text(currentQuantity.toStringAsFixed(0),style: TextStyle(fontSize: 9.5.sp)),
+              Text(currentQuantity.toStringAsFixed(0),style: TextStyle(fontSize: 9.5.sp, color: widget.color)),
               buildIcon(Icons.add, true),
             ],
           ),

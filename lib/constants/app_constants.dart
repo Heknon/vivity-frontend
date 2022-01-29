@@ -49,7 +49,7 @@ const ItemModel itemModelDemo = ItemModel(
 const ItemModel itemModelDemo2 = ItemModel(
   businessName: "Vivity",
   price: 13.9,
-  images: ["https://m.media-amazon.com/images/I/81iyCcqLI6L._AC_SY879._SX._UX._SY._UY_.jpg"],
+  images: ["https://m.media-amazon.com/images/I/81iyCcqLI6L._AC_SY879._SX._UX._SY._UY_.jpg", "https://m.media-amazon.com/images/I/61n+vIfzOKL._AC_UX679_.jpg"],
   reviews: [
     Review(
       posterName: "Heknon",
@@ -72,7 +72,7 @@ const ItemModel itemModelDemo2 = ItemModel(
       ),
       ModificationButton(
         name: "Color",
-        data: [0xff325a4f, 0xfffcb944, 0xff163353, 0xffba2435],
+        data: [0xff325a4f, 0xfffcb944, 0xff163353],
         dataType: ModificationButtonDataType.color,
         modificationButtonSide: ModificationButtonSide.left,
       ),
@@ -99,6 +99,6 @@ CartItemModel cartItemModel2 = CartItemModel.fromItemModel(
     quantity: 1,
     dataChosen: {
       0: [2],
-      1: [3, 0],
+      1: [1, 0],
     }
 );
