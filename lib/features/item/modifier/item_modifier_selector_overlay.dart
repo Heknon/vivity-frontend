@@ -104,6 +104,7 @@ class ItemModifierSelectorOverlay {
         continue;
       }
       final int idx = index;
+
       bakedSelectionList.add(Center(
         child: Material(
           color: Colors.white,

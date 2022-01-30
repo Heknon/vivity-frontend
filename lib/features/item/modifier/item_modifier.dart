@@ -43,11 +43,10 @@ class _ItemModifierState extends State<ItemModifier> {
   void initState() {
     super.initState();
     _modifierSelectorOverlay = ItemModifierSelectorOverlay(
-      selectableData: widget.modificationButton.data,
-      dataType: widget.modificationButton.dataType,
-      sizeScale: sizeScale,
-      padding: EdgeInsets.only(bottom: 7, right: 4, left: 4)
-    );
+        selectableData: widget.modificationButton.data,
+        dataType: widget.modificationButton.dataType,
+        sizeScale: sizeScale,
+        padding: EdgeInsets.only(bottom: 7, right: 4, left: 4));
   }
 
   @override
@@ -57,22 +56,54 @@ class _ItemModifierState extends State<ItemModifier> {
     super.dispose();
   }
 
+  bool shouldShow = true;
+
   @override
   Widget build(BuildContext context) {
+    double screenScalePercent = 7.5;
+
+    Size barSize = Size(140, (screenScalePercent - 2).h);
+    Size modifierContainerSize = Size(screenScalePercent.h, screenScalePercent.h);
+    Size size = Size(barSize.width + modifierContainerSize.width, barSize.height + modifierContainerSize.height);
+
+    return SizedBox(
+      width: size.width,
+      height: size.height,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (shouldShow) Positioned(
+            top: 0,
+            height: barSize.height,
+            width: barSize.width,
+            child: Container(
+              color: Colors.red,
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            height: modifierContainerSize.height,
+            width: modifierContainerSize.width,
+            child: Container(
+              color: Colors.blue,
+            ),
+          ),
+        ],
+      ),
+    );
+
     return BlocProvider(
       create: (_) => ItemModifierBloc(),
-      child: Builder(
-        builder: (ctx) {
-          return InkWell(
-            onTap: () => _modifierSelectorOverlay.toggle(ctx),
-            child: ItemModifierContainer(
-              selectableData: widget.modificationButton.data,
-              dataType: widget.modificationButton.dataType,
-              name: widget.modificationButton.name,
-            ),
-          );
-        }
-      ),
+      child: Builder(builder: (ctx) {
+        return InkWell(
+          onTap: () => _modifierSelectorOverlay.toggle(ctx),
+          child: ItemModifierContainer(
+            selectableData: widget.modificationButton.data,
+            dataType: widget.modificationButton.dataType,
+            name: widget.modificationButton.name,
+          ),
+        );
+      }),
     );
   }
 }
