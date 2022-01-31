@@ -72,7 +72,7 @@ const ItemModel itemModelDemo2 = ItemModel(
       ),
       ModificationButton(
         name: "Color",
-        data: [0xff325a4f, 0xfffcb944, 0xff163353],
+        data: [0xff325a4f, 0xfffcb944, 0xff163353, 0xff325a4f, 0xfffcb944, 0xff163353],
         dataType: ModificationButtonDataType.color,
         modificationButtonSide: ModificationButtonSide.left,
       ),
@@ -84,21 +84,13 @@ const ItemModel itemModelDemo2 = ItemModel(
   stock: 34,
 );
 
-CartItemModel cartItemModel = CartItemModel.fromItemModel(
-  model: itemModelDemo,
-  quantity: 2,
-  dataChosen: {
-    0: [1],
-    1: [2, 1],
-    2: [0, 1]
-  }
-);
+CartItemModel cartItemModel = CartItemModel.fromItemModel(model: itemModelDemo, quantity: 2, dataChosen: {
+  0: [1],
+  1: [2, 1],
+  2: [0, 1]
+});
 
-CartItemModel cartItemModel2 = CartItemModel.fromItemModel(
-    model: itemModelDemo2,
-    quantity: 1,
-    dataChosen: {
-      0: [2],
-      1: [1, 0],
-    }
-);
+CartItemModel cartItemModel2 = CartItemModel.fromItemModel(model: itemModelDemo2, quantity: 1, dataChosen: {
+  0: [2],
+  1: [1, 0],
+});

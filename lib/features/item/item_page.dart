@@ -52,26 +52,41 @@ class ItemPage extends StatelessWidget {
               Positioned.fill(
                 child: Column(
                   children: [
-                    Carousel(
-                      imageUrls: itemModel.images,
-                      bottomRightRadius: 30,
-                      bottomLeftRadius: 30,
-                      initialPage: itemModel.previewImageIndex,
-                      imageSize: Size(70, 40),
-                    ),
-                    Container(
-                      height: 13.h,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: List.generate(itemModel.itemStoreFormat.modificationButtons.length, (index) {
-                          ModificationButton button = itemModel.itemStoreFormat.modificationButtons[index];
-                          return ItemModifier(modificationButton: button);
-                        }),
+                    SizedBox(
+                      height: 50.h,
+                      width: 100.w,
+                      child: Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          Carousel(
+                            imageUrls: itemModel.images,
+                            bottomRightRadius: 30,
+                            bottomLeftRadius: 30,
+                            initialPage: itemModel.previewImageIndex,
+                            imageSize: Size(65, 40),
+                          ),
+                          Positioned(
+                            height: 13.h,
+                            top: 35.h,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: List.generate(
+                                  itemModel.itemStoreFormat.modificationButtons
+                                      .length, (index) {
+                                ModificationButton button = itemModel
+                                    .itemStoreFormat.modificationButtons[index];
+                                return ItemModifier(modificationButton: button);
+                              }),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Spacer(),
                     ClipRRect(
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30)),
                       child: Container(
                         height: 25.h,
                         color: Theme.of(context).colorScheme.primary,
@@ -84,20 +99,29 @@ class ItemPage extends StatelessWidget {
                                   child: Padding(
                                     padding: EdgeInsets.only(top: 36, left: 15),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           itemModel.itemStoreFormat.title,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 16.sp),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headline4
+                                              ?.copyWith(
+                                                  color: Colors.white,
+                                                  fontSize: 16.sp),
                                         ),
                                         SizedBox(
                                           height: 4,
                                         ),
                                         Text(
                                           "${itemModel.businessName}'s shop",
-                                          style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 10.sp),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .subtitle1
+                                              ?.copyWith(fontSize: 10.sp),
                                         ),
                                       ],
                                     ),
@@ -105,12 +129,16 @@ class ItemPage extends StatelessWidget {
                                 ),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Rating(rating: calculateRating()),
                                       Text(
                                         '(${itemModel.reviews.length} reviews)',
-                                        style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle1
+                                            ?.copyWith(fontSize: 8.sp),
                                       )
                                     ],
                                   ),
@@ -119,19 +147,28 @@ class ItemPage extends StatelessWidget {
                             ),
                             Spacer(),
                             Padding(
-                              padding: EdgeInsets.only(left: 15, right: 15, bottom: 10),
+                              padding: EdgeInsets.only(
+                                  left: 15, right: 15, bottom: 10),
                               child: Row(
                                 children: [
                                   Expanded(
                                     flex: 2,
                                     child: Text(
                                       '\$${itemModel.price.toStringAsFixed(2)}',
-                                      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 16.sp, color: Colors.white),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline4!
+                                          .copyWith(
+                                              fontSize: 16.sp,
+                                              color: Colors.white),
                                     ),
                                   ),
                                   Expanded(
                                     child: ConstrainedBox(
-                                      constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
+                                      constraints: BoxConstraints(
+                                          maxWidth: constraints.maxWidth * 0.25,
+                                          maxHeight:
+                                              constraints.maxWidth * 0.25 / 3),
                                       child: Quantity(
                                         initialCount: 1,
                                         color: Colors.white,
@@ -143,17 +180,24 @@ class ItemPage extends StatelessWidget {
                                   ),
                                   Expanded(
                                     child: Material(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(30))),
                                       color: Colors.white,
                                       child: InkWell(
                                         child: Ink(
                                           child: Container(
                                             height: 7.h,
-                                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(30))),
                                             child: Center(
                                               child: Text(
                                                 'Cart',
-                                                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .headline4!
+                                                    .copyWith(fontSize: 14.sp),
                                               ),
                                             ),
                                           ),
@@ -221,7 +265,10 @@ class ItemPage extends StatelessWidget {
                 child: Text(
                   itemModel.itemStoreFormat.title,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 11.sp),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline4
+                      ?.copyWith(color: Colors.white, fontSize: 11.sp),
                 ),
               ),
               SizedBox(
@@ -229,7 +276,10 @@ class ItemPage extends StatelessWidget {
                 child: Text(
                   "${itemModel.businessName}'s shop",
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1
+                      ?.copyWith(fontSize: 8.sp),
                 ),
               ),
             ],

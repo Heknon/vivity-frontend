@@ -8,7 +8,7 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/item/modifier/bloc/item_modifier_bloc.dart';
 import 'package:vivity/features/item/modifier/item_modifier_container.dart';
-import 'package:vivity/features/item/modifier/item_modifier_selector_overlay.dart';
+import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
 import 'package:vivity/helpers/item_data_helper.dart';
 
 import 'item_modifier_service.dart';
@@ -36,22 +36,19 @@ class ItemModifier extends StatefulWidget {
 }
 
 class _ItemModifierState extends State<ItemModifier> {
-  late ItemModifierSelectorOverlay _modifierSelectorOverlay;
+  late ItemModifierSelectorController _selectorController;
   double sizeScale = 9;
 
   @override
   void initState() {
+    _selectorController = ItemModifierSelectorController();
+
     super.initState();
-    _modifierSelectorOverlay = ItemModifierSelectorOverlay(
-        selectableData: widget.modificationButton.data,
-        dataType: widget.modificationButton.dataType,
-        sizeScale: sizeScale,
-        padding: EdgeInsets.only(bottom: 7, right: 4, left: 4));
   }
 
   @override
   void dispose() {
-    _modifierSelectorOverlay.dispose();
+    _selectorController.dispose();
 
     super.dispose();
   }
@@ -69,41 +66,39 @@ class _ItemModifierState extends State<ItemModifier> {
     return SizedBox(
       width: size.width,
       height: size.height,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (shouldShow) Positioned(
-            top: 0,
-            height: barSize.height,
-            width: barSize.width,
-            child: Container(
-              color: Colors.red,
+      child: BlocProvider(
+        create: (_) => ItemModifierBloc(),
+        child: Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Positioned(
+              top: 0,
+              height: barSize.height,
+              width: barSize.width,
+              child: ItemModifierSelector(
+                selectableData: widget.modificationButton.data,
+                dataType: widget.modificationButton.dataType,
+                sizeScale: sizeScale,
+                controller: _selectorController,
+                padding: EdgeInsets.only(bottom: 7, right: 4, left: 4),
+              ),
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            height: modifierContainerSize.height,
-            width: modifierContainerSize.width,
-            child: Container(
-              color: Colors.blue,
+            Positioned(
+              bottom: 0,
+              height: modifierContainerSize.height,
+              width: modifierContainerSize.width,
+              child: InkWell(
+                onTap: _selectorController.toggle,
+                child: ItemModifierContainer(
+                  selectableData: widget.modificationButton.data,
+                  dataType: widget.modificationButton.dataType,
+                  name: widget.modificationButton.name,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
-
-    return BlocProvider(
-      create: (_) => ItemModifierBloc(),
-      child: Builder(builder: (ctx) {
-        return InkWell(
-          onTap: () => _modifierSelectorOverlay.toggle(ctx),
-          child: ItemModifierContainer(
-            selectableData: widget.modificationButton.data,
-            dataType: widget.modificationButton.dataType,
-            name: widget.modificationButton.name,
-          ),
-        );
-      }),
     );
   }
 }
