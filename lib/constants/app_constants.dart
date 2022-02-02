@@ -38,6 +38,12 @@ const ItemModel itemModelDemo = ItemModel(
         dataType: ModificationButtonDataType.image,
         modificationButtonSide: ModificationButtonSide.center,
       ),
+      ModificationButton(
+        name: "dType",
+        data: [0xff325a4f, 0xfffcb944, 0xff163353, 0xff325a4f, 0xfffcb944, 0xff163353],
+        dataType: ModificationButtonDataType.color,
+        modificationButtonSide: ModificationButtonSide.right,
+      ),
     ],
   ),
   brand: "Hanes",
@@ -65,16 +71,22 @@ const ItemModel itemModelDemo2 = ItemModel(
     description: "A very lengthy description",
     modificationButtons: [
       ModificationButton(
-        name: "Size",
-        data: ["S", "M", "L"],
-        dataType: ModificationButtonDataType.text,
-        modificationButtonSide: ModificationButtonSide.right,
-      ),
-      ModificationButton(
         name: "Color",
         data: [0xff325a4f, 0xfffcb944, 0xff163353, 0xff325a4f, 0xfffcb944, 0xff163353],
         dataType: ModificationButtonDataType.color,
         modificationButtonSide: ModificationButtonSide.left,
+      ),
+      ModificationButton(
+        name: "Color Type",
+        data: [0xff325a4f, 0xfffcb944],
+        dataType: ModificationButtonDataType.color,
+        modificationButtonSide: ModificationButtonSide.center,
+      ),
+      ModificationButton(
+        name: "Size",
+        data: ["S", "M", "L"],
+        dataType: ModificationButtonDataType.text,
+        modificationButtonSide: ModificationButtonSide.right,
       ),
     ],
   ),
@@ -92,5 +104,5 @@ CartItemModel cartItemModel = CartItemModel.fromItemModel(model: itemModelDemo, 
 
 CartItemModel cartItemModel2 = CartItemModel.fromItemModel(model: itemModelDemo2, quantity: 1, dataChosen: {
   0: [2],
-  1: [1, 0],
+  1: [1, 0]
 });

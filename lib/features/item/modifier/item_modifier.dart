@@ -18,8 +18,9 @@ class ItemModifier extends StatefulWidget {
   final double imageRadius;
   final double colorSize;
   final double textSize;
-  final double selectableItemPadding;
-  final double overlaySpacing;
+  final double separatingHeight;
+
+  final ItemModifierSelectorController? selectorController;
 
   const ItemModifier({
     Key? key,
@@ -27,8 +28,8 @@ class ItemModifier extends StatefulWidget {
     this.imageRadius = 9,
     this.colorSize = 18,
     this.textSize = 14,
-    this.selectableItemPadding = 8,
-    this.overlaySpacing = 10,
+    this.separatingHeight = 10,
+    this.selectorController
   }) : super(key: key);
 
   @override
@@ -38,10 +39,11 @@ class ItemModifier extends StatefulWidget {
 class _ItemModifierState extends State<ItemModifier> {
   late ItemModifierSelectorController _selectorController;
   double sizeScale = 9;
+  double? maxWidth;
 
   @override
   void initState() {
-    _selectorController = ItemModifierSelectorController();
+    _selectorController = widget.selectorController ?? ItemModifierSelectorController();
 
     super.initState();
   }
@@ -57,14 +59,14 @@ class _ItemModifierState extends State<ItemModifier> {
 
   @override
   Widget build(BuildContext context) {
-    double screenScalePercent = 7.5;
+    double screenScalePercent = sizeScale;
+    double heightFactor = 30;
 
-    Size barSize = Size(140, (screenScalePercent - 2).h);
-    Size modifierContainerSize = Size(screenScalePercent.h, screenScalePercent.h);
-    Size size = Size(barSize.width + modifierContainerSize.width, barSize.height + modifierContainerSize.height);
+    Size modifierContainerSize = Size(70, 70);
+    Size size = Size(modifierContainerSize.width, heightFactor.sp + modifierContainerSize.height + widget.separatingHeight);
 
     return SizedBox(
-      width: size.width,
+      width: (sizeScale + 6).h,
       height: size.height,
       child: BlocProvider(
         create: (_) => ItemModifierBloc(),
@@ -73,13 +75,12 @@ class _ItemModifierState extends State<ItemModifier> {
           children: [
             Positioned(
               top: 0,
-              height: barSize.height,
-              width: barSize.width,
               child: ItemModifierSelector(
                 selectableData: widget.modificationButton.data,
                 dataType: widget.modificationButton.dataType,
                 sizeScale: sizeScale,
                 controller: _selectorController,
+                heightScale: heightFactor,
                 padding: EdgeInsets.only(bottom: 7, right: 4, left: 4),
               ),
             ),
@@ -102,3 +103,4 @@ class _ItemModifierState extends State<ItemModifier> {
     );
   }
 }
+

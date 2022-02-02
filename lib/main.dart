@@ -30,9 +30,7 @@ class Vivity extends StatelessWidget {
       builder: (ctx, orientation, type) => MaterialApp(
         title: 'Vivity',
         theme: lightTheme,
-        home: ItemPage(
-          itemModel: itemModelDemo2,
-        ),
+        home: HomePage(),
       ),
     );
   }

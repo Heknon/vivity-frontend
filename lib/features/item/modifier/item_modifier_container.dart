@@ -96,6 +96,9 @@ class _ItemModifierContainerState extends State<ItemModifierContainer> {
               padding: const EdgeInsets.only(bottom: 4),
               child: Text(
                 widget.name,
+                overflow: TextOverflow.clip,
+                maxLines: 1,
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
               ),
             )

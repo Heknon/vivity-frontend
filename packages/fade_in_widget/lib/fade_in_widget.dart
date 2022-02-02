@@ -123,10 +123,13 @@ class _FadeInWidgetState extends State<FadeInWidget> with SingleTickerProviderSt
 
   void swapCurrentWidget(Widget widget) {
     setState(() {
-      print((widget as Text).style?.fontSize);
       _currentWidget = widget;
     });
   }
+}
+
+class FadeController extends ChangeNotifier {
+
 }
 
 class FadeInController {

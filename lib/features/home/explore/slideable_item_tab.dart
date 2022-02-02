@@ -30,13 +30,6 @@ class SlideableItemTab extends StatelessWidget {
           contentBuilder: (sc) => buildContent(itemViewSize, constraints, sc),
           //parallaxEnabled: true,
         );
-
-        // return SliderPanel(
-        //   startPosition: SliderPosition.bottom,
-        //   duration: const Duration(milliseconds: 500),
-        //   draggableWidget: buildDraggableTab(tabSize, constraints, context),
-        //   followerWidget: buildItemView(tabSize, constraints),
-        // );
       },
     );
   }

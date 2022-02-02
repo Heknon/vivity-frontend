@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:fade_in_widget/fade_in_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,6 +21,7 @@ class ItemModifierSelector extends StatefulWidget {
   final double colorSize;
   final double imageRadius;
   final double sizeScale;
+  final double heightScale;
 
   final bool allowMultiSelect;
 
@@ -29,7 +31,7 @@ class ItemModifierSelector extends StatefulWidget {
     Key? key,
     required this.selectableData,
     required this.dataType,
-    this.padding = const EdgeInsets.only(bottom: 8),
+    this.padding = const EdgeInsets.all(0),
     this.itemPadding = const EdgeInsets.all(8),
     this.textSize = 14,
     this.colorSize = 18,
@@ -37,6 +39,7 @@ class ItemModifierSelector extends StatefulWidget {
     this.sizeScale = 9,
     this.allowMultiSelect = false,
     this.controller,
+    this.heightScale = 30,
   }) : super(key: key);
 
   @override
@@ -49,11 +52,14 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
   @override
   void initState() {
     _controller = widget.controller ?? ItemModifierSelectorController();
-    _controller.addListener(() {
-      setState(() {});
-    });
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,22 +67,22 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
     Size size = _widgetSize;
 
     return _controller.isShown
-        ? Padding(
-            padding: widget.padding,
-            child: BlocBuilder(
-              bloc: BlocProvider.of<ItemModifierBloc>(context),
-              builder: (ctx, ItemModifierState state) {
-                return NotificationListener(
-                  onNotification: (SizeChangedLayoutNotification event) {
-                    size = _widgetSize;
-                    return true;
-                  },
-                  child: SizeChangedLayoutNotifier(
-                    child: buildSelector(context, size, state.chosenIndices),
-                  ),
-                );
-              },
-            ),
+        ? BlocConsumer(
+            bloc: BlocProvider.of<ItemModifierBloc>(context),
+            listener: (ctx, ItemModifierState state) {
+              _controller.updateChosenIndices(state);
+            },
+            builder: (ctx, ItemModifierState state) {
+              return NotificationListener(
+                onNotification: (SizeChangedLayoutNotification event) {
+                  size = _widgetSize;
+                  return true;
+                },
+                child: SizeChangedLayoutNotifier(
+                  child: buildSelector(context, size, state.chosenIndices),
+                ),
+              );
+            },
           )
         : const SizedBox();
   }
@@ -119,16 +125,20 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
       ),
     );
 
-    return Material(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-      color: Colors.white,
-      clipBehavior: Clip.antiAlias,
-      elevation: 7,
-      child: Center(
-        child: ListView(
-          shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          children: selectionList,
+    return SizedBox(
+      width: size.width,
+      height: size.height,
+      child: Material(
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+        color: Colors.white,
+        clipBehavior: Clip.antiAlias,
+        elevation: 7,
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            scrollDirection: Axis.horizontal,
+            children: selectionList,
+          ),
         ),
       ),
     );
@@ -141,16 +151,25 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
           : widget.imageRadius * 2;
 
   Size get _widgetSize => Size(
-        min(10, (widget.sizeScale + 13).h),
-        30.sp,
-      );
+    (widget.sizeScale + 6).h,
+    widget.heightScale.sp,
+  );
 }
 
 class ItemModifierSelectorController extends ChangeNotifier {
   bool isShown = false;
+  DateTime? lastToggle;
+  Set<int> chosenIndices = {};
+  Size? size;
 
   void toggle() {
     isShown = !isShown;
+    lastToggle = DateTime.now();
+    notifyListeners();
+  }
+
+  void updateChosenIndices(ItemModifierState state) {
+    chosenIndices = state.chosenIndices;
     notifyListeners();
   }
 }

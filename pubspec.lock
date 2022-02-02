@@ -486,7 +486,7 @@ packages:
     source: hosted
     version: "4.2.4"
   proj4dart:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: proj4dart
       url: "https://pub.dartlang.org"
@@ -596,7 +596,7 @@ packages:
     source: hosted
     version: "2.0.0"
   tuple:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: tuple
       url: "https://pub.dartlang.org"

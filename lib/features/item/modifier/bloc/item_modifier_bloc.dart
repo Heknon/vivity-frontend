@@ -18,4 +18,9 @@ class ItemModifierBloc extends Bloc<ItemModifierEvent, ItemModifierState> {
       }
     });
   }
+
+  @override
+  void onTransition(Transition<ItemModifierEvent, ItemModifierState> transition) {
+    super.onTransition(transition);
+  }
 }
