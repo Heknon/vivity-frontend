@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:map/map_gui.dart';
 import 'package:map/map_widget.dart';
+import '../../cart/shopping_cart.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vivity/features/search_filter/filter_bar.dart';
 import 'package:vivity/features/search_filter/filter_side_bar.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
-import 'package:vivity/widgets/cart/shopping_cart.dart';
 import 'slideable_item_tab.dart';
 
 final widgetSwapController = WidgetSwapperController();
@@ -51,18 +51,6 @@ class Explore extends StatelessWidget {
             controller: mapGuiController,
           ),
           Positioned(
-            child: ConstrainedBox(
-              child: ShoppingCart(),
-              constraints: constraints,
-            ),
-          ),
-          Positioned(
-            child: ConstrainedBox(
-              child: const SlideableItemTab(),
-              constraints: constraints,
-            ),
-          ),
-          Positioned(
             top: 0,
             right: 0,
             child: ConstrainedBox(
@@ -82,7 +70,19 @@ class Explore extends StatelessWidget {
                 ),
               ),
             ),
-          )
+          ),
+          Positioned(
+            child: ConstrainedBox(
+              child: ShoppingCart(),
+              constraints: constraints,
+            ),
+          ),
+          Positioned(
+            child: ConstrainedBox(
+              child: const SlideableItemTab(),
+              constraints: constraints,
+            ),
+          ),
         ],
       ),
     );

@@ -20,7 +20,7 @@ class ClassicItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (ctx, constraints) => GestureDetector(
-        onTap: _onTap,
+        onTap: () => _onTap(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -68,7 +68,7 @@ class ClassicItem extends StatelessWidget {
     );
   }
 
-  void _onTap() {
-
+  void _onTap(BuildContext context) {
+    Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(itemModel: itemModel)));
   }
 }

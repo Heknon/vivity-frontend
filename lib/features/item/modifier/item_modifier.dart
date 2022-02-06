@@ -22,15 +22,15 @@ class ItemModifier extends StatefulWidget {
 
   final ItemModifierSelectorController? selectorController;
 
-  const ItemModifier({
-    Key? key,
-    required this.modificationButton,
-    this.imageRadius = 9,
-    this.colorSize = 18,
-    this.textSize = 14,
-    this.separatingHeight = 10,
-    this.selectorController
-  }) : super(key: key);
+  const ItemModifier(
+      {Key? key,
+      required this.modificationButton,
+      this.imageRadius = 9,
+      this.colorSize = 18,
+      this.textSize = 14,
+      this.separatingHeight = 10,
+      this.selectorController})
+      : super(key: key);
 
   @override
   State<ItemModifier> createState() => _ItemModifierState();
@@ -50,8 +50,6 @@ class _ItemModifierState extends State<ItemModifier> {
 
   @override
   void dispose() {
-    _selectorController.dispose();
-
     super.dispose();
   }
 
@@ -59,7 +57,6 @@ class _ItemModifierState extends State<ItemModifier> {
 
   @override
   Widget build(BuildContext context) {
-    double screenScalePercent = sizeScale;
     double heightFactor = 30;
 
     Size modifierContainerSize = Size(70, 70);
@@ -103,4 +100,3 @@ class _ItemModifierState extends State<ItemModifier> {
     );
   }
 }
-

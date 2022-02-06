@@ -14,7 +14,7 @@ class CartItemModel {
   });
 
   /// dataChosen: Key is ModificationButton index value are the indices of the data chosen.
-  factory CartItemModel.fromItemModel({required ItemModel model, required int quantity, required Map<int, List<int>> dataChosen}) {
+  factory CartItemModel.fromItemModel({required ItemModel model, required int quantity, required Map<int, Iterable<int>> dataChosen}) {
     List<ModificationButtonDataHost> chosenData = List.empty(growable: true);
 
     dataChosen.forEach(
@@ -40,10 +40,31 @@ class CartItemModel {
     return CartItemModel(
       previewImage: previewImage ?? this.previewImage,
       title: title ?? this.title,
-      chosenData: chosenData ?? this.chosenData.map((e) => e.copyWith()),
+      chosenData: chosenData ?? this.chosenData.map((e) => e.copyWith()).toList(growable: false),
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
     );
+  }
+
+  factory CartItemModel.fromMap(Map<String, dynamic> map) {
+    return CartItemModel(
+      previewImage: map['previewImage'] as String,
+      title: map['title'] as String,
+      chosenData: (map['chosenData'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
+      price: map['price'] as double,
+      quantity: map['quantity'] as int,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    // ignore: unnecessary_cast
+    return {
+      'previewImage': previewImage,
+      'title': title,
+      'chosenData': chosenData.map((e) => e.toMap()).toList(),
+      'price': price,
+      'quantity': quantity,
+    } as Map<String, dynamic>;
   }
 
   @override
@@ -183,18 +204,19 @@ enum ModificationButtonDataType {
 class ModificationButtonDataHost {
   final String name;
   final ModificationButtonDataType dataType;
-  final List<Object> dataChosen;
+  final List<dynamic> dataChosen;
 
   ModificationButtonDataHost({required this.name, required this.dataType, required this.dataChosen});
 
-  factory ModificationButtonDataHost.fromModificationButton(ModificationButton button, List<int> chosenIndices) {
+  factory ModificationButtonDataHost.fromModificationButton(ModificationButton button, Iterable<int> chosenIndices) {
     int dataLength = button.data.length;
-    List<Object> chosenData = List.generate(chosenIndices.length, (index) {
-      int _index = chosenIndices[index];
-      if (_index >= dataLength) throw IndexError(_index, dataLength, "Chosen indices passed an index out of the data's range!");
+    List<dynamic> chosenData = List.empty(growable: true);
 
-      return button.data[_index];
-    });
+    for (int index in chosenIndices) {
+      if (index >= dataLength) throw IndexError(index, dataLength, "Chosen indices passed an index out of the data's range!");
+
+      chosenData.add(button.data[index]);
+    }
 
     return ModificationButtonDataHost(name: button.name, dataType: button.dataType, dataChosen: chosenData);
   }
@@ -214,6 +236,23 @@ class ModificationButtonDataHost {
       dataType: dataType ?? this.dataType,
       dataChosen: dataChosen ?? this.dataChosen,
     );
+  }
+
+  factory ModificationButtonDataHost.fromMap(Map<String, dynamic> map) {
+    return ModificationButtonDataHost(
+      name: map['name'] as String,
+      dataType: ModificationButtonDataType.values[map['dataType']],
+      dataChosen: map['dataChosen'] as List<dynamic>,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    // ignore: unnecessary_cast
+    return {
+      'name': name,
+      'dataType': dataType.index,
+      'dataChosen': dataChosen,
+    } as Map<String, dynamic>;
   }
 }
 

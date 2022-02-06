@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/bloc/cart_bloc/cart_bloc.dart';
+import '../cart/shopping_cart.dart';
 import 'package:vivity/features/home/explore/explore.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
@@ -13,7 +15,6 @@ import 'package:vivity/features/search_filter/filter_side_bar.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 import 'package:vivity/widgets/appbar/appbar.dart';
 import 'package:vivity/widgets/carousel.dart';
-import 'package:vivity/widgets/cart/shopping_cart.dart';
 import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/rating.dart';
 import 'package:vivity/widgets/simple_card.dart';
@@ -38,6 +39,7 @@ class ItemPage extends StatefulWidget {
 
 class _ItemPageState extends State<ItemPage> {
   late List<ItemModifierSelectorController> _selectorControllers;
+  late QuantityController _quantityController;
 
   @override
   void initState() {
@@ -61,6 +63,8 @@ class _ItemPageState extends State<ItemPage> {
         }
       });
     }
+
+    _quantityController = QuantityController();
 
     super.initState();
   }
@@ -104,13 +108,16 @@ class _ItemPageState extends State<ItemPage> {
                             bottom: 0,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(widget.itemModel.itemStoreFormat.modificationButtons.length, (index) {
-                                ModificationButton button = widget.itemModel.itemStoreFormat.modificationButtons[index];
-                                return ItemModifier(
-                                  modificationButton: button,
-                                  selectorController: _selectorControllers[index],
-                                );
-                              },),
+                              children: List.generate(
+                                widget.itemModel.itemStoreFormat.modificationButtons.length,
+                                (index) {
+                                  ModificationButton button = widget.itemModel.itemStoreFormat.modificationButtons[index];
+                                  return ItemModifier(
+                                    modificationButton: button,
+                                    selectorController: _selectorControllers[index],
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ],
@@ -182,6 +189,7 @@ class _ItemPageState extends State<ItemPage> {
                                       child: Quantity(
                                         initialCount: 1,
                                         color: Colors.white,
+                                        controller: _quantityController,
                                       ),
                                     ),
                                   ),
@@ -193,6 +201,15 @@ class _ItemPageState extends State<ItemPage> {
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
                                       color: Colors.white,
                                       child: InkWell(
+                                        onTap: () => BlocProvider.of<CartBloc>(context).add(
+                                          CartAddItemEvent(
+                                            CartItemModel.fromItemModel(
+                                              model: widget.itemModel,
+                                              quantity: _quantityController.quantity,
+                                              dataChosen: generateChosenData(),
+                                            ),
+                                          ),
+                                        ),
                                         child: Ink(
                                           child: Container(
                                             height: 7.h,
@@ -284,6 +301,18 @@ class _ItemPageState extends State<ItemPage> {
         ),
       ),
     );
+  }
+
+  Map<int, Iterable<int>> generateChosenData() {
+    Map<int, Iterable<int>> result = {};
+    int index = 0;
+
+    for (ItemModifierSelectorController controller in _selectorControllers) {
+      result[index] = controller.chosenIndices;
+      index++;
+    }
+
+    return result;
   }
 
   double calculateRating() {

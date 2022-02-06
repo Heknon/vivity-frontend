@@ -47,6 +47,8 @@ dependencies:
   equatable: ^2.0.3
   flutter_bloc: ^8.0.1
   bloc: ^8.0.2
+  shared_preferences: ^2.0.13
+  hydrated_bloc: ^8.0.0
 
   advanced_panel:
     path: ./packages/advanced_panel

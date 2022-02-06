@@ -16,22 +16,22 @@ class Quantity extends StatefulWidget {
   final void Function(QuantityController, int?)? onIncrement;
   final void Function(QuantityController, int?)? onDecrement;
 
-  const Quantity({
-    Key? key,
-    this.initialCount = 1,
-    this.min = 1,
-    this.max = 10,
-    this.controller,
-    this.color = Colors.white,
-    this.maxFailSnackbar = const SnackBar(
-      content: Text("Can't buy more"),
-    ),
-    this.minFailSnackbar,
-    this.onDelete,
-    this.onIncrement,
-    this.onDecrement,
-    this.id
-  }) : super(key: key);
+  const Quantity(
+      {Key? key,
+      this.initialCount = 1,
+      this.min = 1,
+      this.max = 10,
+      this.controller,
+      this.color = Colors.white,
+      this.maxFailSnackbar = const SnackBar(
+        content: Text("Can't buy more"),
+      ),
+      this.minFailSnackbar,
+      this.onDelete,
+      this.onIncrement,
+      this.onDecrement,
+      this.id})
+      : super(key: key);
 
   @override
   _QuantityState createState() => _QuantityState();
@@ -39,45 +39,40 @@ class Quantity extends StatefulWidget {
 
 class _QuantityState extends State<Quantity> {
   late QuantityController _controller;
-  late int currentQuantity;
-  late int min;
-  late int max;
 
   @override
   void initState() {
     super.initState();
 
-    currentQuantity = widget.initialCount;
-    min = widget.min;
-    max = widget.max;
-
     _controller = widget.controller ?? QuantityController();
-    _controller.setState(this);
+    _controller.init(widget.initialCount, widget.min, widget.max);
+
+    _controller.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: widget.color),
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-          ),
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              buildIcon(Icons.remove, false),
-              Text(currentQuantity.toStringAsFixed(0),style: TextStyle(fontSize: 9.5.sp, color: widget.color)),
-              buildIcon(Icons.add, true),
-            ],
-          ),
-        );
-      }
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: widget.color),
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+        ),
+        width: constraints.maxWidth,
+        height: constraints.maxHeight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            buildIcon(Icons.remove, false),
+            Text(_controller.quantity.toStringAsFixed(0), style: TextStyle(fontSize: 9.5.sp, color: widget.color)),
+            buildIcon(Icons.add, true),
+          ],
+        ),
+      );
+    });
   }
 
   Expanded buildIcon(IconData icon, bool increment) {
@@ -97,19 +92,19 @@ class _QuantityState extends State<Quantity> {
 
   void handleTap(bool increment) {
     if (increment) {
-      if (currentQuantity + 1 > max) {
+      if (_controller.quantity + 1 > _controller.max) {
         if (widget.maxFailSnackbar != null) {
           ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(widget.maxFailSnackbar!);
         }
         return;
       }
-      incrementQuantity();
+      _controller.incrementQuantity();
       if (widget.onIncrement != null) widget.onIncrement!(_controller, widget.id);
       return;
     }
 
-    if (currentQuantity - 1 < min) {
+    if (_controller.quantity - 1 < _controller.min) {
       if (widget.minFailSnackbar != null) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(widget.minFailSnackbar!);
@@ -118,67 +113,50 @@ class _QuantityState extends State<Quantity> {
       return;
     }
 
-    decrementQuantity();
+    _controller.decrementQuantity();
     if (widget.onDecrement != null) widget.onDecrement!(_controller, widget.id);
-  }
-
-  void updateMax(int max) {
-    setState(() {
-      this.max = max;
-    });
-  }
-
-  void updateMin(int min) {
-    setState(() {
-      this.min = min;
-    });
-  }
-
-  void updateCurrentQuantity(int quantity) {
-    setState(() {
-      currentQuantity = quantity;
-    });
-  }
-
-  void incrementQuantity() {
-    setState(() {
-      currentQuantity++;
-    });
-  }
-
-  void decrementQuantity() {
-    setState(() {
-      currentQuantity--;
-    });
   }
 }
 
-class QuantityController {
-  late _QuantityState _state;
+class QuantityController extends ChangeNotifier {
+  late int _quantity;
+  late int _min;
+  late int _max;
 
-  int get quantity => _state.currentQuantity;
+  int get min => _min;
 
-  void setState(_QuantityState state) {
-    _state = state;
+  int get max => _max;
+
+  int get quantity => _quantity;
+
+  void init(int initialQuantity, int min, int max) {
+    _quantity = initialQuantity;
+    _min = min;
+    _max = max;
   }
 
   void updateMax(int max) {
-    _state.updateMax(max);
+    _max = max;
+    notifyListeners();
   }
 
   void updateMin(int min) {
-    _state.updateMin(min);
+    _min = min;
+    notifyListeners();
   }
 
   void updateCurrentQuantity(int quantity) {
-    _state.updateCurrentQuantity(quantity);
+    _quantity = quantity;
+    notifyListeners();
   }
 
   void incrementQuantity() {
-    _state.incrementQuantity();
+    _quantity++;
+    notifyListeners();
   }
 
   void decrementQuantity() {
-    _state.decrementQuantity();
+    _quantity--;
+    notifyListeners();
   }
 }

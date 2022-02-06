@@ -20,4 +20,10 @@ ThemeData lightTheme = ThemeData.light().copyWith(
         fontWeight: FontWeight.w500,
         color: primaryColor,
       ),
+      headline3: TextStyle(
+        fontFamily: "futura",
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: primaryColor,
+      ),
     ));

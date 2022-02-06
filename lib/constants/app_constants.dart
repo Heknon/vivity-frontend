@@ -37,13 +37,7 @@ const ItemModel itemModelDemo = ItemModel(
         data: ["https://www.pexels.com/photo/1640777/download/", "https://images.immediate.co.uk/production/volatile/sites/30/2020/08/chorizo-mozarella-gnocchi-bake-cropped-9ab73a3.jpg"],
         dataType: ModificationButtonDataType.image,
         modificationButtonSide: ModificationButtonSide.center,
-      ),
-      ModificationButton(
-        name: "dType",
-        data: [0xff325a4f, 0xfffcb944, 0xff163353, 0xff325a4f, 0xfffcb944, 0xff163353],
-        dataType: ModificationButtonDataType.color,
-        modificationButtonSide: ModificationButtonSide.right,
-      ),
+      )
     ],
   ),
   brand: "Hanes",

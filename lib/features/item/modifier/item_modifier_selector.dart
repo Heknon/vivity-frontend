@@ -73,15 +73,7 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
               _controller.updateChosenIndices(state);
             },
             builder: (ctx, ItemModifierState state) {
-              return NotificationListener(
-                onNotification: (SizeChangedLayoutNotification event) {
-                  size = _widgetSize;
-                  return true;
-                },
-                child: SizeChangedLayoutNotifier(
-                  child: buildSelector(context, size, state.chosenIndices),
-                ),
-              );
+              return buildSelector(context, size, state.chosenIndices);
             },
           )
         : const SizedBox();

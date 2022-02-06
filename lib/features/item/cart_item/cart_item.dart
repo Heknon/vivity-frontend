@@ -13,7 +13,8 @@ class CartItem extends StatelessWidget {
   final CartItemModel itemModel;
   final double? width;
   final double? height;
-  final void Function(QuantityController, int?)? onQuantityUpdate;
+  final void Function(QuantityController, int?)? onQuantityIncrement;
+  final void Function(QuantityController, int?)? onQuantityDecrement;
   final void Function(QuantityController, int?)? onQuantityDelete;
   final int? id;
 
@@ -22,7 +23,8 @@ class CartItem extends StatelessWidget {
     required this.itemModel,
     this.width,
     this.height,
-    this.onQuantityUpdate,
+    this.onQuantityIncrement,
+    this.onQuantityDecrement,
     this.onQuantityDelete,
     this.id,
   }) : super(key: key);
@@ -75,8 +77,8 @@ class CartItem extends StatelessWidget {
                         child: Quantity(
                           initialCount: itemModel.quantity,
                           color: Theme.of(context).primaryColor,
-                          onDecrement: onQuantityUpdate,
-                          onIncrement: onQuantityUpdate,
+                          onDecrement: onQuantityDecrement,
+                          onIncrement: onQuantityIncrement,
                           onDelete: onQuantityDelete,
                           id: id,
                         ),
