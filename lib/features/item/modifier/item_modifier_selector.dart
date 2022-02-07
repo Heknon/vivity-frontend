@@ -66,17 +66,19 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
   Widget build(BuildContext context) {
     Size size = _widgetSize;
 
-    return _controller.isShown
-        ? BlocConsumer(
-            bloc: BlocProvider.of<ItemModifierBloc>(context),
-            listener: (ctx, ItemModifierState state) {
-              _controller.updateChosenIndices(state);
-            },
-            builder: (ctx, ItemModifierState state) {
-              return buildSelector(context, size, state.chosenIndices);
-            },
-          )
-        : const SizedBox();
+    return AnimatedOpacity(
+      opacity: _controller.isShown ? 1 : 0,
+      duration: Duration(milliseconds: 300),
+      child: BlocConsumer(
+        bloc: BlocProvider.of<ItemModifierBloc>(context),
+        listener: (ctx, ItemModifierState state) {
+          _controller.updateChosenIndices(state);
+        },
+        builder: (ctx, ItemModifierState state) {
+          return buildSelector(context, size, state.chosenIndices);
+        },
+      ),
+    );
   }
 
   Widget buildSelector(BuildContext context, Size size, Set<int> chosenIndices) {
@@ -143,9 +145,9 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
           : widget.imageRadius * 2;
 
   Size get _widgetSize => Size(
-    (widget.sizeScale + 6).h,
-    widget.heightScale.sp,
-  );
+        (widget.sizeScale + 6).h,
+        widget.heightScale.sp,
+      );
 }
 
 class ItemModifierSelectorController extends ChangeNotifier {

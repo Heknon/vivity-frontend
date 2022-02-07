@@ -36,6 +36,7 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> {
   late List<ItemModifierSelectorController> _selectorControllers;
   late QuantityController _quantityController;
+  late WidgetSwapperController _widgetSwapController;
 
   @override
   void initState() {
@@ -61,6 +62,7 @@ class _ItemPageState extends State<ItemPage> {
     }
 
     _quantityController = QuantityController();
+    _widgetSwapController = WidgetSwapperController();
 
     super.initState();
   }
@@ -129,12 +131,12 @@ class _ItemPageState extends State<ItemPage> {
                     maxHeight: 120,
                   ),
                   child: WidgetSwapper(
-                    filterViewController: widgetSwapController,
+                    filterViewController: _widgetSwapController,
                     bar: FilterBar(
-                      controller: widgetSwapController,
+                      controller: _widgetSwapController,
                     ),
                     sideBar: FilterSideBar(
-                      controller: widgetSwapController,
+                      controller: _widgetSwapController,
                     ),
                   ),
                 ),

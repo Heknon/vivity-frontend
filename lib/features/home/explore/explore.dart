@@ -11,10 +11,11 @@ import 'package:vivity/features/search_filter/filter_side_bar.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 import 'slideable_item_tab.dart';
 
-final widgetSwapController = WidgetSwapperController();
 final mapGuiController = MapGuiController();
 
 class Explore extends StatelessWidget {
+  final _widgetSwapController = WidgetSwapperController();
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
@@ -30,7 +31,7 @@ class Explore extends StatelessWidget {
               color: Colors.white,
               child: Center(
                 child: InkWell(
-                  onTap: () => widgetSwapController.toggle(),
+                  onTap: () => _widgetSwapController.toggle(),
                   child: const Text(
                     "₪200",
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -61,12 +62,12 @@ class Explore extends StatelessWidget {
                 maxHeight: 120,
               ),
               child: WidgetSwapper(
-                filterViewController: widgetSwapController,
+                filterViewController: _widgetSwapController,
                 bar: FilterBar(
-                  controller: widgetSwapController,
+                  controller: _widgetSwapController,
                 ),
                 sideBar: FilterSideBar(
-                  controller: widgetSwapController,
+                  controller: _widgetSwapController,
                 ),
               ),
             ),

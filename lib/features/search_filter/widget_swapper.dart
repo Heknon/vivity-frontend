@@ -22,14 +22,19 @@ class _WidgetSwapperState extends State<WidgetSwapper> with SingleTickerProvider
   late Animation<double> _animation;
   late WidgetSwapperController _controller;
 
-  bool _isBarOpen = false;
-
   @override
   void initState() {
     super.initState();
 
-    _controller = widget.filterViewController!;
-    _controller._setState(this);
+    _controller = widget.filterViewController ?? WidgetSwapperController();
+
+    _controller.addListener(() {
+      if (_controller.isOpen) {
+        _ac.forward();
+      } else {
+        _ac.reverse();
+      }
+    });
 
     _ac = AnimationController(vsync: this, duration: Duration(milliseconds: 400));
     _animation = CurvedAnimation(parent: _ac, curve: Curves.easeInOut);
@@ -44,8 +49,8 @@ class _WidgetSwapperState extends State<WidgetSwapper> with SingleTickerProvider
           if (_ac.isCompleted) return widget.bar;
           if (_ac.isDismissed) return widget.sideBar;
 
-          Widget bottomWidget = _isBarOpen ? widget.sideBar : widget.bar;
-          Widget topWidget = _isBarOpen ? widget.bar : widget.sideBar;
+          Widget bottomWidget = _controller.isOpen ? widget.sideBar : widget.bar;
+          Widget topWidget = _controller.isOpen ? widget.bar : widget.sideBar;
 
           return Stack(
             alignment: Alignment.topRight,
@@ -54,12 +59,12 @@ class _WidgetSwapperState extends State<WidgetSwapper> with SingleTickerProvider
               SizedBox(
                 width: constraints.minWidth + _ac.value * constraints.maxWidth, // 50 -> 300
                 height: constraints.maxHeight - _ac.value * (constraints.maxHeight - constraints.minHeight), // 100 -> 50
-                child: Opacity(opacity: _isBarOpen ? 1 - _ac.value : _ac.value, child: bottomWidget),
+                child: Opacity(opacity: _controller.isOpen ? 1 - _ac.value : _ac.value, child: bottomWidget),
               ),
               SizedBox(
                 width: constraints.minWidth + _ac.value * constraints.maxWidth, // 50 -> 300
                 height: constraints.maxHeight - _ac.value * (constraints.maxHeight - constraints.minHeight), // 100 -> 50
-                child: Opacity(opacity: _isBarOpen ? _ac.value : 1 - _ac.value, child: topWidget),
+                child: Opacity(opacity: _controller.isOpen ? _ac.value : 1 - _ac.value, child: topWidget),
               ),
             ],
           );
@@ -67,46 +72,23 @@ class _WidgetSwapperState extends State<WidgetSwapper> with SingleTickerProvider
       );
     });
   }
-
-  void open() {
-    _ac.forward().whenComplete(() {
-      setState(() {
-        _isBarOpen = true;
-      });
-    });
-  }
-
-  void close() {
-    _ac.reverse().whenComplete(() {
-      setState(() {
-        _isBarOpen = false;
-      });
-    });
-  }
-
-  void toggle() {
-    _isBarOpen ? close() : open();
-  }
 }
 
-class WidgetSwapperController {
-  _WidgetSwapperState? state;
-
-  void _setState(_WidgetSwapperState state) {
-    this.state = state;
-  }
-
-  bool get isBarOpen => state!._isBarOpen;
+class WidgetSwapperController extends ChangeNotifier {
+  bool isOpen = false;
 
   void open() {
-    state!.open();
+    isOpen = true;
+    notifyListeners();
   }
 
   void close() {
-    state!.close();
+    isOpen = false;
+    notifyListeners();
   }
 
   void toggle() {
-    state!.toggle();
+    isOpen = !isOpen;
+    notifyListeners();
   }
 }
