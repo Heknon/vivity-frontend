@@ -24,13 +24,9 @@ import 'modifier/item_modifier.dart';
 class ItemPage extends StatefulWidget {
   final ItemModel itemModel;
 
-  /// Scaling is applied to size. Sizes are a percentage of the screen.
-  final Size imageSize;
-
   const ItemPage({
     Key? key,
     required this.itemModel,
-    this.imageSize = const Size(70, 50),
   }) : super(key: key);
 
   @override
@@ -92,7 +88,7 @@ class _ItemPageState extends State<ItemPage> {
                 child: Column(
                   children: [
                     SizedBox(
-                      height: 53.h,
+                      height: constraints.maxHeight * 0.66,
                       width: 100.w,
                       child: Stack(
                         alignment: Alignment.topCenter,
@@ -102,136 +98,17 @@ class _ItemPageState extends State<ItemPage> {
                             bottomRightRadius: 30,
                             bottomLeftRadius: 30,
                             initialPage: widget.itemModel.previewImageIndex,
-                            imageSize: Size(70, 40),
+                            imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
                           ),
                           Positioned(
                             bottom: 0,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(
-                                widget.itemModel.itemStoreFormat.modificationButtons.length,
-                                (index) {
-                                  ModificationButton button = widget.itemModel.itemStoreFormat.modificationButtons[index];
-                                  return ItemModifier(
-                                    modificationButton: button,
-                                    selectorController: _selectorControllers[index],
-                                  );
-                                },
-                              ),
-                            ),
+                            child: buildModificationButtons(),
                           ),
                         ],
                       ),
                     ),
                     Spacer(),
-                    ClipRRect(
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-                      child: Container(
-                        height: 25.h,
-                        color: Theme.of(context).colorScheme.primary,
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 4,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(top: 36, left: 15),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          widget.itemModel.itemStoreFormat.title,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 16.sp),
-                                        ),
-                                        SizedBox(
-                                          height: 4,
-                                        ),
-                                        Text(
-                                          "${widget.itemModel.businessName}'s shop",
-                                          style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 10.sp),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Rating(rating: calculateRating()),
-                                      Text(
-                                        '(${widget.itemModel.reviews.length} reviews)',
-                                        style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
-                                      )
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                            Spacer(),
-                            Padding(
-                              padding: EdgeInsets.only(left: 15, right: 15, bottom: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text(
-                                      '\$${widget.itemModel.price.toStringAsFixed(2)}',
-                                      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 16.sp, color: Colors.white),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: ConstrainedBox(
-                                      constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
-                                      child: Quantity(
-                                        initialCount: 1,
-                                        color: Colors.white,
-                                        controller: _quantityController,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 5.w,
-                                  ),
-                                  Expanded(
-                                    child: Material(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
-                                      color: Colors.white,
-                                      child: InkWell(
-                                        onTap: () => BlocProvider.of<CartBloc>(context).add(
-                                          CartAddItemEvent(
-                                            CartItemModel.fromItemModel(
-                                              model: widget.itemModel,
-                                              quantity: _quantityController.quantity,
-                                              dataChosen: generateChosenData(),
-                                            ),
-                                          ),
-                                        ),
-                                        child: Ink(
-                                          child: Container(
-                                            height: 7.h,
-                                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),
-                                            child: Center(
-                                              child: Text(
-                                                'Cart',
-                                                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
+                    buildDetailsTab(constraints, context)
                   ],
                 ),
               ),
@@ -265,6 +142,164 @@ class _ItemPageState extends State<ItemPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  ClipRRect buildDetailsTab(BoxConstraints constraints, BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+      child: Container(
+        height: constraints.maxHeight * 0.32,
+        color: Theme.of(context).colorScheme.primary,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 36, left: 15),
+                    child: buildDetailsTabTitle(context),
+                  ),
+                ),
+                Expanded(
+                  child: buildRatingView(context),
+                )
+              ],
+            ),
+            Spacer(),
+            Padding(
+              padding: EdgeInsets.only(left: 15, right: 15, bottom: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      '\$${widget.itemModel.price.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 16.sp, color: Colors.white),
+                    ),
+                  ),
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
+                      child: Quantity(
+                        initialCount: 1,
+                        color: Colors.white,
+                        controller: _quantityController,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 5.w,
+                  ),
+                  Expanded(
+                    child: buildCartButton(context),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Material buildCartButton(BuildContext context) {
+    return Material(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          bool shouldAdd = true;
+          for (ItemModifierSelectorController controller in _selectorControllers) {
+            if (controller.chosenIndices.isEmpty) {
+              shouldAdd = false;
+              break;
+            }
+          }
+
+          if (!shouldAdd) {
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please set all modifiers in order to add to cart."),
+              ),
+            );
+          }
+
+          BlocProvider.of<CartBloc>(context).add(
+            CartAddItemEvent(
+              CartItemModel.fromItemModel(
+                model: widget.itemModel,
+                quantity: _quantityController.quantity,
+                dataChosen: generateChosenData(),
+              ),
+            ),
+          );
+        },
+        child: Ink(
+          child: Container(
+            height: 7.h,
+            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),
+            child: Center(
+              child: Text(
+                'Cart',
+                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Column buildRatingView(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Rating(rating: calculateRating()),
+        Text(
+          '(${widget.itemModel.reviews.length} reviews)',
+          style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
+        )
+      ],
+    );
+  }
+
+  Column buildDetailsTabTitle(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.itemModel.itemStoreFormat.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 16.sp),
+        ),
+        SizedBox(
+          height: 4,
+        ),
+        Text(
+          "${widget.itemModel.businessName}'s shop",
+          style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 10.sp),
+        ),
+      ],
+    );
+  }
+
+  Row buildModificationButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(
+        widget.itemModel.itemStoreFormat.modificationButtons.length,
+        (index) {
+          ModificationButton button = widget.itemModel.itemStoreFormat.modificationButtons[index];
+          return ItemModifier(
+            modificationButton: button,
+            selectorController: _selectorControllers[index],
+          );
+        },
       ),
     );
   }

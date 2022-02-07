@@ -51,12 +51,12 @@ class _CarouselState extends State<Carousel> {
     return Column(
       children: [
         SizedBox(
-          width: widget.imageSize.width.w,
-          height: widget.imageSize.height.h,
+          width: widget.imageSize.width,
+          height: widget.imageSize.height,
           child: CarouselSlider(
             carouselController: _carouselController,
             options: CarouselOptions(
-                height: widget.imageSize.height.h,
+                height: widget.imageSize.height,
                 initialPage: widget.initialPage,
                 enableInfiniteScroll: false,
                 viewportFraction: 2,
@@ -78,8 +78,8 @@ class _CarouselState extends State<Carousel> {
                         imageBuilder: (ctx, prov) => Image(
                           alignment: Alignment.topCenter,
                           fit: BoxFit.fitHeight,
-                          width: widget.imageSize.width.w,
-                          height: widget.imageSize.height.h,
+                          width: widget.imageSize.width,
+                          height: widget.imageSize.height,
                           image: prov,
                         ),
                       ),
