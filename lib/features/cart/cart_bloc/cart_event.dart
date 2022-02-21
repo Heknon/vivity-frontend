@@ -1,4 +1,4 @@
-part of '../../bloc/cart_bloc/cart_bloc.dart';
+part of './cart_bloc.dart';
 
 @immutable
 abstract class CartEvent {}

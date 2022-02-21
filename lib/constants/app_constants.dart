@@ -1,12 +1,13 @@
+import 'package:uuid/uuid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
 const String mapBoxToken = "pk.eyJ1IjoiaGVrbm9uIiwiYSI6ImNreHVmemwyeDFtYWIyc212cGx3bmJudHIifQ.wHNQF9MwcyfeR06Isivv3g";
 const String ipApiPath = 'http://ip-api.com/json';
-const ItemModel itemModelDemo = ItemModel(
+ItemModel itemModelDemo = ItemModel(
   businessName: "Vivity",
   price: 23.4,
   images: ["https://m.media-amazon.com/images/I/61n+vIfzOKL._AC_UX679_.jpg"],
-  reviews: [
+  reviews: const [
     Review(
       posterName: "Heknon",
       pfpImage: "https://pub.dev/static/img/pub-dev-logo-2x.png?hash=umitaheu8hl7gd3mineshk2koqfngugi",
@@ -15,7 +16,7 @@ const ItemModel itemModelDemo = ItemModel(
       imageUrls: ["https://raw.githubusercontent.com/material-foundation/google-fonts-flutter/main/readme_images/google_fonts_folder.png"],
     ),
   ],
-  itemStoreFormat: ItemStoreFormat(
+  itemStoreFormat: const ItemStoreFormat(
     title: "Nice Item!",
     subtitle: "Ooooo subtitle",
     description: "A very lengthy description",
@@ -34,7 +35,10 @@ const ItemModel itemModelDemo = ItemModel(
       ),
       ModificationButton(
         name: "Type",
-        data: ["https://www.pexels.com/photo/1640777/download/", "https://images.immediate.co.uk/production/volatile/sites/30/2020/08/chorizo-mozarella-gnocchi-bake-cropped-9ab73a3.jpg"],
+        data: [
+          "https://www.pexels.com/photo/1640777/download/",
+          "https://images.immediate.co.uk/production/volatile/sites/30/2020/08/chorizo-mozarella-gnocchi-bake-cropped-9ab73a3.jpg"
+        ],
         dataType: ModificationButtonDataType.image,
         modificationButtonSide: ModificationButtonSide.center,
       )
@@ -44,13 +48,17 @@ const ItemModel itemModelDemo = ItemModel(
   category: "Hoodies",
   tags: ["Cool", "New!", "Hoodie"],
   stock: 34,
+  id: Uuid.parse(const Uuid().v4()),
 );
 
-const ItemModel itemModelDemo2 = ItemModel(
+ItemModel itemModelDemo2 = ItemModel(
   businessName: "Vivity",
   price: 13.9,
-  images: ["https://m.media-amazon.com/images/I/81iyCcqLI6L._AC_SY879._SX._UX._SY._UY_.jpg", "https://m.media-amazon.com/images/I/61n+vIfzOKL._AC_UX679_.jpg"],
-  reviews: [
+  images: [
+    "https://m.media-amazon.com/images/I/81iyCcqLI6L._AC_SY879._SX._UX._SY._UY_.jpg",
+    "https://m.media-amazon.com/images/I/61n+vIfzOKL._AC_UX679_.jpg"
+  ],
+  reviews: const [
     Review(
       posterName: "Heknon",
       pfpImage: "https://pub.dev/static/img/pub-dev-logo-2x.png?hash=umitaheu8hl7gd3mineshk2koqfngugi",
@@ -59,7 +67,7 @@ const ItemModel itemModelDemo2 = ItemModel(
       imageUrls: ["https://raw.githubusercontent.com/material-foundation/google-fonts-flutter/main/readme_images/google_fonts_folder.png"],
     ),
   ],
-  itemStoreFormat: ItemStoreFormat(
+  itemStoreFormat: const ItemStoreFormat(
     title: "Hanes Hoodie - EcoSmart fdsf dsfdsfdsjfdoi",
     subtitle: "Ooooo subtitle",
     description: "A very lengthy description",
@@ -88,6 +96,7 @@ const ItemModel itemModelDemo2 = ItemModel(
   category: "Hoodies",
   tags: ["Cool", "New!", "Hoodie"],
   stock: 34,
+  id: Uuid.parse(const Uuid().v4()),
 );
 
 CartItemModel cartItemModel = CartItemModel.fromItemModel(model: itemModelDemo, quantity: 2, dataChosen: {

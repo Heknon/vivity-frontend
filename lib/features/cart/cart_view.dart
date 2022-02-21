@@ -1,20 +1,28 @@
 import 'package:fade_in_widget/fade_in_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/bloc/cart_bloc/cart_bloc.dart';
+import 'package:uuid/uuid.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/widgets/quantity.dart';
 import '../../../features/item/cart_item/cart_item.dart';
+import 'cart_bloc/cart_bloc.dart';
 
 class CartView extends StatefulWidget {
   final ScrollController? scrollController;
   final Iterable<CartItemModel> itemModels;
+  final CartViewController? controller;
 
-  const CartView({Key? key, this.scrollController, required this.itemModels}) : super(key: key);
+  const CartView({
+    Key? key,
+    this.scrollController,
+    required this.itemModels,
+    this.controller,
+  }) : super(key: key);
 
   @override
   State<CartView> createState() => _CartViewState();
@@ -23,18 +31,20 @@ class CartView extends StatefulWidget {
 FadeInController controller = FadeInController();
 
 class _CartViewState extends State<CartView> {
-  late List<CartItemModel> _itemModels;
-  late double _priceSum = 0;
+  late CartViewController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _itemModels = List.empty(growable: true);
-    for (CartItemModel element in widget.itemModels) {
-      _priceSum += element.quantity * element.price;
-      _itemModels.add(element);
-    }
+    _controller = widget.controller ?? CartViewController();
+    _controller.init(items: widget.itemModels);
+
+    _controller.addListener(() {
+      setState(() {});
+
+      updateCost();
+    });
   }
 
   @override
@@ -63,15 +73,15 @@ class _CartViewState extends State<CartView> {
                 padding: EdgeInsets.only(top: listPadding),
                 height: listSize.height,
                 width: listSize.width,
-                child: _itemModels.isEmpty
+                child: _controller.itemModels.isEmpty
                     ? Align(
-                  alignment: Alignment.center.add(Alignment(constraints.maxWidth / 4, 0)),
-                      child: Text(
+                        alignment: Alignment.center.add(Alignment(constraints.maxWidth / 4, 0)),
+                        child: Text(
                           "Start adding items to your cart!",
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
                         ),
-                    )
+                      )
                     : buildItemsList(itemsPadding, itemSize),
               ),
               Spacer(),
@@ -95,19 +105,19 @@ class _CartViewState extends State<CartView> {
 
   ListView buildItemsList(double itemsPadding, Size itemSize) {
     return ListView.builder(
-      itemCount: _itemModels.length,
+      itemCount: _controller.itemModels.length,
       controller: widget.scrollController,
       itemBuilder: (ctx, i) => Padding(
         padding: i != 0 ? EdgeInsets.only(top: itemsPadding) : const EdgeInsets.only(),
         child: Align(
           alignment: Alignment.centerLeft,
           child: CartItem(
-            itemModel: _itemModels[i],
+            itemModel: _controller.itemModels[i],
             width: itemSize.width,
             height: itemSize.height,
             onQuantityIncrement: onQuantityIncrement,
             onQuantityDecrement: onQuantityDecrement,
-            id: i,
+            id: _controller.itemModels[i].insertionId,
           ),
         ),
       ),
@@ -124,7 +134,7 @@ class _CartViewState extends State<CartView> {
             WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
               controller.swapCurrentWidget(
                 Text(
-                  'Total: \$' + _priceSum.toStringAsFixed(2),
+                  'Total: \$' + (_controller.priceSum).toStringAsFixed(2),
                   style: GoogleFonts.raleway(fontSize: 18.sp),
                 ),
               );
@@ -136,7 +146,7 @@ class _CartViewState extends State<CartView> {
               duration: Duration(milliseconds: 500),
               controller: controller,
               initialWidget: Text(
-                'Total: \$' + _priceSum.toStringAsFixed(2),
+                'Total: \$' + (_controller.priceSum).toStringAsFixed(2),
                 style: GoogleFonts.raleway(fontSize: 18.sp),
               ),
             ),
@@ -177,31 +187,96 @@ class _CartViewState extends State<CartView> {
   void onQuantityIncrement(QuantityController quantityController, int? id) {
     BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!));
 
-    setState(() {
-      _priceSum -= (quantityController.quantity - 1) * _itemModels[id].price;
-      _priceSum += quantityController.quantity * _itemModels[id].price;
-    });
-
-    updateCost();
+    _controller.incrementQuantity(id);
   }
 
   void onQuantityDecrement(QuantityController quantityController, int? id) {
     BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!));
 
-    setState(() {
-      _priceSum -= (quantityController.quantity + 1) * _itemModels[id].price;
-      _priceSum += quantityController.quantity * _itemModels[id].price;
-    });
-
-    updateCost();
+    _controller.decrementQuantity(id);
   }
 
   void updateCost() {
     controller.gracefullySwapCurrentAnimatedWidget(
       Text(
-        'Total: \$' + _priceSum.toStringAsFixed(2),
+        'Total: \$' + _controller.priceSum.toStringAsFixed(2),
         style: GoogleFonts.raleway(fontSize: 18.sp),
       ),
     );
+  }
+}
+
+//TODO: Move to Bloc state...
+class CartViewController extends ChangeNotifier {
+  late List<CartItemModel> itemModels;
+  late double priceSum = 0;
+
+  void init({Iterable<CartItemModel>? items}) {
+    itemModels = items?.toList() ?? List.empty(growable: true);
+
+    int insertionId = 0;
+    for (CartItemModel item in itemModels) {
+      item.insertionId = insertionId++;
+      priceSum += item.price * item.quantity;
+    }
+  }
+
+  void addItem(CartItemModel item) {
+    if (item.quantity <= 0) {
+      throw Exception("Error! Can only add an item with a quantity above 0.");
+    }
+
+    Iterable<CartItemModel> cartedItems = itemModels.where((element) => element == item);
+    if (cartedItems.isNotEmpty) {
+      CartItemModel cartedItem = cartedItems.first;
+      cartedItem.quantity += item.quantity;
+      priceSum += item.price * item.quantity;
+      notifyListeners();
+      return;
+    }
+
+    itemModels.add(item);
+    priceSum += item.price * item.quantity;
+    notifyListeners();
+  }
+
+  void removeItem(int insertionId) {
+    bool removed = false;
+
+    itemModels.removeWhere((element) {
+      if (element.insertionId == insertionId) {
+        priceSum -= element.price * element.quantity;
+        element.quantity = 0;
+        removed = true;
+        return true;
+      }
+
+      return false;
+    });
+
+    if (removed) notifyListeners();
+  }
+
+  void decrementQuantity(int insertionId) {
+    CartItemModel item = getItem(insertionId);
+    item.quantity--;
+    priceSum -= item.price;
+
+    if (item.quantity <= 0) {
+      removeItem(insertionId);
+    }
+
+    notifyListeners();
+  }
+
+  void incrementQuantity(int insertionId) {
+    CartItemModel item = getItem(insertionId);
+    item.quantity++;
+    priceSum += item.price;
+    notifyListeners();
+  }
+
+  CartItemModel getItem(int insertionId) {
+    return itemModels.where((element) => element.insertionId == insertionId).first;
   }
 }

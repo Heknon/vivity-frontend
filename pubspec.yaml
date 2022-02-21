@@ -49,6 +49,7 @@ dependencies:
   bloc: ^8.0.2
   shared_preferences: ^2.0.13
   hydrated_bloc: ^8.0.0
+  uuid: ^3.0.5
 
   advanced_panel:
     path: ./packages/advanced_panel

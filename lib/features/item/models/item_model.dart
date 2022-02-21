@@ -1,8 +1,16 @@
+import 'package:flutter/foundation.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:uuid/uuid.dart';
+import 'package:vivity/services/item_service.dart';
+import 'package:vivity/services/storage_service.dart';
+
 class CartItemModel {
   final String previewImage;
   final String title;
   final Iterable<ModificationButtonDataHost> chosenData;
   final double price;
+  int insertionId;
+  ItemModel item;
   int quantity;
 
   CartItemModel({
@@ -11,6 +19,8 @@ class CartItemModel {
     required this.chosenData,
     required this.quantity,
     required this.price,
+    required this.item,
+    this.insertionId = -1,
   });
 
   /// dataChosen: Key is ModificationButton index value are the indices of the data chosen.
@@ -27,6 +37,7 @@ class CartItemModel {
       chosenData: chosenData,
       quantity: quantity,
       price: model.price,
+      item: model,
     );
   }
 
@@ -36,6 +47,8 @@ class CartItemModel {
     Iterable<ModificationButtonDataHost>? chosenData,
     double? price,
     int? quantity,
+    List<int>? id,
+    ItemModel? model,
   }) {
     return CartItemModel(
       previewImage: previewImage ?? this.previewImage,
@@ -43,16 +56,26 @@ class CartItemModel {
       chosenData: chosenData ?? this.chosenData.map((e) => e.copyWith()).toList(growable: false),
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
+      item: model ?? item,
     );
   }
 
   factory CartItemModel.fromMap(Map<String, dynamic> map) {
+    ItemModel item;
+    try {
+      // TODO: Implement check to see if item no longer exists. if it doesn't remove. An error can also be a connection error.
+      item = getItemFromId(map['id'])!;
+    } catch (ex) {
+      rethrow;
+    }
+
     return CartItemModel(
       previewImage: map['previewImage'] as String,
       title: map['title'] as String,
       chosenData: (map['chosenData'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
       price: map['price'] as double,
       quantity: map['quantity'] as int,
+      item: item,
     );
   }
 
@@ -64,6 +87,7 @@ class CartItemModel {
       'chosenData': chosenData.map((e) => e.toMap()).toList(),
       'price': price,
       'quantity': quantity,
+      'id': item.id,
     } as Map<String, dynamic>;
   }
 
@@ -71,6 +95,23 @@ class CartItemModel {
   String toString() {
     return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $chosenData, price: $price, quantity: $quantity}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CartItemModel &&
+          runtimeType == other.runtimeType &&
+          previewImage == other.previewImage &&
+          title == other.title &&
+          listEquals(chosenData.toList(), other.chosenData.toList()) &&
+          price == other.price &&
+          insertionId == other.insertionId &&
+          listEquals(item.id, other.item.id) &&
+          quantity == other.quantity;
+
+  @override
+  int get hashCode =>
+      previewImage.hashCode ^ title.hashCode ^ chosenData.hashCode ^ price.hashCode ^ insertionId.hashCode ^ item.id.hashCode ^ quantity.hashCode;
 }
 
 class ItemModel {
@@ -84,6 +125,7 @@ class ItemModel {
   final String category;
   final List<String> tags;
   final int stock;
+  final List<int> id;
 
   const ItemModel({
     required this.businessName,
@@ -96,6 +138,7 @@ class ItemModel {
     required this.category,
     required this.tags,
     required this.stock,
+    required this.id,
   });
 
   @override
@@ -114,19 +157,20 @@ class ItemModel {
     String? category,
     List<String>? tags,
     int? stock,
+    List<int>? id,
   }) {
     return ItemModel(
-      businessName: businessName ?? this.businessName,
-      price: price ?? this.price,
-      images: images ?? this.images,
-      previewImageIndex: previewImageIndex ?? this.previewImageIndex,
-      reviews: reviews ?? this.reviews,
-      itemStoreFormat: itemStoreFormat ?? this.itemStoreFormat.copyWith(),
-      brand: brand ?? this.brand,
-      category: category ?? this.category,
-      tags: tags ?? this.tags,
-      stock: stock ?? this.stock,
-    );
+        businessName: businessName ?? this.businessName,
+        price: price ?? this.price,
+        images: images ?? this.images,
+        previewImageIndex: previewImageIndex ?? this.previewImageIndex,
+        reviews: reviews ?? this.reviews,
+        itemStoreFormat: itemStoreFormat ?? this.itemStoreFormat.copyWith(),
+        brand: brand ?? this.brand,
+        category: category ?? this.category,
+        tags: tags ?? this.tags,
+        stock: stock ?? this.stock,
+        id: id ?? this.id);
   }
 }
 
@@ -254,6 +298,18 @@ class ModificationButtonDataHost {
       'dataChosen': dataChosen,
     } as Map<String, dynamic>;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ModificationButtonDataHost &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          dataType == other.dataType &&
+          listEquals(dataChosen, other.dataChosen);
+
+  @override
+  int get hashCode => name.hashCode ^ dataType.hashCode ^ dataChosen.hashCode;
 }
 
 class ModificationButton {
@@ -291,4 +347,18 @@ class ModificationButton {
       multiSelect: multiSelect ?? this.multiSelect,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ModificationButton &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          modificationButtonSide == other.modificationButtonSide &&
+          listEquals(data, other.data) &&
+          dataType == other.dataType &&
+          multiSelect == other.multiSelect;
+
+  @override
+  int get hashCode => name.hashCode ^ modificationButtonSide.hashCode ^ data.hashCode ^ dataType.hashCode ^ multiSelect.hashCode;
 }

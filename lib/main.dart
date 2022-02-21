@@ -8,9 +8,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/light_theme.dart';
 import 'package:vivity/constants/app_constants.dart';
-import 'bloc/cart_bloc/cart_bloc.dart';
+import 'package:vivity/services/storage_service.dart';
 import 'package:vivity/features/item/item_page.dart';
 
+import 'features/cart/cart_bloc/cart_bloc.dart';
 import 'features/home/home_page.dart';
 
 class VivityOverrides extends HttpOverrides {
@@ -24,9 +25,7 @@ void main() async {
   HttpOverrides.global = VivityOverrides();
   WidgetsFlutterBinding.ensureInitialized();
 
-  final storage = await HydratedStorage.build(
-    storageDirectory: kIsWeb ? HydratedStorage.webStorageDirectory : await getApplicationDocumentsDirectory(),
-  );
+  HydratedStorage storage = await initializeStorage();
 
   HydratedBlocOverrides.runZoned(
     () => runApp(const Vivity()),

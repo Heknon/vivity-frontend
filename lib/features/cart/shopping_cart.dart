@@ -6,11 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/bloc/cart_bloc/cart_bloc.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/features/cart/side_tab.dart';
 import 'package:vivity/features/item/cart_item/cart_item.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'cart_bloc/cart_bloc.dart';
 import 'cart_view.dart';
 
 class ShoppingCart extends StatelessWidget {

@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/bloc/cart_bloc/cart_bloc.dart';
+import '../cart/cart_bloc/cart_bloc.dart';
 import '../cart/shopping_cart.dart';
 import 'package:vivity/features/home/explore/explore.dart';
 import 'package:vivity/features/item/models/item_model.dart';
