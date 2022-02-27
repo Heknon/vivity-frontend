@@ -49,6 +49,7 @@ class CartItemModel {
     int? quantity,
     List<int>? id,
     ItemModel? model,
+    int? insertionId,
   }) {
     return CartItemModel(
       previewImage: previewImage ?? this.previewImage,
@@ -57,6 +58,7 @@ class CartItemModel {
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
       item: model ?? item,
+      insertionId: insertionId ?? this.insertionId,
     );
   }
 
@@ -105,13 +107,21 @@ class CartItemModel {
           title == other.title &&
           listEquals(chosenData.toList(), other.chosenData.toList()) &&
           price == other.price &&
-          insertionId == other.insertionId &&
           listEquals(item.id, other.item.id) &&
           quantity == other.quantity;
 
+  bool looseEquals(Object other) =>
+      identical(this, other) ||
+      other is CartItemModel &&
+          runtimeType == other.runtimeType &&
+          previewImage == other.previewImage &&
+          title == other.title &&
+          listEquals(chosenData.toList(), other.chosenData.toList()) &&
+          price == other.price &&
+          listEquals(item.id, other.item.id);
+
   @override
-  int get hashCode =>
-      previewImage.hashCode ^ title.hashCode ^ chosenData.hashCode ^ price.hashCode ^ insertionId.hashCode ^ item.id.hashCode ^ quantity.hashCode;
+  int get hashCode => previewImage.hashCode ^ title.hashCode ^ chosenData.hashCode ^ price.hashCode ^ item.id.hashCode ^ quantity.hashCode;
 }
 
 class ItemModel {

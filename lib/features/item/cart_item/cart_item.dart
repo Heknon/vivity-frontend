@@ -16,6 +16,7 @@ class CartItem extends StatelessWidget {
   final void Function(QuantityController, int?)? onQuantityIncrement;
   final void Function(QuantityController, int?)? onQuantityDecrement;
   final void Function(QuantityController, int?)? onQuantityDelete;
+  final QuantityController? quantityController;
   final int? id;
 
   const CartItem({
@@ -26,6 +27,7 @@ class CartItem extends StatelessWidget {
     this.onQuantityIncrement,
     this.onQuantityDecrement,
     this.onQuantityDelete,
+    this.quantityController,
     this.id,
   }) : super(key: key);
 
@@ -80,6 +82,7 @@ class CartItem extends StatelessWidget {
                           onDecrement: onQuantityDecrement,
                           onIncrement: onQuantityIncrement,
                           onDelete: onQuantityDelete,
+                          controller: quantityController,
                           id: id,
                         ),
                       )

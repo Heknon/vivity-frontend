@@ -55,7 +55,6 @@ class ShoppingCart extends StatelessWidget {
     );
   }
 
-
   Widget buildSlidedBody(BuildContext context, Size cartSize, Size sliderSize, BoxConstraints constraints, ScrollController? sc) {
     return Positioned(
       right: 0,
@@ -67,13 +66,7 @@ class ShoppingCart extends StatelessWidget {
           maxHeight: cartSize.height,
           minHeight: cartSize.height,
         ),
-        child: BlocBuilder<CartBloc, List<CartItemModel>>(
-          bloc: BlocProvider.of<CartBloc>(context),
-          builder: (BuildContext context, state) => CartView(
-              scrollController: sc,
-              itemModels: List.generate(state.length, (index) => state[index]),
-            ),
-        ),
+        child: CartView(scrollController: sc),
       ),
     );
   }
