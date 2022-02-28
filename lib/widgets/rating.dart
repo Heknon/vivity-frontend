@@ -8,7 +8,7 @@ class Rating extends StatelessWidget {
   final double rating;
   final Color color;
 
-  const Rating({Key? key, required this.rating, this.color = Colors.white})
+  const Rating({Key? key, required this.rating, this.color = Colors.black})
       : assert(rating >= 0 && rating <= 5),
         super(key: key);
 

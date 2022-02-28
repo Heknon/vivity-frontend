@@ -21,6 +21,8 @@ class VivityOverrides extends HttpOverrides {
   }
 }
 
+
+// TODO: Create checkout pages/process
 void main() async {
   HttpOverrides.global = VivityOverrides();
   WidgetsFlutterBinding.ensureInitialized();
