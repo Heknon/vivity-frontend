@@ -26,7 +26,6 @@ FadeInController controller = FadeInController();
 
 class _CartViewState extends State<CartView> {
   double price = -1;
-  late QuantityController _quantityController;
 
   @override
   void initState() {
@@ -74,7 +73,7 @@ class _CartViewState extends State<CartView> {
                             style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
                           ),
                         )
-                      : buildItemsList(itemsPadding, itemSize, state.items),
+                      : buildItemsList(itemsPadding, itemSize, state),
                 ),
                 Spacer(),
                 Padding(
@@ -96,21 +95,22 @@ class _CartViewState extends State<CartView> {
     );
   }
 
-  ListView buildItemsList(double itemsPadding, Size itemSize, List<CartItemModel> items) {
+  ListView buildItemsList(double itemsPadding, Size itemSize, CartState state) {
     return ListView.builder(
-      itemCount: items.length,
+      itemCount: state.items.length,
       controller: widget.scrollController,
       itemBuilder: (ctx, i) => Padding(
         padding: i != 0 ? EdgeInsets.only(top: itemsPadding) : const EdgeInsets.only(),
         child: Align(
           alignment: Alignment.centerLeft,
           child: CartItem(
-            itemModel: items[i],
+            itemModel: state.items[i],
             width: itemSize.width,
             height: itemSize.height,
             onQuantityIncrement: onQuantityIncrement,
             onQuantityDecrement: onQuantityDecrement,
-            id: items[i].insertionId,
+            quantityController: state.getItemQuantityController(state.items[i].insertionId),
+            id: state.items[i].insertionId,
           ),
         ),
       ),

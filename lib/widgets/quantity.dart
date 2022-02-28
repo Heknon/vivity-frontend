@@ -48,7 +48,23 @@ class _QuantityState extends State<Quantity> {
     _controller.init(widget.initialCount, widget.min, widget.max);
 
     _controller.addListener(() {
-      setState(() {});
+      if (_controller.quantity > _controller.max) {
+        if (widget.maxFailSnackbar != null && mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(widget.maxFailSnackbar!);
+        }
+        _controller.updateCurrentQuantity(_controller.max);
+        return;
+      } else if (_controller.quantity < _controller.min) {
+        if (widget.minFailSnackbar != null && mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(widget.minFailSnackbar!);
+        }
+        _controller.updateCurrentQuantity(_controller.min);
+        return;
+      }
+
+      if (mounted) setState(() {});
     });
   }
 
@@ -146,6 +162,7 @@ class QuantityController extends ChangeNotifier {
   }
 
   void updateCurrentQuantity(int quantity) {
+
     _quantity = quantity;
     notifyListeners();
   }
@@ -158,5 +175,13 @@ class QuantityController extends ChangeNotifier {
   void decrementQuantity() {
     _quantity--;
     notifyListeners();
+  }
+
+  void _quantityCheck(int newQuantity) {
+    if (newQuantity > max) {
+
+    } else if (newQuantity < min) {
+
+    }
   }
 }

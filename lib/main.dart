@@ -26,6 +26,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HydratedStorage storage = await initializeStorage();
+  // await storage.clear();
 
   HydratedBlocOverrides.runZoned(
     () => runApp(const Vivity()),

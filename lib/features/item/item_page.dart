@@ -228,6 +228,7 @@ class _ItemPageState extends State<ItemPage> {
                 content: Text("Please set all modifiers in order to add to cart."),
               ),
             );
+            return;
           }
 
           BlocProvider.of<CartBloc>(context).add(

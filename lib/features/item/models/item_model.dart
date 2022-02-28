@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/services/item_service.dart';
 import 'package:vivity/services/storage_service.dart';
 
@@ -66,7 +67,7 @@ class CartItemModel {
     ItemModel item;
     try {
       // TODO: Implement check to see if item no longer exists. if it doesn't remove. An error can also be a connection error.
-      item = getItemFromId(map['id'])!;
+      item = getItemFromId(map['id']) ?? itemModelDemo2;
     } catch (ex) {
       rethrow;
     }
@@ -95,7 +96,7 @@ class CartItemModel {
 
   @override
   String toString() {
-    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $chosenData, price: $price, quantity: $quantity}';
+    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $chosenData, price: $price, quantity: $quantity, insertionId: $insertionId}';
   }
 
   @override
@@ -110,8 +111,10 @@ class CartItemModel {
           listEquals(item.id, other.item.id) &&
           quantity == other.quantity;
 
-  bool looseEquals(Object other) =>
-      identical(this, other) ||
+  bool looseEquals(Object other) {
+    print("THIS: $this");
+    print("OTHER: $other");
+    return identical(this, other) ||
       other is CartItemModel &&
           runtimeType == other.runtimeType &&
           previewImage == other.previewImage &&
@@ -119,6 +122,7 @@ class CartItemModel {
           listEquals(chosenData.toList(), other.chosenData.toList()) &&
           price == other.price &&
           listEquals(item.id, other.item.id);
+  }
 
   @override
   int get hashCode => previewImage.hashCode ^ title.hashCode ^ chosenData.hashCode ^ price.hashCode ^ item.id.hashCode ^ quantity.hashCode;

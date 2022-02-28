@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:vivity/widgets/quantity.dart';
 
 import '../../item/models/item_model.dart';
 
@@ -7,11 +8,15 @@ class CartState {
   double priceTotal = 0;
 
   List<CartItemModel> get items => _items;
+  static final Map<int, QuantityController> _quantityControllers = {};
 
   CartState(this._items) {
     int insertionId = 0;
     for (CartItemModel item in _items) {
       item.insertionId = insertionId++;
+      if (!_quantityControllers.containsKey(item.insertionId)) {
+        _quantityControllers[item.insertionId] = QuantityController();
+      }
       priceTotal += item.price * item.quantity;
     }
   }
@@ -24,8 +29,12 @@ class CartState {
     Iterable<CartItemModel> cartedItems = _items.where((element) => element.looseEquals(item));
     if (cartedItems.isNotEmpty) {
       CartItemModel cartedItem = cartedItems.first;
+      QuantityController itemQController = getItemQuantityController(cartedItem.insertionId)!;
+      int originalQuantity = cartedItem.quantity;
       cartedItem.quantity += item.quantity;
-      priceTotal += item.price * item.quantity;
+      itemQController.updateCurrentQuantity(cartedItem.quantity);
+      cartedItem.quantity = itemQController.quantity;
+      priceTotal += item.price * (cartedItem.quantity - originalQuantity);
       return this;
     }
 
@@ -44,6 +53,8 @@ class CartState {
 
       return false;
     });
+
+    _quantityControllers.remove(insertionId);
 
     return this;
   }
@@ -83,7 +94,9 @@ class CartState {
   int get hashCode => _items.hashCode ^ priceTotal.hashCode;
 
   factory CartState.fromMap(Map<String, dynamic> map) {
-    return CartState((map["items"] as List<dynamic>).map((e) => CartItemModel.fromMap(e)).toList());
+    return CartState(
+      (map["items"] as List<dynamic>).map((e) => CartItemModel.fromMap(e)).toList(),
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -99,11 +112,22 @@ class CartState {
   }) {
     return CartState(
       items ??
-          _items.map((e) {
-            return e.copyWith(insertionId: e.insertionId);
-          }).toList()
+          _items.map(
+            (e) {
+              return e.copyWith(insertionId: e.insertionId);
+            },
+          ).toList(),
     );
   }
 
+  QuantityController? getItemQuantityController(int insertionId) {
+    return _quantityControllers[insertionId];
+  }
+
   bool get cartIsEmpty => _items.isEmpty;
+
+  @override
+  String toString() {
+    return 'CartState{_items: $_items, priceTotal: $priceTotal}';
+  }
 }
