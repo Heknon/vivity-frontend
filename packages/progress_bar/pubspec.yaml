@@ -1,0 +1,14 @@
+name: progress_bar
+description: New state sweeps in from bottom old fade to top.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.1 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  sizer: any
+

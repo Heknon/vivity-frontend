@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vivity/constants/app_constants.dart';
+import 'package:vivity/features/checkout/confirm_page.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/widgets/quantity.dart';
 import '../../../features/item/cart_item/cart_item.dart';
@@ -163,7 +164,9 @@ class _CartViewState extends State<CartView> {
           ),
           splashFactory: InkSplash.splashFactory,
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (ctx) => const ConfirmPage()));
+        },
         child: Text(
           'Checkout',
           style: TextStyle(

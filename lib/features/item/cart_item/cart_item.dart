@@ -18,6 +18,7 @@ class CartItem extends StatelessWidget {
   final void Function(QuantityController, int?)? onQuantityDelete;
   final QuantityController? quantityController;
   final int? id;
+  final BorderRadius? borderRadius;
 
   const CartItem({
     Key? key,
@@ -29,6 +30,7 @@ class CartItem extends StatelessWidget {
     this.onQuantityDelete,
     this.quantityController,
     this.id,
+    this.borderRadius
   }) : super(key: key);
 
   @override
@@ -43,8 +45,7 @@ class CartItem extends StatelessWidget {
           height: usedHeight,
           child: SimpleCard(
             elevation: 7,
-            topRightRadius: 8,
-            bottomRightRadius: 8,
+            borderRadius: borderRadius,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

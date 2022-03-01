@@ -26,7 +26,6 @@ class FilterSideBar extends StatelessWidget {
                     child: InkWell(
                       borderRadius: const BorderRadius.all(Radius.circular(50)),
                       onTap: () {
-                        print("fdsfds");
                         controller.toggle();
                       },
                       child: Icon(Icons.search, color: Colors.white),

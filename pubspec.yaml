@@ -60,6 +60,12 @@ dependencies:
   fade_in_widget:
     path: ./packages/fade_in_widget
 
+  progress_bar:
+    path: ./packages/progress_bar
+
+  radio_button_list:
+    path: ./packages/radio_button_list
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

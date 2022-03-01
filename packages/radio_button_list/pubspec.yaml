@@ -1,0 +1,12 @@
+name: radio_button_list
+description: Allows easy creation of radio button lists
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.1 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+

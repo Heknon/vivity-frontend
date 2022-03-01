@@ -112,8 +112,6 @@ class CartItemModel {
           quantity == other.quantity;
 
   bool looseEquals(Object other) {
-    print("THIS: $this");
-    print("OTHER: $other");
     return identical(this, other) ||
       other is CartItemModel &&
           runtimeType == other.runtimeType &&

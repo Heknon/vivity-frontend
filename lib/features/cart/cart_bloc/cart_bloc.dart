@@ -36,7 +36,6 @@ class CartBloc extends HydratedBloc<CartEvent, CartState> {
 
   @override
   Map<String, dynamic> toJson(CartState state) {
-    print("YO CONVERTING YO");
     return state.toMap();
   }
 
