@@ -26,3 +26,9 @@ class CartDecrementItemEvent extends CartEvent {
 
   CartDecrementItemEvent(this.index);
 }
+
+class CartShipmentMethodUpdateEvent extends CartEvent {
+  final ShippingMethod shippingMethod;
+
+  CartShipmentMethodUpdateEvent(this.shippingMethod);
+}

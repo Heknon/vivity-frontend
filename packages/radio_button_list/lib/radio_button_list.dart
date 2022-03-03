@@ -6,12 +6,14 @@ class RadioButtonList extends StatefulWidget {
   final List<Widget> labels;
   final int initialSelection;
   final RadioButtonListController? controller;
+  final void Function(int)? onChange;
 
   const RadioButtonList({
     required this.color,
     required this.labels,
     this.initialSelection = 0,
     this.controller,
+    this.onChange,
   });
 
   @override
@@ -42,7 +44,10 @@ class _RadioButtonListState extends State<RadioButtonList> {
         visualDensity: VisualDensity.compact,
         fillColor: MaterialStateProperty.all(widget.color),
         groupValue: _controller.selectedLabel,
-        onChanged: (dynamic val) => _controller.setSelectedLabel(val),
+        onChanged: (dynamic val) {
+          _controller.setSelectedLabel(val);
+          if (widget.onChange != null) widget.onChange!(val as int);
+        },
       ),
     );
 

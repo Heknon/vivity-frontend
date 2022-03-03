@@ -1,17 +1,24 @@
 import 'package:flutter/foundation.dart';
+import 'package:vivity/models/shipping_method.dart';
 import 'package:vivity/widgets/quantity.dart';
 
 import '../../item/models/item_model.dart';
 
 class CartState {
   final List<CartItemModel> _items;
-  double priceTotal = 0;
+  ShippingMethod shippingMethod;
+
+  late double priceTotal;
+  late double shippingCost;
 
   List<CartItemModel> get items => _items;
   static final Map<int, QuantityController> _quantityControllers = {};
 
-  CartState(this._items) {
+  CartState(this._items, this.shippingMethod) {
     int insertionId = 0;
+    shippingCost = calculateShippingCost(shippingMethod);
+    priceTotal = 0;
+
     for (CartItemModel item in _items) {
       item.insertionId = insertionId++;
       if (!_quantityControllers.containsKey(item.insertionId)) {
@@ -85,17 +92,45 @@ class CartState {
     }).first;
   }
 
+  CartState updateShipmentMethod(ShippingMethod shippingMethod) {
+    this.shippingMethod = shippingMethod;
+    shippingCost = calculateShippingCost(shippingMethod);
+    return this;
+  }
+
+  double calculateShippingCost(ShippingMethod method) {
+    // TODO: Connect to database - business
+    if (method == ShippingMethod.pickup) {
+      return 0;
+    } else if (method == ShippingMethod.delivery) {
+      double cost = 0; // 1.5 standard currency per item
+      // TODO: Figure out how to support both USD and ILS. where to convert the currency? here?
+      for (CartItemModel item in _items) {
+        cost += item.quantity * 1.5;
+      }
+
+      return cost;
+    }
+
+    return -1;
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CartState && runtimeType == other.runtimeType && listEquals(_items, other._items) && priceTotal == other.priceTotal;
+      other is CartState &&
+          runtimeType == other.runtimeType &&
+          listEquals(_items, other._items) &&
+          priceTotal == other.priceTotal &&
+          shippingMethod == other.shippingMethod;
 
   @override
-  int get hashCode => _items.hashCode ^ priceTotal.hashCode;
+  int get hashCode => _items.hashCode ^ priceTotal.hashCode ^ shippingMethod.index.hashCode;
 
   factory CartState.fromMap(Map<String, dynamic> map) {
     return CartState(
       (map["items"] as List<dynamic>).map((e) => CartItemModel.fromMap(e)).toList(),
+      ShippingMethod.values[(map['shippingMethod'] as int)],
     );
   }
 
@@ -103,12 +138,13 @@ class CartState {
     // ignore: unnecessary_cast
     return {
       'items': _items.map((e) => e.toMap()).toList(),
+      'shippingMethod': shippingMethod.index,
     } as Map<String, dynamic>;
   }
 
   CartState copyWith({
     List<CartItemModel>? items,
-    double? priceTotal,
+    ShippingMethod? shippingMethod,
   }) {
     return CartState(
       items ??
@@ -117,6 +153,7 @@ class CartState {
               return e.copyWith(insertionId: e.insertionId);
             },
           ).toList(),
+      shippingMethod ?? this.shippingMethod,
     );
   }
 
@@ -128,6 +165,6 @@ class CartState {
 
   @override
   String toString() {
-    return 'CartState{_items: $_items, priceTotal: $priceTotal}';
+    return 'CartState{_items: $_items, priceTotal: $priceTotal, shippingMethod: $shippingMethod}';
   }
 }

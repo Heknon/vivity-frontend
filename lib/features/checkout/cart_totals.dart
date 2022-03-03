@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:radio_button_list/radio_button_list.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/models/shipping_method.dart';
 
 import '../cart/cart_bloc/cart_bloc.dart';
 import '../cart/cart_bloc/cart_state.dart';
@@ -30,8 +31,6 @@ class _CartTotalsState extends State<CartTotals> {
   @override
   Widget build(BuildContext context) {
     // TODO: Add dynamic shipping costs
-    // TODO: Move shipping cost and whether selected to CART STATE BLOC
-    int shippingCost = 12;
 
     return Material(
       color: Colors.white,
@@ -81,6 +80,9 @@ class _CartTotalsState extends State<CartTotals> {
               child: RadioButtonList(
                 controller: _radioController,
                 color: Theme.of(context).colorScheme.secondaryVariant,
+                onChange: (index) => BlocProvider.of<CartBloc>(context).add(
+                    CartShipmentMethodUpdateEvent(index == 0 ? ShippingMethod.delivery : ShippingMethod.pickup),
+                  ),
                 labels: [
                   RichText(
                     text: TextSpan(children: [
@@ -89,7 +91,7 @@ class _CartTotalsState extends State<CartTotals> {
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.5.sp, fontWeight: FontWeight.normal),
                       ),
                       TextSpan(
-                        text: "\$${shippingCost.toStringAsFixed(2)}",
+                        text: "\$${state.calculateShippingCost(ShippingMethod.delivery).toStringAsFixed(2)}",
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                       )
                     ]),
@@ -130,7 +132,7 @@ class _CartTotalsState extends State<CartTotals> {
                 Padding(
                   padding: const EdgeInsets.only(right: 20),
                   child: Text(
-                    "\$${(state.priceTotal + (_radioController.selectedLabel == 0 ? shippingCost : 0)).toStringAsFixed(2)}",
+                    "\$${(state.priceTotal + state.shippingCost).toStringAsFixed(2)}",
                     style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.5.sp),
                   ),
                 ),

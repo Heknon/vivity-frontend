@@ -1,0 +1,4 @@
+enum ShippingMethod {
+  delivery,
+  pickup,
+}
