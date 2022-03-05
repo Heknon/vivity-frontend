@@ -50,6 +50,10 @@ dependencies:
   shared_preferences: ^2.0.13
   hydrated_bloc: ^8.0.0
   uuid: ^3.0.5
+  country_icons: ^2.0.2
+  country_code_picker: ^2.0.2
+  form_validator: ^1.0.2
+  libphonenumber: ^2.0.2
 
   advanced_panel:
     path: ./packages/advanced_panel

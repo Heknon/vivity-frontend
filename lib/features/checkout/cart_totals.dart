@@ -79,6 +79,7 @@ class _CartTotalsState extends State<CartTotals> {
               padding: const EdgeInsets.only(left: 70),
               child: RadioButtonList(
                 controller: _radioController,
+                initialSelection: BlocProvider.of<CartBloc>(context).state.shippingMethod.index,
                 color: Theme.of(context).colorScheme.secondaryVariant,
                 onChange: (index) => BlocProvider.of<CartBloc>(context).add(
                     CartShipmentMethodUpdateEvent(index == 0 ? ShippingMethod.delivery : ShippingMethod.pickup),

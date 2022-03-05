@@ -17,7 +17,8 @@ import 'features/home/home_page.dart';
 class VivityOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
 
@@ -31,7 +32,7 @@ void main() async {
   // await storage.clear();
 
   HydratedBlocOverrides.runZoned(
-    () => runApp(const Vivity()),
+        () => runApp(const Vivity()),
     storage: storage,
   );
 }
@@ -45,11 +46,12 @@ class Vivity extends StatelessWidget {
     return BlocProvider(
       create: (ctx) => CartBloc(),
       child: Sizer(
-        builder: (ctx, orientation, type) => MaterialApp(
-          title: 'Vivity',
-          theme: lightTheme,
-          home: HomePage(),
-        ),
+        builder: (ctx, orientation, type) =>
+            MaterialApp(
+              title: 'Vivity',
+              theme: lightTheme,
+              home: HomePage(),
+            ),
       ),
     );
   }

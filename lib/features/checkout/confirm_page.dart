@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:progress_bar/progress_bar.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/checkout/cupon.dart';
+import 'package:vivity/features/checkout/shipping_page.dart';
 
 import '../../config/themes/themes_config.dart';
 import '../../widgets/appbar/appbar.dart';
@@ -25,7 +26,7 @@ class ConfirmPage extends StatelessWidget {
     Size itemSize = Size(listSize.width * 0.95, (listSize.height) / itemsToFitInList);
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: VivityAppBar(
         bottom: buildTitle(context),
       ),
@@ -107,7 +108,9 @@ class ConfirmPage extends StatelessWidget {
             'Proceed To Shipping',
             style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
           ),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (ctx) => ShippingPage()));
+          },
         ),
         const SizedBox(height: 10),
       ],
@@ -133,7 +136,7 @@ class ConfirmPage extends StatelessWidget {
   }
 
   Widget buildProgressBar(BuildContext context) {
-    return ProgressBar(activeColor: const Color(0xffBA2435), inactiveColor: const Color(0xffE7C6CA), labelsActive: [
+    return ProgressBar(activeColor: const Color(0xffBA2435), inactiveColor: const Color(0xffE7C6CA), initialStep: 0, labelsActive: [
       Text(
         'Confirm',
         style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),

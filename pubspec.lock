@@ -85,6 +85,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
+  country_code_picker:
+    dependency: "direct main"
+    description:
+      name: country_code_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
+  country_icons:
+    dependency: "direct main"
+    description:
+      name: country_icons
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
   crypto:
     dependency: transitive
     description:
@@ -240,6 +254,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  form_validator:
+    dependency: "direct main"
+    description:
+      name: form_validator
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   geolocator:
     dependency: transitive
     description:
@@ -331,6 +352,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.8.1"
+  libphonenumber:
+    dependency: "direct main"
+    description:
+      name: libphonenumber
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
   lints:
     dependency: transitive
     description:
@@ -377,6 +405,13 @@ packages:
     dependency: transitive
     description:
       name: mgrs_dart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
+  modal_bottom_sheet:
+    dependency: transitive
+    description:
+      name: modal_bottom_sheet
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
@@ -714,6 +749,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.4"
+  universal_platform:
+    dependency: transitive
+    description:
+      name: universal_platform
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0+1"
   uuid:
     dependency: "direct main"
     description:

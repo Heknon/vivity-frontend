@@ -68,7 +68,6 @@ class _ProgressBarState extends State<ProgressBar> {
       },
     );
 
-    double pixelStep = 0;
     return Align(
       alignment: Alignment.center,
       child: SizedBox(
@@ -148,6 +147,7 @@ class ProgressBarController extends ChangeNotifier {
     this.initialStep = initialStep;
     this.activeColor = activeColor;
     this.inactiveColor = inactiveColor;
+    print(initialStep);
     this.currentStep = initialStep;
     this.maxStep = maxStep;
   }
