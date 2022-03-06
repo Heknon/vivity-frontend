@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/app_constants.dart';
-import '../../item/classic_item/classic_item.dart';
+import '../../item/classic_item.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vivity/features/item/models/item_model.dart';

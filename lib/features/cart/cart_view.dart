@@ -10,7 +10,7 @@ import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/features/checkout/confirm_page.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/widgets/quantity.dart';
-import '../../../features/item/cart_item/cart_item.dart';
+import '../item/cart_item.dart';
 import 'cart_bloc/cart_bloc.dart';
 import 'cart_bloc/cart_state.dart';
 

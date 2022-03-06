@@ -8,13 +8,15 @@ import 'package:progress_bar/progress_bar.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/checkout/cupon.dart';
 import 'package:vivity/features/checkout/shipping_page.dart';
+import 'package:vivity/features/item/cart_item_list.dart';
 
 import '../../config/themes/themes_config.dart';
 import '../../widgets/appbar/appbar.dart';
 import '../cart/cart_bloc/cart_bloc.dart';
 import '../cart/cart_bloc/cart_state.dart';
-import '../item/cart_item/cart_item.dart';
+import '../item/cart_item.dart';
 import 'cart_totals.dart';
+import 'checkout_progress.dart';
 
 class ConfirmPage extends StatelessWidget {
   const ConfirmPage({Key? key}) : super(key: key);
@@ -39,44 +41,22 @@ class ConfirmPage extends StatelessWidget {
   Column buildBody(BuildContext context, Size itemSize, Size listSize) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 15),
-          child: buildProgressBar(context),
+        const Padding(
+          padding: EdgeInsets.only(top: 15),
+          child: CheckoutProgress(step: 0),
         ),
         const SizedBox(height: 10),
-        BlocBuilder<CartBloc, CartState>(builder: (ctx, CartState state) {
-          List<CartItem> cartItems = List.generate(
-            state.items.length,
-            (i) => CartItem(
-              itemModel: state.items[i],
-              width: itemSize.width,
-              height: itemSize.height,
-              onQuantityIncrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!)),
-              onQuantityDecrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!)),
-              quantityController: state.getItemQuantityController(state.items[i].insertionId),
-              id: state.items[i].insertionId,
-              borderRadius: BorderRadius.all(Radius.circular(8)),
+        CartItemList(
+          listSize: listSize,
+          itemsToFitInList: 2.4,
+          emptyCartWidget: Center(
+            child: Text(
+              "Start adding items to your cart!",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
             ),
-          );
-          return SizedBox(
-            width: listSize.width,
-            height: state.items.length < 3 ? listSize.height / 3 : listSize.height,
-            child: state.items.isNotEmpty
-                ? ListView.separated(
-                    padding: EdgeInsets.all(8),
-                    itemCount: cartItems.length,
-                    separatorBuilder: (ctx, i) => SizedBox(height: 10),
-                    itemBuilder: (ctx, i) => cartItems[i],
-                  )
-                : Center(
-                    child: Text(
-                      "Start adding items to your cart!",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
-                    ),
-                  ),
-          );
-        }),
+          ),
+        ),
         const SizedBox(height: 20),
         SizedBox(
           width: itemSize.width,
@@ -133,35 +113,5 @@ class ConfirmPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Widget buildProgressBar(BuildContext context) {
-    return ProgressBar(activeColor: const Color(0xffBA2435), inactiveColor: const Color(0xffE7C6CA), initialStep: 0, labelsActive: [
-      Text(
-        'Confirm',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),
-      ),
-      Text(
-        'Shipping',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),
-      ),
-      Text(
-        'Payment',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),
-      ),
-    ], labelsInactive: [
-      Text(
-        'Confirm',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey, fontSize: 11.sp),
-      ),
-      Text(
-        'Shipping',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey, fontSize: 11.sp),
-      ),
-      Text(
-        'Payment',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey, fontSize: 11.sp),
-      ),
-    ]);
   }
 }

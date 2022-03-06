@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
-import '../item_page.dart';
+import 'item_page.dart';
 import 'background_image.dart';
 import 'package:vivity/widgets/rating.dart';
 
-import '../models/item_model.dart';
+import 'models/item_model.dart';
 
 class ClassicItem extends StatelessWidget {
   final ItemModel itemModel;

@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:progress_bar/progress_bar.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/checkout/add_address.dart';
-import 'package:vivity/features/checkout/address.dart';
+import 'package:vivity/features/checkout/checkout_progress.dart';
+import 'package:vivity/features/checkout/payment_page.dart';
+import 'package:vivity/features/item/cart_item_list.dart';
+import 'shipping/add_address.dart';
 
 import '../../widgets/appbar/appbar.dart';
+import 'shipping/address.dart';
+import '../item/cart_item.dart';
 
 class ShippingPage extends StatelessWidget {
   @override
@@ -21,38 +25,11 @@ class ShippingPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 15),
-              child: buildProgressBar(context),
+            const Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: CheckoutProgress(step: 1),
             ),
-            Address(
-              name: "Ori Harel",
-              city: "Kochav Yair, HaMerkaz",
-              country: "Israel",
-              houseNumber: "24",
-              phone: "+972585551784",
-              street: "HaHar",
-              zipCode: "4486400",
-            ),
-            Address(
-              name: "Ori Harel",
-              city: "Kochav Yair, HaMerkaz",
-              country: "Israel",
-              houseNumber: "24",
-              phone: "+972585551784",
-              street: "HaHar",
-              zipCode: "4486400",
-            ),
-            Address(
-              name: "Ori Harel",
-              city: "Kochav Yair, HaMerkaz",
-              country: "Israel",
-              houseNumber: "24",
-              phone: "+972585551784",
-              street: "HaHar",
-              zipCode: "4486400",
-            ),
-            Address(
+            Address( // TODO: Swap to ListView
               name: "Ori Harel",
               city: "Kochav Yair, HaMerkaz",
               country: "Israel",
@@ -96,7 +73,9 @@ class ShippingPage extends StatelessWidget {
                 'Proceed To Payment',
                 style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PaymentPage()));
+              },
             ),
             SizedBox(height: 20),
           ],
@@ -123,33 +102,13 @@ class ShippingPage extends StatelessWidget {
     );
   }
 
-  Widget buildProgressBar(BuildContext context) {
-    return ProgressBar(activeColor: const Color(0xffBA2435), inactiveColor: const Color(0xffE7C6CA), initialStep: 1, labelsActive: [
-      Text(
-        'Confirm',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),
-      ),
-      Text(
-        'Shipping',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),
-      ),
-      Text(
-        'Payment',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.black, fontSize: 12.sp),
-      ),
-    ], labelsInactive: [
-      Text(
-        'Confirm',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey, fontSize: 11.sp),
-      ),
-      Text(
-        'Shipping',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey, fontSize: 11.sp),
-      ),
-      Text(
-        'Payment',
-        style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey, fontSize: 11.sp),
-      ),
-    ]);
+  Widget? buildItemsDialog(List<CartItem> items) {
+    if (items.isEmpty) return null;
+
+    // TODO: Dropdown menu instead when clicking a business address to show all items to pickup from business.
+
+    return AlertDialog(
+
+    );
   }
 }

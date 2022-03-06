@@ -9,6 +9,7 @@ import 'package:vivity/widgets/simple_card.dart';
 
 import 'item_data_section.dart';
 
+
 class CartItem extends StatelessWidget {
   final CartItemModel itemModel;
   final double? width;
