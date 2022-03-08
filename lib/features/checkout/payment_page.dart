@@ -1,4 +1,8 @@
+import 'dart:math';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,6 +27,8 @@ class _PaymentPageState extends State<PaymentPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
+
+  bool deletePressed = false;
 
   bool saveCardInfo = false;
 
@@ -168,35 +174,110 @@ class _PaymentPageState extends State<PaymentPage> {
                                     ),
                               ),
                               SizedBox(height: 5),
-                              TextFormField(
-                                controller: dateController,
-                                validator: ValidationBuilder().add((value) {
-                                  if (value == null || value.length != 5) return 'Follow format: MM/YY';
-                                  List<String> dates = value.split('/');
-                                  if (double.tryParse(dates[0]) == null || double.tryParse(dates[1]) == null) {
-                                    return 'Follow format: MM/YY';
-                                  }
-
-                                  return null;
-                                }).build(),
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: fillerColor,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                onChanged: (String? value) {
-                                  // TODO: Fix algorithm - https://stackoverflow.com/questions/20607860/formatting-expiry-date-in-mm-yy-format
-                                  if (value == null) return;
-                                  if (value.length == 2) dateController.text += "/"; //<-- Automatically show a '/' after dd
-                                  if (value.length > 6) dateController.text = dateController.text.substring(0, dateController.text.length - 1);
+                              RawKeyboardListener(
+                                onKey: (event) {
+                                  deletePressed = event.logicalKey == LogicalKeyboardKey.backspace;
                                 },
-                                keyboardType: TextInputType.datetime,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.all(10),
-                                  hintText: "MM/YY",
-                                  hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                                  border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
-                                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
+                                focusNode: FocusNode(),
+                                child: TextFormField(
+                                  controller: dateController,
+                                  validator: ValidationBuilder().add((value) {
+                                    if (value == null || value.length != 5) return 'Follow format: MM/YY';
+                                    List<String> dates = value.split('/');
+                                    if (double.tryParse(dates[0]) == null || double.tryParse(dates[1]) == null) {
+                                      return 'Follow format: MM/YY';
+                                    }
+
+                                    return null;
+                                  }).build(),
+                                  onChanged: (value) {
+                                    int cursorPosition = dateController.selection.base.offset;
+                                    String rawText = dateController.text;
+
+                                    String enteredCharacter = dateController.text[cursorPosition];
+                                    String text = rawText.substring(0, cursorPosition) + rawText.substring(cursorPosition, rawText.length);
+                                    bool pressedBackspace = deletePressed;
+                                    deletePressed = false;
+
+                                    if (pressedBackspace) {
+                                      print('entered delete');
+                                      if (cursorPosition == 4) {
+                                        dateController.text += '0';
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+                                      } else if (cursorPosition == 3) {
+                                        dateController.text =
+                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, text.length);
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+                                      } else if (cursorPosition == 2) {
+                                        dateController.text =
+                                            rawText.substring(0, cursorPosition - 1) + '0/' + rawText.substring(cursorPosition, text.length);
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+                                      } else if (cursorPosition == 1) {
+                                        dateController.text = rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, text.length);
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+                                      } else if (cursorPosition == 0) {
+                                        dateController.text = rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, text.length);
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+                                      }
+
+                                      if (dateController.text == '00/00') {
+                                        dateController.text = '';
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: 0));
+                                      }
+                                      return;
+                                    }
+
+                                    if (dateController.text == '00/00') {
+                                      dateController.text = '';
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: 0));
+                                      return;
+                                    }
+
+                                    if (int.tryParse(enteredCharacter) == null || rawText.length > 5) {
+                                      print("entered thing");
+                                      dateController.text = text;
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: dateController.text.length));
+                                      return;
+                                    }
+
+                                    int numEntered = int.parse(enteredCharacter);
+                                    print(cursorPosition);
+
+                                    if (text.length > 2 && text[2] != '/') {
+                                      dateController.text = text.substring(0, 2) + '/' + text.substring(3, 5);
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: dateController.text.length));
+                                    }
+
+                                    if (cursorPosition == 1) {
+                                      if (numEntered >= 2 && numEntered <= 9) {
+                                        dateController.text = text.substring(0, text.length - 1);
+                                        dateController.text += '0' + enteredCharacter + '/';
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 2));
+                                      }
+                                    } else if (cursorPosition == 2) {
+                                      dateController.text = text + '/';
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
+                                    } else if (cursorPosition == 4) {
+                                      if (numEntered >= 2 && numEntered <= 9) {
+                                        dateController.text = text.substring(0, text.length - 1);
+                                        dateController.text += '0' + enteredCharacter;
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
+                                      }
+                                    }
+                                  },
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: fillerColor,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  keyboardType: TextInputType.datetime,
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(10),
+                                    hintText: "MM/YY",
+                                    hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                                    border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
+                                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
+                                  ),
                                 ),
                               ),
                             ],
