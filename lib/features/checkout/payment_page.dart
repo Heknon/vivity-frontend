@@ -192,10 +192,15 @@ class _PaymentPageState extends State<PaymentPage> {
                                   }).build(),
                                   onChanged: (value) {
                                     int cursorPosition = dateController.selection.base.offset;
-                                    String rawText = dateController.text;
 
-                                    String enteredCharacter = dateController.text[cursorPosition];
-                                    String text = rawText.substring(0, cursorPosition) + rawText.substring(cursorPosition, rawText.length);
+                                    String rawText = dateController.text;
+                                    if (rawText.isEmpty) return;
+
+                                    String text = rawText.substring(0, max(0, cursorPosition - 1)) +
+                                        rawText.substring(cursorPosition, dateController.text.length);
+
+                                    String enteredCharacter = rawText[max(0, cursorPosition - 1)];
+                                    bool slashInserted = text.length > 2 ? text[2] == '/' : false;
                                     bool pressedBackspace = deletePressed;
                                     deletePressed = false;
 
@@ -206,63 +211,78 @@ class _PaymentPageState extends State<PaymentPage> {
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       } else if (cursorPosition == 3) {
                                         dateController.text =
-                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, text.length);
+                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       } else if (cursorPosition == 2) {
                                         dateController.text =
-                                            rawText.substring(0, cursorPosition - 1) + '0/' + rawText.substring(cursorPosition, text.length);
+                                            rawText.substring(0, cursorPosition - 1) + '0/' + rawText.substring(cursorPosition, rawText.length);
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       } else if (cursorPosition == 1) {
-                                        dateController.text = rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, text.length);
+                                        dateController.text =
+                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       } else if (cursorPosition == 0) {
-                                        dateController.text = rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, text.length);
+                                        dateController.text =
+                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       }
 
-                                      if (dateController.text == '00/00') {
+                                      if (dateController.text == '00/00' || dateController.text == '00/') {
                                         dateController.text = '';
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: 0));
                                       }
                                       return;
                                     }
 
-                                    if (dateController.text == '00/00') {
-                                      dateController.text = '';
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: 0));
-                                      return;
-                                    }
+                                    print("Cursor: $cursorPosition; Char: $enteredCharacter; Text: $text}");
 
-                                    if (int.tryParse(enteredCharacter) == null || rawText.length > 5) {
-                                      print("entered thing");
+                                    if (int.tryParse(enteredCharacter) == null || (rawText.length > 5 && cursorPosition > 5)) {
                                       dateController.text = text;
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: dateController.text.length));
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: max(0, cursorPosition - 1)));
                                       return;
                                     }
 
                                     int numEntered = int.parse(enteredCharacter);
-                                    print(cursorPosition);
-
-                                    if (text.length > 2 && text[2] != '/') {
-                                      dateController.text = text.substring(0, 2) + '/' + text.substring(3, 5);
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: dateController.text.length));
-                                    }
 
                                     if (cursorPosition == 1) {
                                       if (numEntered >= 2 && numEntered <= 9) {
-                                        dateController.text = text.substring(0, text.length - 1);
-                                        dateController.text += '0' + enteredCharacter + '/';
+                                        String modifiedText = slashInserted
+                                            ? '0$enteredCharacter' + text.substring(min(text.length, 2), min(text.length, 6))
+                                            : '0$enteredCharacter/' + text.substring(min(text.length, 4), min(text.length, 6));
+
+                                        dateController.text = modifiedText;
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 2));
+                                      } else if (slashInserted) {
+                                        String modifiedText = enteredCharacter + rawText.substring(min(rawText.length, 2), min(rawText.length, 6));
+
+                                        dateController.text = modifiedText;
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       }
                                     } else if (cursorPosition == 2) {
-                                      dateController.text = text + '/';
+                                      dateController.text = slashInserted
+                                          ? text.substring(0, 1) + enteredCharacter + text.substring(min(text.length, 2), min(text.length, 6))
+                                          : text.substring(0, 1) + '$enteredCharacter/' + text.substring(min(text.length, 2), min(text.length, 6));
                                       dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
+                                    } else if (cursorPosition == 3) {
+                                      dateController.text = text;
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                     } else if (cursorPosition == 4) {
-                                      if (numEntered >= 2 && numEntered <= 9) {
-                                        dateController.text = text.substring(0, text.length - 1);
-                                        dateController.text += '0' + enteredCharacter;
+                                      if (numEntered >= 4 && numEntered <= 9) {
+                                        String modifiedText =  text.substring(0, 3) + '0$enteredCharacter';
+
+                                        dateController.text = modifiedText;
                                         dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
+                                      } else {
+                                        String modifiedText =  text.substring(0, 3) + enteredCharacter + text.substring(min(text.length, 4), min(text.length, 6));
+
+                                        dateController.text = modifiedText;
+                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                       }
+                                    } else if (cursorPosition == 5) {
+                                      String modifiedText =  text.substring(0, 4) + enteredCharacter;
+
+                                      dateController.text = modifiedText;
+                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
                                     }
                                   },
                                   style: TextStyle(
