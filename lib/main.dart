@@ -8,9 +8,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/light_theme.dart';
 import 'package:vivity/constants/app_constants.dart';
+import 'package:vivity/features/auth/bloc/auth_bloc.dart';
+import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/services/storage_service.dart';
 import 'package:vivity/features/item/item_page.dart';
 
+import 'features/auth/auth_page.dart';
 import 'features/cart/cart_bloc/cart_bloc.dart';
 import 'features/home/home_page.dart';
 
@@ -43,14 +46,24 @@ class Vivity extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (ctx) => CartBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(
+          create: (BuildContext context) => AuthBloc(),
+        ),
+        BlocProvider<CartBloc>(
+          create: (BuildContext context) => CartBloc(),
+        ),
+        BlocProvider<UserBloc>(
+          create: (BuildContext context) => UserBloc(),
+        ),
+      ],
       child: Sizer(
         builder: (ctx, orientation, type) =>
             MaterialApp(
               title: 'Vivity',
               theme: lightTheme,
-              home: HomePage(),
+              home: AuthPage(),
             ),
       ),
     );
