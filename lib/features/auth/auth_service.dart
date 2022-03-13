@@ -4,7 +4,7 @@ const FlutterSecureStorage storage = FlutterSecureStorage();
 
 /// logs in and returns token. returning null signals login failed
 Future<String?> login(String email, String password) async {
-  return null;
+  return "null";
 }
 
 Future<String?> register(String email, String password, String name, String phone) async {

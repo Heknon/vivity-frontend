@@ -147,6 +147,6 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   Future<String> authenticate() async {
     String? res = await BlocProvider.of<AuthBloc>(context).state.verifyCredentials();
     context.read<AuthBloc>().add(AuthUpdateEvent(res));
-    return res ?? "";
+    return res ?? "a";
   }
 }

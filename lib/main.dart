@@ -26,7 +26,17 @@ class VivityOverrides extends HttpOverrides {
 }
 
 
-// TODO: Create checkout pages/process
+/*
+Check if CheckoutBloc is good
+Check if UserBloc logic is good
+Fix AuthBloc logic to use Eden's implementation
+
+IMPLEMENT SERVICES fdshfiusdhgisosde
+
+Create explore state
+Create Feed state
+ */
+
 void main() async {
   HttpOverrides.global = VivityOverrides();
   WidgetsFlutterBinding.ensureInitialized();
