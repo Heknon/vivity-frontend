@@ -21,14 +21,14 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  late Future<String?> authenticateResult;
   bool onLoginModule = false;
 
   @override
   void initState() {
     super.initState();
-    authenticateResult = authenticate();
-    _tabController = TabController(length: 2, vsync: this);
+    BlocProvider.of<AuthBloc>(context).state.previouslyLoggedIn.then((value) => _tabController.index = value ? 0 : 1);
+    sendAuthenticationRequestEvent();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -40,21 +40,51 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(height: 10),
-            SvgPicture.asset(
-              "assets/icons/abstract_logo.svg",
-              color: primaryComplementaryColor,
-              height: 110,
+            Center(
+              child: SvgPicture.asset(
+                "assets/icons/abstract_logo.svg",
+                color: primaryComplementaryColor,
+                height: 110,
+              ),
             ),
             SizedBox(height: 25),
-            SvgPicture.asset(
-              "assets/icons/text_logo_simple.svg",
-              width: 90.w,
+            Center(
+              child: SvgPicture.asset(
+                "assets/icons/text_logo_simple.svg",
+                width: 90.w,
+              ),
             ),
             SizedBox(height: 20),
             buildAuthenticationSplashscreen(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildAuthenticationSplashscreen() {
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (ctx, state) {
+        if (state is AuthLoggedInState) {
+          loginRoutine(state.token);
+        } else if (state is AuthRegisterFailedState) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.reason.name),
+            ),
+          );
+        }
+      },
+      builder: (ctx, state) {
+        if (state is AuthLoadingState || state is AuthLoggedInState) {
+          return const CircularProgressIndicator();
+        }
+
+        return Expanded(
+          child: buildAuthModule(),
+        );
+      },
     );
   }
 
@@ -102,51 +132,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  FutureBuilder<String?> buildAuthenticationSplashscreen() {
-    return FutureBuilder<String?>(
-      future: authenticateResult,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
-
-        if (snapshot.data?.isNotEmpty ?? false) {
-          loginRoutine(snapshot.data!);
-          return const CircularProgressIndicator();
-        }
-
-        return BlocConsumer<AuthBloc, AuthState>(
-          listener: (ctx, state) {
-            print(state);
-          },
-          builder: (ctx, state) {
-            if (state.loggedIn) {
-              loginRoutine(state.loginResult!);
-              return const CircularProgressIndicator();
-            }
-
-            onLoginModule = state.previouslyLoggedIn;
-
-            return Expanded(
-              child: buildAuthModule(),
-            );
-          },
-        );
-      },
-    );
-  }
-
   void loginRoutine(String token) {
     BlocProvider.of<UserBloc>(context).add(UserLoginEvent(token));
-
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      Navigator.push(context, MaterialPageRoute(builder: (ctx) => HomePage()));
-    });
   }
 
-  Future<String> authenticate() async {
-    String? res = await BlocProvider.of<AuthBloc>(context).state.verifyCredentials();
-    context.read<AuthBloc>().add(AuthUpdateEvent(res));
-    return res ?? "a";
+  void sendAuthenticationRequestEvent() async {
+    context.read<AuthBloc>().add(AuthConfirmationEvent(false));
   }
 }

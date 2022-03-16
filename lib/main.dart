@@ -7,24 +7,27 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/light_theme.dart';
+import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
+import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
+import 'package:vivity/models/shipping_method.dart';
 import 'package:vivity/services/storage_service.dart';
 import 'package:vivity/features/item/item_page.dart';
 
 import 'features/auth/auth_page.dart';
 import 'features/cart/cart_bloc/cart_bloc.dart';
+import 'features/checkout/checkout_service.dart';
 import 'features/home/home_page.dart';
+import 'package:http/http.dart' as http;
 
 class VivityOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
-
 
 /*
 Check if CheckoutBloc is good
@@ -45,7 +48,7 @@ void main() async {
   // await storage.clear();
 
   HydratedBlocOverrides.runZoned(
-        () => runApp(const Vivity()),
+    () => runApp(const Vivity()),
     storage: storage,
   );
 }
@@ -56,6 +59,8 @@ class Vivity extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    navigateToCorrectCheckoutPage(CheckoutStatePaymentStage(
+        paymentMethod: null, shippingAddress: null, items: List.empty(), cuponCode: "", shippingMethod: ShippingMethod.delivery));
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
@@ -67,14 +72,32 @@ class Vivity extends StatelessWidget {
         BlocProvider<UserBloc>(
           create: (BuildContext context) => UserBloc(),
         ),
+        BlocProvider<CheckoutBloc>(
+          create: (BuildContext context) => CheckoutBloc(),
+        ),
       ],
       child: Sizer(
-        builder: (ctx, orientation, type) =>
-            MaterialApp(
-              title: 'Vivity',
-              theme: lightTheme,
-              home: AuthPage(),
-            ),
+        builder: (ctx, orientation, type) => MaterialApp(
+          title: 'Vivity',
+          theme: lightTheme,
+          home: Builder(builder: (context1) {
+            return BlocListener<UserBloc, UserState>(
+              listener: (ctx, state) {
+                print(state);
+                if (state is UserLoggedOutState) {
+                  context1.read<AuthBloc>().add(AuthLogoutEvent());
+                  Navigator.popUntil(ctx, (route) => route.isFirst);
+                  Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => AuthPage()));
+                } else if (state is UserLoggedInState) {
+                  ctx.read<AuthBloc>().add(AuthLogoutEvent());
+                  Navigator.popUntil(ctx, (route) => route.isFirst);
+                  Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => HomePage()));
+                }
+              },
+              child: AuthPage(),
+            );
+          }),
+        ),
       ),
     );
   }

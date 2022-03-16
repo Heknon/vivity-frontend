@@ -1,15 +1,44 @@
 part of 'auth_bloc.dart';
 
 @immutable
-class AuthState {
-  final bool loggedIn;
-  final bool previouslyLoggedIn;
+abstract class AuthState {
+  const AuthState();
 
-  final String? loginResult;
+  Future<bool> get previouslyLoggedIn async {
+    SharedPreferences shared = await SharedPreferences.getInstance();
 
-  const AuthState({required this.loggedIn, required this.previouslyLoggedIn, this.loginResult});
+    if (!shared.containsKey("previouslyLoggedIn")) {
+      return false;
+    }
 
+    return shared.getBool("previouslyLoggedIn")!;
+  }
+}
+
+class AuthLoggedOutState extends AuthState {
+  const AuthLoggedOutState();
+}
+
+class AuthLoadingState extends AuthLoggedOutState {}
+
+class AuthRegisterFailedState extends AuthLoggedOutState {
+  final AuthenticationResult reason;
+
+  const AuthRegisterFailedState(this.reason);
+}
+
+class AuthLoggedInState extends AuthState {
+  final String token;
+
+  const AuthLoggedInState({required this.token});
+
+  /// Checks if current token is valid and returns it. if not valid generates a new one based on stored credentials or returns null.
   Future<String?> verifyCredentials() async {
+    bool tokenIsGood = await verifyToken(token);
+    if (tokenIsGood) {
+      return token;
+    }
+
     String? email = await getStoredEmail();
     String? password = await getStoredPassword();
 
@@ -18,45 +47,29 @@ class AuthState {
       return loginResult;
     }
 
-    if (loginResult != null) {
-      bool result = await verifyToken(loginResult!);
-      return result ? loginResult! : null;
-    }
-
     return null;
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AuthState &&
-          runtimeType == other.runtimeType &&
-          loggedIn == other.loggedIn &&
-          previouslyLoggedIn == other.previouslyLoggedIn &&
-          loginResult == other.loginResult;
+  bool operator ==(Object other) => identical(this, other) || other is AuthLoggedInState && runtimeType == other.runtimeType && token == other.token;
 
   @override
-  int get hashCode => loggedIn.hashCode ^ previouslyLoggedIn.hashCode ^ loginResult.hashCode;
+  int get hashCode => token.hashCode;
 
-  factory AuthState.fromMap(Map<String, dynamic> map) {
-    return AuthState(
-      loggedIn: map['loggedIn'] as bool,
-      previouslyLoggedIn: map['previouslyLoggedIn'] as bool,
-      loginResult: map['loginResult'] as String?,
+  factory AuthLoggedInState.fromMap(Map<String, dynamic> map) {
+    return AuthLoggedInState(
+      token: map["token"] as String,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'loggedIn': loggedIn,
-      'previouslyLoggedIn': previouslyLoggedIn,
-      'loginResult': loginResult,
+      'token': token,
     };
   }
 
   @override
   String toString() {
-    return 'AuthState{loggedIn: $loggedIn, previouslyLoggedIn: $previouslyLoggedIn, loginResult: $loginResult}';
+    return 'AuthState{token: $token}';
   }
 }
-

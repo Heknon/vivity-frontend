@@ -13,42 +13,40 @@ part 'checkout_event.dart';
 part 'checkout_state.dart';
 
 class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
-  CheckoutBloc() : super(CheckoutState(items: List.empty(), shippingMethod: ShippingMethod.pickup, cuponCode: null, paymentMethod: null)) {
-    on<CheckoutInitializeEvent>((event, emit) {
-      emit(CheckoutState(
-        items: event.items,
-        shippingMethod: event.shippingMethod,
-        cuponCode: event.cuponCode,
-        paymentMethod: state.paymentMethod
-      ));
+  CheckoutBloc() : super(CheckoutInitial()) {
+    on<CheckoutInitializeEvent>((event, emit) async {
+      CheckoutState state = CheckoutStateConfirmationStage(items: event.items, shippingMethod: event.shippingMethod, cuponCode: event.cuponCode);
+
+      emit(CheckoutLoadingState());
+      await state.init();
+      emit(state);
     });
 
-    on<CheckoutApplyCupon>((event, emit) {
-      emit(CheckoutState(
-        items: state.items,
-        shippingMethod: state.shippingMethod,
-        cuponCode: event.cuponCode,
-        paymentMethod: state.paymentMethod,
-      ));
-    });
-
-    on<CheckoutApplyShippingEvent>((event, emit) {
-      emit(CheckoutState(
-        items: state.items,
-        shippingMethod: state.shippingMethod,
-        cuponCode: state.cuponCode,
+    on<CheckoutApplyShippingEvent>((event, emit) async {
+      CheckoutState state = CheckoutStateShippingStage(
+        items: (this.state as CheckoutStateConfirmationStage).items,
+        shippingMethod: (this.state as CheckoutStateConfirmationStage).shippingMethod,
+        cuponCode: (this.state as CheckoutStateConfirmationStage).cuponCode,
         shippingAddress: event.address,
-        paymentMethod: state.paymentMethod,
-      ));
+      );
+
+      emit(CheckoutLoadingState());
+      await state.init();
+      emit(state);
     });
 
-    on<CheckoutSelectPaymentEvent>((event, emit) {
-      emit(CheckoutState(
-        items: state.items,
-        shippingMethod: state.shippingMethod,
-        cuponCode: state.cuponCode,
+    on<CheckoutSelectPaymentEvent>((event, emit) async {
+      CheckoutState state = CheckoutStatePaymentStage(
+        items: (this.state as CheckoutStateShippingStage).items,
+        shippingMethod: (this.state as CheckoutStateShippingStage).shippingMethod,
+        cuponCode: (this.state as CheckoutStateShippingStage).cuponCode,
+        shippingAddress: (this.state as CheckoutStateShippingStage).shippingAddress,
         paymentMethod: event.paymentMethod,
-      ));
+      );
+
+      emit(CheckoutLoadingState());
+      await state.init();
+      emit(state);
     });
   }
 }

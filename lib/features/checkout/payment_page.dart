@@ -190,101 +190,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
                                     return null;
                                   }).build(),
-                                  onChanged: (value) {
-                                    int cursorPosition = dateController.selection.base.offset;
-
-                                    String rawText = dateController.text;
-                                    if (rawText.isEmpty) return;
-
-                                    String text = rawText.substring(0, max(0, cursorPosition - 1)) +
-                                        rawText.substring(cursorPosition, dateController.text.length);
-
-                                    String enteredCharacter = rawText[max(0, cursorPosition - 1)];
-                                    bool slashInserted = text.length > 2 ? text[2] == '/' : false;
-                                    bool pressedBackspace = deletePressed;
-                                    deletePressed = false;
-
-                                    if (pressedBackspace) {
-                                      print('entered delete');
-                                      if (cursorPosition == 4) {
-                                        dateController.text += '0';
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      } else if (cursorPosition == 3) {
-                                        dateController.text =
-                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      } else if (cursorPosition == 2) {
-                                        dateController.text =
-                                            rawText.substring(0, cursorPosition - 1) + '0/' + rawText.substring(cursorPosition, rawText.length);
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      } else if (cursorPosition == 1) {
-                                        dateController.text =
-                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      } else if (cursorPosition == 0) {
-                                        dateController.text =
-                                            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      }
-
-                                      if (dateController.text == '00/00' || dateController.text == '00/') {
-                                        dateController.text = '';
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: 0));
-                                      }
-                                      return;
-                                    }
-
-                                    print("Cursor: $cursorPosition; Char: $enteredCharacter; Text: $text}");
-
-                                    if (int.tryParse(enteredCharacter) == null || (rawText.length > 5 && cursorPosition > 5)) {
-                                      dateController.text = text;
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: max(0, cursorPosition - 1)));
-                                      return;
-                                    }
-
-                                    int numEntered = int.parse(enteredCharacter);
-
-                                    if (cursorPosition == 1) {
-                                      if (numEntered >= 2 && numEntered <= 9) {
-                                        String modifiedText = slashInserted
-                                            ? '0$enteredCharacter' + text.substring(min(text.length, 2), min(text.length, 6))
-                                            : '0$enteredCharacter/' + text.substring(min(text.length, 4), min(text.length, 6));
-
-                                        dateController.text = modifiedText;
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 2));
-                                      } else if (slashInserted) {
-                                        String modifiedText = enteredCharacter + rawText.substring(min(rawText.length, 2), min(rawText.length, 6));
-
-                                        dateController.text = modifiedText;
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      }
-                                    } else if (cursorPosition == 2) {
-                                      dateController.text = slashInserted
-                                          ? text.substring(0, 1) + enteredCharacter + text.substring(min(text.length, 2), min(text.length, 6))
-                                          : text.substring(0, 1) + '$enteredCharacter/' + text.substring(min(text.length, 2), min(text.length, 6));
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
-                                    } else if (cursorPosition == 3) {
-                                      dateController.text = text;
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                    } else if (cursorPosition == 4) {
-                                      if (numEntered >= 4 && numEntered <= 9) {
-                                        String modifiedText =  text.substring(0, 3) + '0$enteredCharacter';
-
-                                        dateController.text = modifiedText;
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
-                                      } else {
-                                        String modifiedText =  text.substring(0, 3) + enteredCharacter + text.substring(min(text.length, 4), min(text.length, 6));
-
-                                        dateController.text = modifiedText;
-                                        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                      }
-                                    } else if (cursorPosition == 5) {
-                                      String modifiedText =  text.substring(0, 4) + enteredCharacter;
-
-                                      dateController.text = modifiedText;
-                                      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
-                                    }
-                                  },
+                                  onChanged: (_) => handleDateInput(),
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     color: fillerColor,
@@ -453,6 +359,19 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
+  void handleSuccessfulSubmission(
+      String cardNumber,
+      String expirationMonth,
+      String expirationYear,
+      String cvv,
+      String holderName,
+      bool saveInfo,
+      double total,
+      ) {
+    print(
+        "Handling: (cardNumber: $cardNumber, expirationMonth: $expirationMonth, expirationYear: $expirationYear, cvv: $cvv, holderName: $holderName, saveInfo: $saveInfo, total: $total)");
+  }
+
   PreferredSize buildTitle(BuildContext context) {
     return PreferredSize(
       preferredSize: const Size(double.infinity, kToolbarHeight),
@@ -471,16 +390,96 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  void handleSuccessfulSubmission(
-    String cardNumber,
-    String expirationMonth,
-    String expirationYear,
-    String cvv,
-    String holderName,
-    bool saveInfo,
-    double total,
-  ) {
-    print(
-        "Handling: (cardNumber: $cardNumber, expirationMonth: $expirationMonth, expirationYear: $expirationYear, cvv: $cvv, holderName: $holderName, saveInfo: $saveInfo, total: $total)");
+  void handleDateInput() {
+    int cursorPosition = dateController.selection.base.offset;
+
+    String rawText = dateController.text;
+    if (rawText.isEmpty) return;
+
+    String text = rawText.substring(0, max(0, cursorPosition - 1)) +
+        rawText.substring(cursorPosition, dateController.text.length);
+
+    String enteredCharacter = rawText[max(0, cursorPosition - 1)];
+    bool slashInserted = text.length > 2 ? text[2] == '/' : false;
+    bool pressedBackspace = deletePressed;
+    deletePressed = false;
+
+    if (pressedBackspace) {
+      if (cursorPosition == 4) {
+        dateController.text += '0';
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      } else if (cursorPosition == 3) {
+        dateController.text =
+            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      } else if (cursorPosition == 2) {
+        dateController.text =
+            rawText.substring(0, cursorPosition - 1) + '0/' + rawText.substring(cursorPosition, rawText.length);
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      } else if (cursorPosition == 1) {
+        dateController.text =
+            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      } else if (cursorPosition == 0) {
+        dateController.text =
+            rawText.substring(0, cursorPosition) + '0' + rawText.substring(cursorPosition, rawText.length);
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      }
+
+      if (dateController.text == '00/00' || dateController.text == '00/') {
+        dateController.text = '';
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: 0));
+      }
+      return;
+    }
+
+    if (int.tryParse(enteredCharacter) == null || (rawText.length > 5 && cursorPosition > 5)) {
+      dateController.text = text;
+      dateController.selection = TextSelection.fromPosition(TextPosition(offset: max(0, cursorPosition - 1)));
+      return;
+    }
+
+    int numEntered = int.parse(enteredCharacter);
+
+    if (cursorPosition == 1) {
+      if (numEntered >= 2 && numEntered <= 9) {
+        String modifiedText = slashInserted
+            ? '0$enteredCharacter' + text.substring(min(text.length, 2), min(text.length, 6))
+            : '0$enteredCharacter/' + text.substring(min(text.length, 4), min(text.length, 6));
+
+        dateController.text = modifiedText;
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 2));
+      } else if (slashInserted) {
+        String modifiedText = enteredCharacter + rawText.substring(min(rawText.length, 2), min(rawText.length, 6));
+
+        dateController.text = modifiedText;
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      }
+    } else if (cursorPosition == 2) {
+      dateController.text = slashInserted
+          ? text.substring(0, 1) + enteredCharacter + text.substring(min(text.length, 2), min(text.length, 6))
+          : text.substring(0, 1) + '$enteredCharacter/' + text.substring(min(text.length, 2), min(text.length, 6));
+      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
+    } else if (cursorPosition == 3) {
+      dateController.text = text;
+      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+    } else if (cursorPosition == 4) {
+      if (numEntered >= 4 && numEntered <= 9) {
+        String modifiedText =  text.substring(0, 3) + '0$enteredCharacter';
+
+        dateController.text = modifiedText;
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition + 1));
+      } else {
+        String modifiedText =  text.substring(0, 3) + enteredCharacter + text.substring(min(text.length, 4), min(text.length, 6));
+
+        dateController.text = modifiedText;
+        dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+      }
+    } else if (cursorPosition == 5) {
+      String modifiedText =  text.substring(0, 4) + enteredCharacter;
+
+      dateController.text = modifiedText;
+      dateController.selection = TextSelection.fromPosition(TextPosition(offset: cursorPosition));
+    }
   }
 }

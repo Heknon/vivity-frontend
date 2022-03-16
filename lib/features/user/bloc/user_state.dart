@@ -11,9 +11,12 @@ class UserLoginFailedState extends UserLoggedOutState {
   final String reason;
 
   UserLoginFailedState(this.reason);
-}
 
-class UserLoggingInState extends UserLoggedOutState {}
+  @override
+  String toString() {
+    return 'UserLoginFailedState{reason: $reason}';
+  }
+}
 
 class UserLoggedInState extends UserState {
   final String _token;
@@ -28,7 +31,7 @@ class UserLoggedInState extends UserState {
 
   UserLoggedInState(this._token);
 
-  Future<String?> initUserState() async {
+  Future<String?> init() async {
     Map<String, dynamic>? mapUser = getUserFromToken(_token);
     if (mapUser == null) return 'Token expired';
 

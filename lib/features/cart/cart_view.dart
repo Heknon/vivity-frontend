@@ -165,7 +165,7 @@ class _CartViewState extends State<CartView> {
           splashFactory: InkSplash.splashFactory,
         ),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (ctx) => const ConfirmPage()));
+          Navigator.push(context, MaterialPageRoute(builder: (ctx) => ConfirmPage()));
         },
         child: Text(
           'Checkout',

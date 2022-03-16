@@ -1,18 +1,49 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:vivity/constants/api_path.dart';
+import 'package:vivity/features/auth/register_result.dart';
+import 'package:vivity/services/api_service.dart';
 
 const FlutterSecureStorage storage = FlutterSecureStorage();
 
 /// logs in and returns token. returning null signals login failed
 Future<String?> login(String email, String password) async {
-  return "null";
+  http.Response res = await sendPostRequest(subRoute: "$userPath/login", data: {
+    "email": email,
+    "password": password,
+  });
+
+  if (res.statusCode != 200) {
+    return null;
+  }
+
+  return res.body;
 }
 
-Future<String?> register(String email, String password, String name, String phone) async {
-  return null;
+Future<RegisterResult> register(String email, String password, String name, String phone) async {
+  http.Response res = await sendPostRequest(
+    subRoute: "$userPath/register",
+    data: {
+      "email": email,
+      "password": password,
+      "name": name,
+      "phone": phone,
+    },
+  );
+
+  Map<String, dynamic> decoded = jsonDecode(res.body);
+
+  return RegisterResult(
+    decoded.containsKey("token") ? decoded['token'] : null,
+    decoded.containsKey("auth_result") ? AuthenticationResult.values[decoded['auth_result'] as int] : null,
+  );
 }
 
 Future<bool> verifyToken(String token) async {
-  return false;
+  http.Response res = await sendGetRequest(subRoute: "$userPath/verify?token=$token");
+  return res.statusCode == 200;
 }
 
 void securelyStoreCredentials(String email, String password) {

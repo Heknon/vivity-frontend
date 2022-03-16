@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/auth/auth_service.dart';
+import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 
 class RegisterModule extends StatefulWidget {
   @override
@@ -72,8 +75,8 @@ class _RegisterModuleState extends State<RegisterModule> {
                       passwordController.text,
                       phoneController.text,
                       nameController.text,
+                      context,
                     );
-                    Navigator.pop(context);
                     ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registering!')));
                   },
@@ -104,7 +107,8 @@ class _RegisterModuleState extends State<RegisterModule> {
     );
   }
 
-  void handleRegister(String email, String password, String phone, String name) {
+  void handleRegister(String email, String password, String phone, String name, BuildContext context) {
     print("Handling register - Email: $email, Password: $password, Name: $name, Phone: $phone");
+    context.read<AuthBloc>().add(AuthRegisterEvent(email, password, name, phone));
   }
 }

@@ -45,16 +45,10 @@ class AuthRegisterEvent extends AuthEvent {
   int get hashCode => email.hashCode ^ password.hashCode ^ name.hashCode ^ phone.hashCode;
 }
 
-class AuthConfirmationEvent extends AuthEvent {}
+class AuthConfirmationEvent extends AuthEvent {
+  final bool silent;
 
-class AuthUpdateEvent extends AuthEvent {
-  final String? token;
-
-  AuthUpdateEvent(this.token);
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is AuthUpdateEvent && runtimeType == other.runtimeType && token == other.token;
-
-  @override
-  int get hashCode => token.hashCode;
+  AuthConfirmationEvent(this.silent);
 }
+
+class AuthLogoutEvent extends AuthEvent {}

@@ -4,55 +4,87 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vivity/features/auth/auth_service.dart';
+import 'package:vivity/features/auth/register_result.dart';
 
 part 'auth_event.dart';
+
 part 'auth_state.dart';
 
 class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
-  AuthBloc() : super(const AuthState(loggedIn: false, previouslyLoggedIn: false, loginResult: null)) {
+  AuthBloc() : super(const AuthLoggedOutState()) {
     on<AuthLoginEvent>((event, emit) async {
-      String? token = await login(event.email, event.password);
-      bool successLogin = token != null;
+      emit(AuthLoadingState());
 
-      if (successLogin) {
-        securelyStoreCredentials(event.email, event.password);
+      String? token = await login(event.email, event.password);
+      print(token);
+      if (token == null) {
+        emit(const AuthLoggedOutState());
+        return;
       }
 
-      emit(AuthState(loggedIn: successLogin, previouslyLoggedIn: state.previouslyLoggedIn || successLogin, loginResult: token));
+      securelyStoreCredentials(event.email, event.password);
+      _setPreviouslyLoggedInFlag();
+      emit(AuthLoggedInState(token: token));
     });
 
     on<AuthRegisterEvent>((event, emit) async {
-      String? token = await login(event.email, event.password);
-      bool successRegister = token != null;
+      emit(AuthLoadingState());
+      RegisterResult res = await register(event.email, event.password, event.name, event.phone);
 
-      if (successRegister) {
-        securelyStoreCredentials(event.email, event.password);
+      if (res.token == null) {
+        emit(AuthRegisterFailedState(res.authResult!));
+        return;
       }
 
-      emit(AuthState(loggedIn: successRegister, previouslyLoggedIn: state.previouslyLoggedIn || successRegister, loginResult: token));
+      securelyStoreCredentials(event.email, event.password);
+      _setPreviouslyLoggedInFlag();
+      emit(AuthLoggedInState(token: res.token!));
     });
 
     on<AuthConfirmationEvent>((event, emit) async {
-      String? loginResult = await state.verifyCredentials();
+      if (!event.silent) {
+        emit(AuthLoadingState());
+      }
 
-      emit(AuthState(loggedIn: loginResult != null, previouslyLoggedIn: state.previouslyLoggedIn, loginResult: loginResult));
+      if (state is! AuthLoggedInState) {
+        emit(const AuthLoggedOutState());
+        return;
+      }
+
+      String? loginResult = await (state as AuthLoggedInState).verifyCredentials();
+      if (loginResult == null) {
+        emit(const AuthLoggedOutState());
+        return;
+      }
+
+      emit(AuthLoggedInState(token: loginResult));
     });
 
-    on<AuthUpdateEvent>((event, emit) async {
-      emit(AuthState(loggedIn: event.token != null, previouslyLoggedIn: state.previouslyLoggedIn, loginResult: event.token));
+    on<AuthLogoutEvent>((event, emit) async {
+      if (state is! AuthLoggedOutState) {
+        emit(const AuthLoggedOutState());
+      }
     });
-
-    //add(AuthConfirmationEvent());
   }
 
   @override
   AuthState? fromJson(Map<String, dynamic> json) {
-    return AuthState.fromMap(json);
+    return AuthLoggedInState.fromMap(json);
   }
 
   @override
   Map<String, dynamic> toJson(AuthState state) {
+    if (state is! AuthLoggedInState) {
+      return {};
+    }
+
     return state.toMap();
+  }
+
+  void _setPreviouslyLoggedInFlag() async {
+    SharedPreferences shared = await SharedPreferences.getInstance();
+    shared.setBool("previouslyLoggedIn", true);
   }
 }

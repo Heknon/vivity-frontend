@@ -14,16 +14,14 @@ part 'user_state.dart';
 class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc() : super(UserLoggedOutState()) {
     on<UserLoginEvent>((event, emit) async {
-      emit(UserLoggingInState());
-
-      UserLoggedInState s = UserLoggedInState(event.token);
-      String? result = await s.initUserState();
+      UserLoggedInState state = UserLoggedInState(event.token);
+      String? result = await state.init();
       if (result != null) {
         emit(UserLoginFailedState(result));
         return;
       }
 
-      emit(s);
+      emit(state);
     });
 
     on<UserLogoutEvent>((event, emit) {

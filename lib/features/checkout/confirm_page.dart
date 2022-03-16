@@ -6,9 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:progress_bar/progress_bar.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
 import 'package:vivity/features/checkout/cupon.dart';
 import 'package:vivity/features/checkout/shipping_page.dart';
 import 'package:vivity/features/item/cart_item_list.dart';
+import 'package:vivity/models/shipping_method.dart';
 
 import '../../config/themes/themes_config.dart';
 import '../../widgets/appbar/appbar.dart';
@@ -19,7 +21,9 @@ import 'cart_totals.dart';
 import 'checkout_progress.dart';
 
 class ConfirmPage extends StatelessWidget {
-  const ConfirmPage({Key? key}) : super(key: key);
+  final TextEditingController cuponController = TextEditingController();
+
+  ConfirmPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,63 +42,83 @@ class ConfirmPage extends StatelessWidget {
     );
   }
 
-  Column buildBody(BuildContext context, Size itemSize, Size listSize) {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 15),
-          child: CheckoutProgress(step: 0),
-        ),
-        const SizedBox(height: 10),
-        CartItemList(
-          listSize: listSize,
-          itemsToFitInList: 2.4,
-          emptyCartWidget: Center(
-            child: Text(
-              "Start adding items to your cart!",
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
+  Widget buildBody(BuildContext context, Size itemSize, Size listSize) {
+    return BlocConsumer<CheckoutBloc, CheckoutState>(listener: (context, state) {
+      if (state is CheckoutStateShippingStage) {
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) => ShippingPage()));
+      }
+    }, builder: (context, state) {
+      if (state is CheckoutLoadingState) {
+        return const CircularProgressIndicator();
+      }
+      return Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 15),
+            child: CheckoutProgress(step: 0),
+          ),
+          const SizedBox(height: 10),
+          CartItemList(
+            listSize: listSize,
+            itemsToFitInList: 2.4,
+            emptyCartWidget: Center(
+              child: Text(
+                "Start adding items to your cart!",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: itemSize.width,
-          child: const Cupon(),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: listSize.width - 20,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Cart totals', style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 15.sp)),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: itemSize.width,
+            child: Cupon(
+              cuponTextController: cuponController,
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: EdgeInsets.all(8),
-          child: SizedBox(
+          const SizedBox(height: 20),
+          SizedBox(
             width: listSize.width - 20,
-            child: CartTotals(),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Cart totals', style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 15.sp)),
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        TextButton(
-          style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.secondaryVariant),
-              overlayColor: MaterialStateProperty.all(Colors.grey),
-              fixedSize: MaterialStateProperty.all(Size(listSize.width - 20, 15.sp * 3))),
-          child: Text(
-            'Proceed To Shipping',
-            style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
+          const SizedBox(height: 20),
+          Padding(
+            padding: EdgeInsets.all(8),
+            child: SizedBox(
+              width: listSize.width - 20,
+              child: CartTotals(),
+            ),
           ),
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (ctx) => ShippingPage()));
-          },
-        ),
-        const SizedBox(height: 10),
-      ],
-    );
+          const SizedBox(height: 20),
+          TextButton(
+            style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.secondaryVariant),
+                overlayColor: MaterialStateProperty.all(Colors.grey),
+                fixedSize: MaterialStateProperty.all(Size(listSize.width - 20, 15.sp * 3))),
+            child: Text(
+              'Proceed To Shipping',
+              style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
+            ),
+            onPressed: () {
+              context.read<CheckoutBloc>().add(
+                    CheckoutInitializeEvent(
+                      items: context.read<CartBloc>().state.items,
+                      shippingMethod: ShippingMethod.delivery,
+                      cuponCode: cuponController.text,
+                    ),
+                  );
+              context.read<CheckoutBloc>().add(
+                    CheckoutApplyShippingEvent(address: null),
+                  );
+            },
+          ),
+          const SizedBox(height: 10),
+        ],
+      );
+    });
   }
 
   PreferredSize buildTitle(BuildContext context) {

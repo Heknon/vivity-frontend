@@ -21,11 +21,11 @@ class CheckoutApplyShippingEvent extends CheckoutEvent {
 class CheckoutApplyCupon extends CheckoutEvent {
   final String cuponCode;
 
-  CheckoutApplyCupon({required this.cuponCode})
+  CheckoutApplyCupon({required this.cuponCode});
 }
 
 class CheckoutSelectPaymentEvent extends CheckoutEvent {
-  final PaymentMethod paymentMethod;
+  final PaymentMethod? paymentMethod;
 
   CheckoutSelectPaymentEvent({
     required this.paymentMethod,

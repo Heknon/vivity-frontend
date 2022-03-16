@@ -54,6 +54,8 @@ dependencies:
   country_code_picker: ^2.0.2
   form_validator: ^1.0.2
   jwt_decoder: ^2.0.1
+  http: ^0.13.4
+  charset: ^0.2.4
 
   advanced_panel:
     path: ./packages/advanced_panel

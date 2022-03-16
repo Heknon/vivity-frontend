@@ -3,7 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 
 class Cupon extends StatelessWidget {
-  const Cupon({Key? key}) : super(key: key);
+  final TextEditingController? cuponTextController;
+
+  const Cupon({Key? key, this.cuponTextController}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,6 +14,7 @@ class Cupon extends StatelessWidget {
         width: constraints.maxWidth,
         height: 10.sp * 3.5,
         child: TextField(
+          controller: cuponTextController,
           style: TextStyle(fontSize: 12.sp, color: Colors.black),
           decoration: InputDecoration(
             contentPadding: EdgeInsets.all(10),
@@ -64,3 +67,4 @@ class Cupon extends StatelessWidget {
     });
   }
 }
+
