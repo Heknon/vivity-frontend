@@ -6,7 +6,7 @@ import 'package:vivity/features/checkout/checkout_progress.dart';
 import 'package:vivity/features/checkout/payment_page.dart';
 import 'package:vivity/models/payment_method.dart';
 import 'package:vivity/models/shipping_method.dart';
-import '../../models/address.dart';
+import '../user/models/address.dart';
 import './shipping/address.dart' as address_widget;
 import '../user/bloc/user_bloc.dart';
 import 'bloc/checkout_bloc.dart';

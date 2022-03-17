@@ -1,4 +1,4 @@
-import '../../models/address.dart';
+import '../user/models/address.dart';
 import '../item/models/item_model.dart';
 import 'bloc/checkout_bloc.dart';
 

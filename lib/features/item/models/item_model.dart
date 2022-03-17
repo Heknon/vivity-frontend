@@ -67,7 +67,7 @@ class CartItemModel {
     ItemModel item;
     try {
       // TODO: Implement check to see if item no longer exists. if it doesn't remove. An error can also be a connection error.
-      item = getItemFromId(map['id']) ?? itemModelDemo2;
+      item = getItemFromId(map['businessId'], map['id']) ?? itemModelDemo2;
     } catch (ex) {
       rethrow;
     }
@@ -91,6 +91,7 @@ class CartItemModel {
       'price': price,
       'quantity': quantity,
       'id': item.id,
+      'businessId': item.businessId,
     } as Map<String, dynamic>;
   }
 
@@ -113,13 +114,13 @@ class CartItemModel {
 
   bool looseEquals(Object other) {
     return identical(this, other) ||
-      other is CartItemModel &&
-          runtimeType == other.runtimeType &&
-          previewImage == other.previewImage &&
-          title == other.title &&
-          listEquals(chosenData.toList(), other.chosenData.toList()) &&
-          price == other.price &&
-          listEquals(item.id, other.item.id);
+        other is CartItemModel &&
+            runtimeType == other.runtimeType &&
+            previewImage == other.previewImage &&
+            title == other.title &&
+            listEquals(chosenData.toList(), other.chosenData.toList()) &&
+            price == other.price &&
+            listEquals(item.id, other.item.id);
   }
 
   @override
@@ -127,6 +128,8 @@ class CartItemModel {
 }
 
 class ItemModel {
+  final List<int> businessId;
+  final List<int> id;
   final String businessName;
   final double price;
   final List<String> images;
@@ -137,9 +140,10 @@ class ItemModel {
   final String category;
   final List<String> tags;
   final int stock;
-  final List<int> id;
 
   const ItemModel({
+    required this.id,
+    required this.businessId,
     required this.businessName,
     required this.price,
     required this.images,
@@ -150,7 +154,6 @@ class ItemModel {
     required this.category,
     required this.tags,
     required this.stock,
-    required this.id,
   });
 
   @override
@@ -159,6 +162,8 @@ class ItemModel {
   }
 
   ItemModel copyWith({
+    List<int>? id,
+    List<int>? businessId,
     String? businessName,
     double? price,
     List<String>? images,
@@ -169,20 +174,21 @@ class ItemModel {
     String? category,
     List<String>? tags,
     int? stock,
-    List<int>? id,
   }) {
     return ItemModel(
-        businessName: businessName ?? this.businessName,
-        price: price ?? this.price,
-        images: images ?? this.images,
-        previewImageIndex: previewImageIndex ?? this.previewImageIndex,
-        reviews: reviews ?? this.reviews,
-        itemStoreFormat: itemStoreFormat ?? this.itemStoreFormat.copyWith(),
-        brand: brand ?? this.brand,
-        category: category ?? this.category,
-        tags: tags ?? this.tags,
-        stock: stock ?? this.stock,
-        id: id ?? this.id);
+      businessId: businessId ?? this.businessId,
+      id: id ?? this.id,
+      businessName: businessName ?? this.businessName,
+      price: price ?? this.price,
+      images: images ?? this.images,
+      previewImageIndex: previewImageIndex ?? this.previewImageIndex,
+      reviews: reviews ?? this.reviews,
+      itemStoreFormat: itemStoreFormat ?? this.itemStoreFormat.copyWith(),
+      brand: brand ?? this.brand,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      stock: stock ?? this.stock,
+    );
   }
 }
 

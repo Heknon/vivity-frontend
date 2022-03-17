@@ -4,6 +4,8 @@ import 'package:vivity/features/item/models/item_model.dart';
 const String mapBoxToken = "pk.eyJ1IjoiaGVrbm9uIiwiYSI6ImNreHVmemwyeDFtYWIyc212cGx3bmJudHIifQ.wHNQF9MwcyfeR06Isivv3g";
 const String ipApiPath = 'http://ip-api.com/json';
 ItemModel itemModelDemo = ItemModel(
+  id: Uuid.parse(const Uuid().v4()),
+  businessId: Uuid.parse(const Uuid().v4()),
   businessName: "Vivity",
   price: 23.4,
   images: ["https://m.media-amazon.com/images/I/61n+vIfzOKL._AC_UX679_.jpg"],
@@ -48,10 +50,11 @@ ItemModel itemModelDemo = ItemModel(
   category: "Hoodies",
   tags: ["Cool", "New!", "Hoodie"],
   stock: 34,
-  id: Uuid.parse(const Uuid().v4()),
 );
 
 ItemModel itemModelDemo2 = ItemModel(
+  id: Uuid.parse(const Uuid().v4()),
+  businessId: Uuid.parse(const Uuid().v4()),
   businessName: "Vivity",
   price: 13.9,
   images: [
@@ -96,7 +99,6 @@ ItemModel itemModelDemo2 = ItemModel(
   category: "Hoodies",
   tags: ["Cool", "New!", "Hoodie"],
   stock: 34,
-  id: Uuid.parse(const Uuid().v4()),
 );
 
 CartItemModel cartItemModel = CartItemModel.fromItemModel(model: itemModelDemo, quantity: 2, dataChosen: {

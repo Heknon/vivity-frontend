@@ -16,6 +16,7 @@ class _LoginModuleState extends State<LoginModule> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool stayLoggedIn = false;
+  bool _passwordVisible = false;
   final GlobalKey<FormState> _formKey = GlobalKey();
 
   @override
@@ -51,11 +52,22 @@ class _LoginModuleState extends State<LoginModule> {
                     controller: passwordController,
                     validator: ValidationBuilder().minLength(8).maxLength(80).build(),
                     style: TextStyle(fontSize: 12.sp, color: Colors.black),
-                    obscureText: true,
+                    obscureText: !_passwordVisible,
                     obscuringCharacter: '*',
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                          color: fillerColor,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _passwordVisible = !_passwordVisible;
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -87,19 +99,12 @@ class _LoginModuleState extends State<LoginModule> {
               Center(
                 child: TextButton(
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Theme
-                          .of(context)
-                          .colorScheme
-                          .secondaryVariant),
+                      backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.secondaryVariant),
                       overlayColor: MaterialStateProperty.all(Colors.grey),
                       fixedSize: MaterialStateProperty.all(Size(85.w, 15.sp * 3))),
                   child: Text(
                     'Login',
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .headline4!
-                        .copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
+                    style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
                   ),
                   onPressed: () {
                     if (!(_formKey.currentState?.validate() ?? true)) {

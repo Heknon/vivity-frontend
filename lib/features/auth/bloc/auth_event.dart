@@ -46,9 +46,9 @@ class AuthRegisterEvent extends AuthEvent {
 }
 
 class AuthConfirmationEvent extends AuthEvent {
-  final bool silent;
+  final bool isSilentLogin;
 
-  AuthConfirmationEvent(this.silent);
+  AuthConfirmationEvent(this.isSilentLogin);
 }
 
 class AuthLogoutEvent extends AuthEvent {}

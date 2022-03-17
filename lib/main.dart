@@ -25,7 +25,10 @@ import 'package:http/http.dart' as http;
 class VivityOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    HttpClient client = super.createHttpClient(context);
+    client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    client.connectionTimeout = const Duration(seconds: 5);
+    return client;
   }
 }
 
@@ -89,7 +92,6 @@ class Vivity extends StatelessWidget {
                   Navigator.popUntil(ctx, (route) => route.isFirst);
                   Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => AuthPage()));
                 } else if (state is UserLoggedInState) {
-                  ctx.read<AuthBloc>().add(AuthLogoutEvent());
                   Navigator.popUntil(ctx, (route) => route.isFirst);
                   Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => HomePage()));
                 }

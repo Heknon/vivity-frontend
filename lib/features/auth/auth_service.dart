@@ -19,7 +19,7 @@ Future<String?> login(String email, String password) async {
     return null;
   }
 
-  return res.body;
+  return jsonDecode(res.body)['token'];
 }
 
 Future<RegisterResult> register(String email, String password, String name, String phone) async {
@@ -49,6 +49,11 @@ Future<bool> verifyToken(String token) async {
 void securelyStoreCredentials(String email, String password) {
   storage.write(key: "auth_email", value: email, iOptions: _getIOSOptions(), aOptions: _getAndroidOptions());
   storage.write(key: "auth_pw", value: password, iOptions: _getIOSOptions(), aOptions: _getAndroidOptions());
+}
+
+void eraseCredentialsFromStorage() {
+  storage.delete(key: "auth_email", iOptions: _getIOSOptions(), aOptions: _getAndroidOptions());
+  storage.delete(key: "auth_pw", iOptions: _getIOSOptions(), aOptions: _getAndroidOptions());
 }
 
 Future<String?> getStoredCredential(String key) async {

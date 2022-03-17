@@ -22,6 +22,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   late TabController _tabController;
 
   bool onLoginModule = false;
+  bool sentAuthRequest = false;
 
   @override
   void initState() {
@@ -33,6 +34,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    if (!sentAuthRequest) {
+      sendAuthenticationRequestEvent();
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xffdddddd),
       body: SafeArea(
@@ -77,7 +82,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         }
       },
       builder: (ctx, state) {
-        if (state is AuthLoadingState || state is AuthLoggedInState) {
+        if (state is AuthLoadingState || state is AuthLoggedInState || context.read<UserBloc>().state is UserLoadingState) {
           return const CircularProgressIndicator();
         }
 
@@ -137,6 +142,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   }
 
   void sendAuthenticationRequestEvent() async {
+    print("Sending auth request");
     context.read<AuthBloc>().add(AuthConfirmationEvent(false));
+    sentAuthRequest = true;
   }
 }

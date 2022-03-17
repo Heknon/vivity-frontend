@@ -13,6 +13,19 @@ abstract class AuthState {
 
     return shared.getBool("previouslyLoggedIn")!;
   }
+
+  /// Checks if current token is valid and returns it. if not valid generates a new one based on stored credentials or returns null.
+  Future<String?> verifyCredentials() async {
+    String? email = await getStoredEmail();
+    String? password = await getStoredPassword();
+
+    if (email != null && password != null) {
+      String? loginResult = await login(email, password);
+      return loginResult;
+    }
+
+    return null;
+  }
 }
 
 class AuthLoggedOutState extends AuthState {
@@ -32,22 +45,15 @@ class AuthLoggedInState extends AuthState {
 
   const AuthLoggedInState({required this.token});
 
-  /// Checks if current token is valid and returns it. if not valid generates a new one based on stored credentials or returns null.
+  @override
   Future<String?> verifyCredentials() async {
+    print("Verifying token $token");
     bool tokenIsGood = await verifyToken(token);
     if (tokenIsGood) {
       return token;
     }
 
-    String? email = await getStoredEmail();
-    String? password = await getStoredPassword();
-
-    if (email != null && password != null) {
-      String? loginResult = await login(email, password);
-      return loginResult;
-    }
-
-    return null;
+    return super.verifyCredentials();
   }
 
   @override

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/auth/auth_service.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 
@@ -17,6 +18,8 @@ class _RegisterModuleState extends State<RegisterModule> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
+
+  bool _passwordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +42,22 @@ class _RegisterModuleState extends State<RegisterModule> {
                     controller: passwordController,
                     validator: ValidationBuilder().minLength(8).maxLength(80).build(),
                     style: TextStyle(fontSize: 12.sp, color: Colors.black),
-                    obscureText: true,
+                    obscureText: !_passwordVisible,
                     obscuringCharacter: '*',
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                          color: fillerColor,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _passwordVisible = !_passwordVisible;
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ),

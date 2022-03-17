@@ -17,7 +17,13 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     on<AuthLoginEvent>((event, emit) async {
       emit(AuthLoadingState());
 
-      String? token = await login(event.email, event.password);
+      String? token;
+      try {
+        token = await login(event.email, event.password);
+      } catch (e) {
+        emit(const AuthLoggedOutState());
+        rethrow;
+      }
       print(token);
       if (token == null) {
         emit(const AuthLoggedOutState());
@@ -31,11 +37,18 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
 
     on<AuthRegisterEvent>((event, emit) async {
       emit(AuthLoadingState());
-      RegisterResult res = await register(event.email, event.password, event.name, event.phone);
 
-      if (res.token == null) {
-        emit(AuthRegisterFailedState(res.authResult!));
-        return;
+      RegisterResult res;
+      try {
+        res = await register(event.email, event.password, event.name, event.phone);
+
+        if (res.token == null) {
+          emit(AuthRegisterFailedState(res.authResult!));
+          return;
+        }
+      } catch (e) {
+        emit(const AuthRegisterFailedState(AuthenticationResult.tokenInvalid));
+        rethrow;
       }
 
       securelyStoreCredentials(event.email, event.password);
@@ -44,16 +57,20 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
     });
 
     on<AuthConfirmationEvent>((event, emit) async {
-      if (!event.silent) {
+      if (!event.isSilentLogin) {
         emit(AuthLoadingState());
       }
 
-      if (state is! AuthLoggedInState) {
+      print("sending request");
+      String? loginResult;
+      try {
+        loginResult = await state.verifyCredentials();
+      } catch (e) {
         emit(const AuthLoggedOutState());
-        return;
+        rethrow;
       }
 
-      String? loginResult = await (state as AuthLoggedInState).verifyCredentials();
+      print("Confirmation result: $loginResult");
       if (loginResult == null) {
         emit(const AuthLoggedOutState());
         return;
@@ -64,6 +81,7 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
 
     on<AuthLogoutEvent>((event, emit) async {
       if (state is! AuthLoggedOutState) {
+        eraseCredentialsFromStorage();
         emit(const AuthLoggedOutState());
       }
     });
