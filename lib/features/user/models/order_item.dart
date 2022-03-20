@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/order.dart';
 
 class OrderItem {
-  final List<int> businessId;
-  final List<int> itemId;
+  final ObjectId businessId;
+  final ObjectId itemId;
   final String previewImage;
   final String title;
   final String? subtitle;
@@ -22,8 +23,8 @@ class OrderItem {
   });
 
   factory OrderItem.fromModifiers(
-      {required List<int> businessId,
-      required List<int> itemId,
+      {required ObjectId businessId,
+      required ObjectId itemId,
       required String previewImage,
       required String title,
       String? subtitle,
@@ -52,14 +53,14 @@ class OrderItem {
       itemId: cartItem.item.id,
       previewImage: cartItem.previewImage,
       title: cartItem.title,
-      selectedModifiers: cartItem.chosenData.toList(),
+      selectedModifiers: cartItem.modifiersChosen.toList(),
     );
   }
 
   factory OrderItem.fromMap(Map<String, dynamic> map) {
     return OrderItem(
-      businessId: map['businessId'] as List<int>,
-      itemId: map['itemId'] as List<int>,
+      businessId: ObjectId.fromHexString(map['businessId']),
+      itemId: ObjectId.fromHexString(map['itemId']),
       previewImage: map['previewImage'] as String,
       title: map['title'] as String,
       subtitle: map['subtitle'] as String?,
@@ -87,7 +88,7 @@ class OrderItem {
       other is OrderItem &&
           runtimeType == other.runtimeType &&
           businessId == other.businessId &&
-          listEquals(itemId, other.itemId) &&
+          itemId == other.itemId &&
           previewImage == other.previewImage &&
           title == other.title &&
           subtitle == other.subtitle &&

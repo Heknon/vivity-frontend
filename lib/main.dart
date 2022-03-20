@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/app_system_manager.dart';
 import 'package:vivity/config/themes/light_theme.dart';
 import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/constants/app_constants.dart';
@@ -41,6 +42,10 @@ IMPLEMENT SERVICES fdshfiusdhgisosde
 
 Create explore state
 Create Feed state
+
+Create connection between database and cart
+
+Add hamburger menu for logout
  */
 
 void main() async {
@@ -80,25 +85,27 @@ class Vivity extends StatelessWidget {
         ),
       ],
       child: Sizer(
-        builder: (ctx, orientation, type) => MaterialApp(
-          title: 'Vivity',
-          theme: lightTheme,
-          home: Builder(builder: (context1) {
-            return BlocListener<UserBloc, UserState>(
-              listener: (ctx, state) {
-                print(state);
-                if (state is UserLoggedOutState) {
-                  context1.read<AuthBloc>().add(AuthLogoutEvent());
-                  Navigator.popUntil(ctx, (route) => route.isFirst);
-                  Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => AuthPage()));
-                } else if (state is UserLoggedInState) {
-                  Navigator.popUntil(ctx, (route) => route.isFirst);
-                  Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => HomePage()));
-                }
-              },
-              child: AuthPage(),
-            );
-          }),
+        builder: (ctx, orientation, type) => AppSystemManager(
+          child: MaterialApp(
+            title: 'Vivity',
+            theme: lightTheme,
+            home: Builder(builder: (ctxWithBloc) {
+              return BlocListener<UserBloc, UserState>(
+                listener: (ctx, userState) {
+                  if (userState is UserLoggedOutState) {
+                    ctxWithBloc.read<AuthBloc>().add(AuthLogoutEvent());
+                    Navigator.popUntil(ctx, (route) => route.isFirst);
+                    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => AuthPage()));
+                  } else if (userState is UserLoggedInState) {
+                    Navigator.popUntil(ctx, (route) => route.isFirst);
+                    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => HomePage()));
+                    ctxWithBloc.read<CartBloc>().add(CartSyncToUserStateEvent(userState));
+                  }
+                },
+                child: AuthPage(),
+              );
+            }),
+          ),
         ),
       ),
     );

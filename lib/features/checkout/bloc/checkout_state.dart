@@ -23,7 +23,7 @@ class CheckoutStateConfirmationStage extends CheckoutState {
 
   // final PaymentMethod? paymentMethod;
 
-  // late Address? shippingAddress;
+  late Address? shippingAddress;
 
   late double subtotal;
   late double shippingCost;

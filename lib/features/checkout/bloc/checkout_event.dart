@@ -18,10 +18,16 @@ class CheckoutApplyShippingEvent extends CheckoutEvent {
   CheckoutApplyShippingEvent({required this.address});
 }
 
-class CheckoutApplyCupon extends CheckoutEvent {
+class CheckoutApplyCuponEvent extends CheckoutEvent {
   final String cuponCode;
 
-  CheckoutApplyCupon({required this.cuponCode});
+  CheckoutApplyCuponEvent({required this.cuponCode});
+}
+
+class CheckoutApplyShippingMethodEvent extends CheckoutEvent {
+  final ShippingMethod shippingMethod;
+
+  CheckoutApplyShippingMethodEvent({required this.shippingMethod});
 }
 
 class CheckoutSelectPaymentEvent extends CheckoutEvent {

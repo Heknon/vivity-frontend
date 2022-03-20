@@ -72,6 +72,9 @@ dependencies:
   radio_button_list:
     path: ./packages/radio_button_list
 
+  objectid:
+    path: ./packages/object_id
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

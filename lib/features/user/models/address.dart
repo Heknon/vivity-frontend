@@ -3,7 +3,8 @@ class Address {
   final String country;
   final String city;
   final String street;
-  final String houseNumber;
+  final String extraInfo;
+  final String province;
   final String zipCode;
   final String phone;
 
@@ -12,7 +13,8 @@ class Address {
     required this.country,
     required this.city,
     required this.street,
-    required this.houseNumber,
+    required this.extraInfo,
+    required this.province,
     required this.zipCode,
     required this.phone,
   });
@@ -23,8 +25,9 @@ class Address {
       country: map['country'] as String,
       city: map['city'] as String,
       street: map['street'] as String,
-      houseNumber: map['houseNumber'] as String,
-      zipCode: map['zipCode'] as String,
+      extraInfo: map['extra_info'] as String,
+      province: map['province'] as String,
+      zipCode: map['zip_code'] as String,
       phone: map['phone'] as String,
     );
   }
@@ -36,8 +39,9 @@ class Address {
       'country': country,
       'city': city,
       'street': street,
-      'houseNumber': houseNumber,
-      'zipCode': zipCode,
+      'extra_info': extraInfo,
+      'province': province,
+      'zip_code': zipCode,
       'phone': phone,
     } as Map<String, dynamic>;
   }
@@ -51,15 +55,17 @@ class Address {
           country == other.country &&
           city == other.city &&
           street == other.street &&
-          houseNumber == other.houseNumber &&
+          province == other.province &&
+          extraInfo == other.extraInfo &&
           zipCode == other.zipCode &&
           phone == other.phone;
 
   @override
-  int get hashCode => name.hashCode ^ country.hashCode ^ city.hashCode ^ street.hashCode ^ houseNumber.hashCode ^ zipCode.hashCode ^ phone.hashCode;
+  int get hashCode =>
+      name.hashCode ^ country.hashCode ^ city.hashCode ^ street.hashCode ^ extraInfo.hashCode ^ zipCode.hashCode ^ phone.hashCode ^ province.hashCode;
 
   @override
   String toString() {
-    return 'Address{name: $name, country: $country, city: $city, street: $street, houseNumber: $houseNumber, zipCode: $zipCode, phone: $phone}';
+    return 'Address{name: $name, country: $country, city: $city, street: $street, extraInfo: $extraInfo, zipCode: $zipCode, phone: $phone, province: $province}';
   }
 }

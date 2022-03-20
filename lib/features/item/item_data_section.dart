@@ -51,11 +51,11 @@ class ItemDataSection extends StatelessWidget {
   }
 
   Iterable<Widget> buildItemDataTexts(BuildContext ctx, double usedWidth) {
-    return itemModel.chosenData.map(
+    return itemModel.modifiersChosen.map(
       (e) {
         if (e.dataType == ModificationButtonDataType.text) {
           return Text(
-            "${e.name}: ${e.dataChosen.join(", ")}",
+            "${e.name}: ${e.selectedData.join(", ")}",
             style: Theme.of(ctx).textTheme.subtitle2!.copyWith(fontSize: 10.sp),
           );
         }

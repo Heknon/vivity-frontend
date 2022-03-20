@@ -1,9 +1,14 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/shipping/address_service.dart';
+import 'package:vivity/features/user/models/address.dart';
+
+import '../user/bloc/user_bloc.dart';
 
 class AddAddress extends StatefulWidget {
   const AddAddress({Key? key}) : super(key: key);
@@ -246,10 +251,8 @@ class _AddAddressState extends State<AddAddress> {
                   provinceController.value.text,
                   cityController.value.text,
                   zipCodeController.value.text,
+                  (context.read<UserBloc>().state as UserLoggedInState).token,
                 );
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address added!')));
               },
             ),
           ],
@@ -267,9 +270,28 @@ class _AddAddressState extends State<AddAddress> {
     String province,
     String city,
     String zipCode,
-  ) {
+    String token,
+  ) async {
     // TODO: Actually handle... To handle need User BLOC with bloc database connection
     print(
         "Handling: (country: $country, name: $fullName, phone: $phoneNumber, street: $street, streetExtra: $extraAddressInfo, province: $province, city: $city, zipCode: $zipCode)");
+
+    List<Address> addresses = await addAddress(
+        token,
+        Address(
+          name: fullName,
+          country: selectedCountryCode!.code!,
+          city: city,
+          street: street,
+          extraInfo: extraAddressInfo,
+          province: province,
+          zipCode: zipCode,
+          phone: phoneNumber,
+        ));
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address added!')));
+
+    context.read<UserBloc>().add(UserUpdateAddressesEvent(addresses));
   }
 }

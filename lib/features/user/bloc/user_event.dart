@@ -12,3 +12,9 @@ class UserLoginEvent extends UserEvent {
 class UserLogoutEvent extends UserEvent {}
 
 class UserUpdateEvent extends UserEvent {}
+
+class UserUpdateAddressesEvent extends UserEvent {
+  final List<Address> addresses;
+
+  UserUpdateAddressesEvent(this.addresses);
+}

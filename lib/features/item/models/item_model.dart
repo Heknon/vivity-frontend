@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:objectid/objectid/objectid.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/services/item_service.dart';
@@ -8,7 +9,7 @@ import 'package:vivity/services/storage_service.dart';
 class CartItemModel {
   final String previewImage;
   final String title;
-  final Iterable<ModificationButtonDataHost> chosenData;
+  final Iterable<ModificationButtonDataHost> modifiersChosen;
   final double price;
   int insertionId;
   ItemModel item;
@@ -17,7 +18,7 @@ class CartItemModel {
   CartItemModel({
     required this.previewImage,
     required this.title,
-    required this.chosenData,
+    required this.modifiersChosen,
     required this.quantity,
     required this.price,
     required this.item,
@@ -35,7 +36,7 @@ class CartItemModel {
     return CartItemModel(
       previewImage: model.images[model.previewImageIndex],
       title: model.itemStoreFormat.title,
-      chosenData: chosenData,
+      modifiersChosen: chosenData,
       quantity: quantity,
       price: model.price,
       item: model,
@@ -45,17 +46,17 @@ class CartItemModel {
   CartItemModel copyWith({
     String? previewImage,
     String? title,
-    Iterable<ModificationButtonDataHost>? chosenData,
+    Iterable<ModificationButtonDataHost>? modifiersChosen,
     double? price,
     int? quantity,
-    List<int>? id,
+    ObjectId? id,
     ItemModel? model,
     int? insertionId,
   }) {
     return CartItemModel(
       previewImage: previewImage ?? this.previewImage,
       title: title ?? this.title,
-      chosenData: chosenData ?? this.chosenData.map((e) => e.copyWith()).toList(growable: false),
+      modifiersChosen: modifiersChosen ?? this.modifiersChosen.map((e) => e.copyWith()).toList(growable: false),
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
       item: model ?? item,
@@ -75,7 +76,7 @@ class CartItemModel {
     return CartItemModel(
       previewImage: map['previewImage'] as String,
       title: map['title'] as String,
-      chosenData: (map['chosenData'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
+      modifiersChosen: (map['modifiersChosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
       price: map['price'] as double,
       quantity: map['quantity'] as int,
       item: item,
@@ -87,7 +88,7 @@ class CartItemModel {
     return {
       'previewImage': previewImage,
       'title': title,
-      'chosenData': chosenData.map((e) => e.toMap()).toList(),
+      'modifiersChosen': modifiersChosen.map((e) => e.toMap()).toList(),
       'price': price,
       'quantity': quantity,
       'id': item.id,
@@ -97,7 +98,7 @@ class CartItemModel {
 
   @override
   String toString() {
-    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $chosenData, price: $price, quantity: $quantity, insertionId: $insertionId}';
+    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $modifiersChosen, price: $price, quantity: $quantity, insertionId: $insertionId, id: ${item.id}';
   }
 
   @override
@@ -107,9 +108,9 @@ class CartItemModel {
           runtimeType == other.runtimeType &&
           previewImage == other.previewImage &&
           title == other.title &&
-          listEquals(chosenData.toList(), other.chosenData.toList()) &&
+          listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()) &&
           price == other.price &&
-          listEquals(item.id, other.item.id) &&
+          item.id == other.item.id &&
           quantity == other.quantity;
 
   bool looseEquals(Object other) {
@@ -118,18 +119,18 @@ class CartItemModel {
             runtimeType == other.runtimeType &&
             previewImage == other.previewImage &&
             title == other.title &&
-            listEquals(chosenData.toList(), other.chosenData.toList()) &&
+            listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()) &&
             price == other.price &&
-            listEquals(item.id, other.item.id);
+            item.id == other.item.id;
   }
 
   @override
-  int get hashCode => previewImage.hashCode ^ title.hashCode ^ chosenData.hashCode ^ price.hashCode ^ item.id.hashCode ^ quantity.hashCode;
+  int get hashCode => previewImage.hashCode ^ title.hashCode ^ modifiersChosen.hashCode ^ price.hashCode ^ item.id.hashCode ^ quantity.hashCode;
 }
 
 class ItemModel {
-  final List<int> businessId;
-  final List<int> id;
+  final ObjectId businessId;
+  final ObjectId id;
   final String businessName;
   final double price;
   final List<String> images;
@@ -162,8 +163,8 @@ class ItemModel {
   }
 
   ItemModel copyWith({
-    List<int>? id,
-    List<int>? businessId,
+    ObjectId? id,
+    ObjectId? businessId,
     String? businessName,
     double? price,
     List<String>? images,
@@ -190,36 +191,102 @@ class ItemModel {
       stock: stock ?? this.stock,
     );
   }
+
+  factory ItemModel.fromDBMap(Map<String, dynamic> map) {
+    return ItemModel(
+      businessId: ObjectId.fromHexString(map['business_id']),
+      id: ObjectId.fromHexString(map['_id']),
+      businessName: map['business_name'] as String,
+      price: map['price'] as double,
+      images: (map['images'] as List<dynamic>).map((e) => e as String).toList(),
+      previewImageIndex: map['preview_image'] as int,
+      reviews: (map['reviews'] as List<dynamic>).map((e) => Review.fromDBMap(e)).toList(),
+      itemStoreFormat: ItemStoreFormat.fromDBMap(map['item_store_format']),
+      brand: map['brand'] as String,
+      category: map['category'] as String,
+      tags: (map['tags'] as List<dynamic>).map((e) => e as String).toList(),
+      stock: map['stock'] as int,
+    );
+  }
+
+  Map<String, dynamic> toDBMap() {
+    return {
+      'business_id': businessId.bytes,
+      '_id': id.bytes,
+      'business_name': businessName,
+      'price': price,
+      'images': images,
+      'preview_image': previewImageIndex,
+      'reviews': reviews.map((e) => e.toDBMap()).toList(),
+      'item_store_format': itemStoreFormat.toDBMap(),
+      'brand': brand,
+      'category': category,
+      'tags': tags,
+      'stock': stock,
+    };
+  }
 }
 
 class Review {
+  final ObjectId posterId;
   final String posterName;
   final String pfpImage;
   final double rating;
   final String textContent;
-  final List<String> imageUrls;
+  final List<String> images;
 
-  const Review({required this.posterName, required this.pfpImage, required this.rating, required this.textContent, required this.imageUrls});
+  const Review({
+    required this.posterId,
+    required this.posterName,
+    required this.pfpImage,
+    required this.rating,
+    required this.textContent,
+    required this.images,
+  });
 
   @override
   String toString() {
-    return 'Review{posterName: $posterName, pfpImage: $pfpImage, rating: $rating, textContent: $textContent, imageUrls: $imageUrls}';
+    return 'Review{posterName: $posterName, pfpImage: $pfpImage, rating: $rating, textContent: $textContent, imageUrls: $images}';
   }
 
   Review copyWith({
+    ObjectId? posterId,
     String? posterName,
     String? pfpImage,
     double? rating,
     String? textContent,
-    List<String>? imageUrls,
+    List<String>? images,
   }) {
     return Review(
+      posterId: posterId ?? this.posterId,
       posterName: posterName ?? this.posterName,
       pfpImage: pfpImage ?? this.pfpImage,
       rating: rating ?? this.rating,
       textContent: textContent ?? this.textContent,
-      imageUrls: imageUrls ?? this.imageUrls,
+      images: images ?? this.images,
     );
+  }
+
+  factory Review.fromDBMap(Map<String, dynamic> map) {
+    return Review(
+      posterId: ObjectId.fromHexString(map["poster_id"]),
+      posterName: map['poster_name'] as String,
+      pfpImage: map['pfp_image'] as String,
+      rating: (map['rating'] as num).toDouble(),
+      textContent: map['text_content'] as String,
+      images: (map['images'] as List<dynamic>).map((e) => e as String).toList(),
+    );
+  }
+
+  Map<String, dynamic> toDBMap() {
+    return {
+      'poster_id': posterId,
+      'poster_name': posterName,
+      'pfp_image': pfpImage,
+      'rating': rating,
+      'text_content': textContent,
+      'images': images,
+    };
   }
 }
 
@@ -249,6 +316,24 @@ class ItemStoreFormat {
       modificationButtons: modificationButtons ?? this.modificationButtons.map((e) => e.copyWith()).toList(),
     );
   }
+
+  factory ItemStoreFormat.fromDBMap(Map<String, dynamic> map) {
+    return ItemStoreFormat(
+      title: map['title'] as String,
+      subtitle: map['subtitle'] as String?,
+      description: map['description'] as String?,
+      modificationButtons: (map['modification_buttons'] as List<dynamic>).map((e) => ModificationButton.fromDBMap(e)).toList(),
+    );
+  }
+
+  Map<String, dynamic> toDBMap() {
+    return {
+      'title': title,
+      'subtitle': subtitle,
+      'description': description,
+      'modification_buttons': modificationButtons.map((e) => e.toDBMap()).toList(),
+    };
+  }
 }
 
 enum ModificationButtonSide {
@@ -266,9 +351,9 @@ enum ModificationButtonDataType {
 class ModificationButtonDataHost {
   final String name;
   final ModificationButtonDataType dataType;
-  final List<dynamic> dataChosen;
+  final List<dynamic> selectedData;
 
-  ModificationButtonDataHost({required this.name, required this.dataType, required this.dataChosen});
+  ModificationButtonDataHost({required this.name, required this.dataType, required this.selectedData});
 
   factory ModificationButtonDataHost.fromModificationButton(ModificationButton button, Iterable<int> chosenIndices) {
     int dataLength = button.data.length;
@@ -280,41 +365,40 @@ class ModificationButtonDataHost {
       chosenData.add(button.data[index]);
     }
 
-    return ModificationButtonDataHost(name: button.name, dataType: button.dataType, dataChosen: chosenData);
+    return ModificationButtonDataHost(name: button.name, dataType: button.dataType, selectedData: chosenData);
   }
 
   @override
   String toString() {
-    return 'ModificationButtonDataHost{name: $name, dataType: $dataType, dataChosen: $dataChosen}';
+    return 'ModificationButtonDataHost{name: $name, dataType: $dataType, selectedData: $selectedData}';
   }
 
   ModificationButtonDataHost copyWith({
     String? name,
     ModificationButtonDataType? dataType,
-    List<Object>? dataChosen,
+    List<Object>? selectedData,
   }) {
     return ModificationButtonDataHost(
       name: name ?? this.name,
       dataType: dataType ?? this.dataType,
-      dataChosen: dataChosen ?? this.dataChosen,
+      selectedData: selectedData ?? this.selectedData,
     );
   }
 
   factory ModificationButtonDataHost.fromMap(Map<String, dynamic> map) {
     return ModificationButtonDataHost(
       name: map['name'] as String,
-      dataType: ModificationButtonDataType.values[map['dataType']],
-      dataChosen: map['dataChosen'] as List<dynamic>,
+      dataType: ModificationButtonDataType.values[map['data_type']],
+      selectedData: map['selected_data'] as List<dynamic>,
     );
   }
 
   Map<String, dynamic> toMap() {
-    // ignore: unnecessary_cast
     return {
       'name': name,
-      'dataType': dataType.index,
-      'dataChosen': dataChosen,
-    } as Map<String, dynamic>;
+      'data_type': dataType.index,
+      'selected_data': selectedData,
+    };
   }
 
   @override
@@ -324,15 +408,15 @@ class ModificationButtonDataHost {
           runtimeType == other.runtimeType &&
           name == other.name &&
           dataType == other.dataType &&
-          listEquals(dataChosen, other.dataChosen);
+          listEquals(selectedData, other.selectedData);
 
   @override
-  int get hashCode => name.hashCode ^ dataType.hashCode ^ dataChosen.hashCode;
+  int get hashCode => name.hashCode ^ dataType.hashCode ^ selectedData.hashCode;
 }
 
 class ModificationButton {
   final String name;
-  final ModificationButtonSide modificationButtonSide;
+  final ModificationButtonSide side;
   final List<Object> data;
   final ModificationButtonDataType dataType;
   final bool multiSelect;
@@ -342,12 +426,12 @@ class ModificationButton {
     required this.data,
     required this.dataType,
     this.multiSelect = false,
-    required this.modificationButtonSide,
+    required this.side,
   });
 
   @override
   String toString() {
-    return 'ModificationButton{name: $name, modificationButtonSide: $modificationButtonSide, data: $data, dataType: $dataType, multiSelect: $multiSelect}';
+    return 'ModificationButton{name: $name, side: $side, data: $data, dataType: $dataType, multiSelect: $multiSelect}';
   }
 
   ModificationButton copyWith({
@@ -359,11 +443,31 @@ class ModificationButton {
   }) {
     return ModificationButton(
       name: name ?? this.name,
-      modificationButtonSide: modificationButtonSide ?? this.modificationButtonSide,
+      side: modificationButtonSide ?? this.side,
       data: data ?? this.data,
       dataType: dataType ?? this.dataType,
       multiSelect: multiSelect ?? this.multiSelect,
     );
+  }
+
+  factory ModificationButton.fromDBMap(Map<String, dynamic> map) {
+    return ModificationButton(
+      name: map['name'] as String,
+      side: ModificationButtonSide.values[map['side']],
+      data: (map['data'] as List<dynamic>).map((e) => e as Object).toList(),
+      dataType: ModificationButtonDataType.values[map['data_type']],
+      multiSelect: map['multi_select'] as bool,
+    );
+  }
+
+  Map<String, dynamic> toDBMap() {
+    return {
+      'name': name,
+      'side': side.index,
+      'data': data,
+      'data_type': dataType.index,
+      'multi_select': multiSelect,
+    };
   }
 
   @override
@@ -372,11 +476,11 @@ class ModificationButton {
       other is ModificationButton &&
           runtimeType == other.runtimeType &&
           name == other.name &&
-          modificationButtonSide == other.modificationButtonSide &&
+          side == other.side &&
           listEquals(data, other.data) &&
           dataType == other.dataType &&
           multiSelect == other.multiSelect;
 
   @override
-  int get hashCode => name.hashCode ^ modificationButtonSide.hashCode ^ data.hashCode ^ dataType.hashCode ^ multiSelect.hashCode;
+  int get hashCode => name.hashCode ^ side.hashCode ^ data.hashCode ^ dataType.hashCode ^ multiSelect.hashCode;
 }

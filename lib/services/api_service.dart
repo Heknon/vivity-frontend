@@ -11,9 +11,9 @@ Future<http.Response> sendGetRequest({required String subRoute, String? token}) 
   );
 }
 
-Future<http.Response> sendPostRequest({required String subRoute, String? token, Map<dynamic, dynamic>? data}) async {
+Future<http.Response> sendPostRequest({required String subRoute, String? token, dynamic data}) async {
   Map<String, String> headers = {
-    HttpHeaders.acceptHeader: 'application/json',
+    HttpHeaders.acceptHeader: '*',
     HttpHeaders.contentTypeHeader: 'application/json',
   };
 
@@ -24,7 +24,7 @@ Future<http.Response> sendPostRequest({required String subRoute, String? token, 
   String body = json.encode(data);
   return http.post(
     Uri.parse(host + subRoute),
-    headers: {"Content-Type": "application/json"},
+    headers: headers,
     body: body,
   );
 }
@@ -36,7 +36,7 @@ Future<http.Response> sendDeleteRequest({required String subRoute, String? token
   );
 }
 
-Future<http.Response> sendPatchRequest({required String subRoute, String? token, Map<dynamic, dynamic>? data}) {
+Future<http.Response> sendPatchRequest({required String subRoute, String? token, dynamic data}) {
   return http.patch(
     Uri.parse(host + subRoute),
     headers: token != null ? {"Authorization": "Bearer: $token", "Content-Type": "application/json"} : {"Content-Type": "application/json"},

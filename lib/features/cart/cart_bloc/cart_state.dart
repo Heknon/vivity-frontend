@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:http/src/response.dart';
+import 'package:vivity/features/cart/cart_service.dart';
 import 'package:vivity/models/shipping_method.dart';
 import 'package:vivity/widgets/quantity.dart';
 
 import '../../item/models/item_model.dart';
+import '../../user/bloc/user_bloc.dart';
 
 class CartState {
   final List<CartItemModel> _items;
@@ -26,6 +29,10 @@ class CartState {
       }
       priceTotal += item.price * item.quantity;
     }
+  }
+
+  factory CartState.fromState(UserLoggedInState state) {
+    return CartState(state.cart, ShippingMethod.delivery);
   }
 
   CartState addItem(CartItemModel item) {
@@ -113,6 +120,10 @@ class CartState {
     }
 
     return -1;
+  }
+
+  Future<Response> saveToDatabase(String token) async {
+    return await replaceDBCart(token, _items);
   }
 
   @override

@@ -7,12 +7,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vivity/constants/app_constants.dart';
+import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
 import 'package:vivity/features/checkout/confirm_page.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/widgets/quantity.dart';
 import '../item/cart_item.dart';
 import 'cart_bloc/cart_bloc.dart';
 import 'cart_bloc/cart_state.dart';
+import 'cart_service.dart';
 
 class CartView extends StatefulWidget {
   final ScrollController? scrollController;
@@ -54,7 +56,7 @@ class _CartViewState extends State<CartView> {
           clipBehavior: Clip.antiAlias,
           child: BlocConsumer<CartBloc, CartState>(listener: (ctx, CartState state) {
             if (price != state.priceTotal) {
-                updateCost(state.priceTotal);
+              updateCost(state.priceTotal);
             }
             price = state.priceTotal;
           }, builder: (context, CartState state) {
@@ -165,6 +167,14 @@ class _CartViewState extends State<CartView> {
           splashFactory: InkSplash.splashFactory,
         ),
         onPressed: () {
+          saveCart(context);
+          context.read<CheckoutBloc>().add(
+                CheckoutInitializeEvent(
+                  items: context.read<CartBloc>().state.items,
+                  shippingMethod: context.read<CartBloc>().state.shippingMethod,
+                  cuponCode: "",
+                ),
+              );
           Navigator.push(context, MaterialPageRoute(builder: (ctx) => ConfirmPage()));
         },
         child: Text(

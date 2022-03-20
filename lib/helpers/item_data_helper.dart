@@ -5,7 +5,7 @@ import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/widgets/preview_dialog.dart';
 
 Iterable<Widget> buildImageDataType(ModificationButtonDataHost e, {double radius = 5.25}) {
-  return e.dataChosen.map(
+  return e.selectedData.map(
     (d) => Padding(
       padding: const EdgeInsets.only(left: 3.0),
       child: buildImageCircle(e.name, d as String),
@@ -14,11 +14,13 @@ Iterable<Widget> buildImageDataType(ModificationButtonDataHost e, {double radius
 }
 
 Iterable<Widget> buildColoredDataType(BuildContext context, ModificationButtonDataHost e) {
-  return e.dataChosen.map(
-    (d) => Padding(
-      padding: const EdgeInsets.only(left: 3.0),
-      child: buildColoredCircle(context, e.name, Color(d as int)),
-    ),
+  return e.selectedData.map(
+    (d) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 3.0),
+        child: buildColoredCircle(context, e.name, Color(d as int)),
+      );
+    },
   );
 }
 

@@ -47,7 +47,7 @@ class CartItemList extends StatelessWidget {
       );
       return SizedBox(
         width: listSize.width,
-        height: state.items.length < 3 ? listSize.height / 3 : listSize.height,
+        height: state.items.length < 2 ? listSize.height / 3 : state.items.length < 3 ? listSize.height / 1.5 : listSize.height,
         child: state.items.isNotEmpty
             ? ListView.separated(
                 padding: itemPadding.add(EdgeInsets.only(bottom: 6)),

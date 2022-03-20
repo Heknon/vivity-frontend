@@ -4,8 +4,9 @@ import 'package:sizer/sizer.dart';
 
 class Cupon extends StatelessWidget {
   final TextEditingController? cuponTextController;
+  final VoidCallback? onApplyClicked;
 
-  const Cupon({Key? key, this.cuponTextController}) : super(key: key);
+  const Cupon({Key? key, this.cuponTextController, this.onApplyClicked}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,7 @@ class Cupon extends StatelessWidget {
                     overlayColor: MaterialStateProperty.all(Colors.grey),
                   ),
                   onPressed: () {
+                    if (onApplyClicked != null) onApplyClicked!();
                   },
                   child: Padding(
                     padding: EdgeInsets.only(left: 5),
@@ -67,4 +69,3 @@ class Cupon extends StatelessWidget {
     });
   }
 }
-

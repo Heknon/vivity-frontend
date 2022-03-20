@@ -436,6 +436,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  objectid:
+    dependency: "direct main"
+    description:
+      path: "packages/object_id"
+      relative: true
+    source: path
+    version: "1.0.0+1"
   octo_image:
     dependency: transitive
     description:

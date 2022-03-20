@@ -7,11 +7,12 @@ import 'package:meta/meta.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
 import '../../../models/shipping_method.dart';
+import '../../user/bloc/user_bloc.dart';
 import 'cart_state.dart';
 
 part 'cart_event.dart';
 
-class CartBloc extends HydratedBloc<CartEvent, CartState> {
+class CartBloc extends Bloc<CartEvent, CartState> {
   CartBloc() : super(CartState(List.empty(growable: true), ShippingMethod.delivery)) {
     on<CartAddItemEvent>((event, emit) {
       emit(state.copyWith().addItem(event.item).copyWith());
@@ -31,6 +32,10 @@ class CartBloc extends HydratedBloc<CartEvent, CartState> {
 
     on<CartShipmentMethodUpdateEvent>((event, emit) {
       emit(state.copyWith().updateShipmentMethod(event.shippingMethod).copyWith());
+    });
+
+    on<CartSyncToUserStateEvent>((event, emit) {
+      emit(CartState.fromState(event.state));
     });
   }
 

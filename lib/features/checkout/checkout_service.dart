@@ -17,7 +17,7 @@ Future<double> getShippingCost(List<CartItemModel> items, Address address) async
 }
 
 double getCuponDiscount(String? cuponCode, List<CartItemModel> items) {
-  if (cuponCode == null) return 0;
+  if (cuponCode == null || cuponCode.isEmpty) return 0;
 
   double p = 0;
 

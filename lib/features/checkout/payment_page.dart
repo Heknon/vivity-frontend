@@ -124,182 +124,13 @@ class _PaymentPageState extends State<PaymentPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 10),
-                    Text(
-                      'Card number',
-                      style: Theme.of(context).textTheme.headline4!.copyWith(
-                            fontSize: 13.sp,
-                            color: fillerColor,
-                            fontWeight: FontWeight.normal,
-                          ),
-                    ),
-                    SizedBox(height: 5),
-                    TextFormField(
-                      controller: cardNumberController,
-                      validator: ValidationBuilder()
-                          .minLength(16)
-                          .maxLength(16)
-                          .add((String? value) => value == null
-                              ? "Must be a number"
-                              : double.tryParse(value) != null
-                                  ? null
-                                  : "Must be a number")
-                          .build(),
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: fillerColor,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      obscureText: true,
-                      obscuringCharacter: '*',
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.all(10),
-                        border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
-                        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Expiry date',
-                                style: Theme.of(context).textTheme.headline4!.copyWith(
-                                      fontSize: 13.sp,
-                                      color: fillerColor,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                              ),
-                              SizedBox(height: 5),
-                              RawKeyboardListener(
-                                onKey: (event) {
-                                  deletePressed = event.logicalKey == LogicalKeyboardKey.backspace;
-                                },
-                                focusNode: FocusNode(),
-                                child: TextFormField(
-                                  controller: dateController,
-                                  validator: ValidationBuilder().add((value) {
-                                    if (value == null || value.length != 5) return 'Follow format: MM/YY';
-                                    List<String> dates = value.split('/');
-                                    if (double.tryParse(dates[0]) == null || double.tryParse(dates[1]) == null) {
-                                      return 'Follow format: MM/YY';
-                                    }
-
-                                    return null;
-                                  }).build(),
-                                  onChanged: (_) => handleDateInput(),
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color: fillerColor,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                  keyboardType: TextInputType.datetime,
-                                  decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.all(10),
-                                    hintText: "MM/YY",
-                                    hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                                    border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
-                                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 5),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'CVV',
-                                style: Theme.of(context).textTheme.headline4!.copyWith(
-                                      fontSize: 13.sp,
-                                      color: fillerColor,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                              ),
-                              SizedBox(height: 5),
-                              TextFormField(
-                                controller: cvvController,
-                                validator: ValidationBuilder()
-                                    .minLength(3)
-                                    .maxLength(3)
-                                    .add((String? value) => value == null
-                                        ? "Must be a number"
-                                        : double.tryParse(value) != null
-                                            ? null
-                                            : "Must be a number")
-                                    .build(),
-                                style: TextStyle(fontSize: 12.sp, color: Colors.black),
-                                obscureText: true,
-                                obscuringCharacter: '*',
-                                onChanged: (String? value) {
-                                  if (value == null) return;
-                                  if (value.length > 3) dateController.text = dateController.text.substring(0, dateController.text.length - 1);
-                                },
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.all(10),
-                                  border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
-                                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Card holder name',
-                      style: Theme.of(context).textTheme.headline4!.copyWith(
-                            fontSize: 13.sp,
-                            color: fillerColor,
-                            fontWeight: FontWeight.normal,
-                          ),
-                    ),
-                    TextFormField(
-                      controller: nameController,
-                      validator: ValidationBuilder().minLength(1).maxLength(100).build(),
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: fillerColor,
-                        fontWeight: FontWeight.normal,
-                      ),
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.all(10),
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                          color: fillerColor,
-                        )),
-                        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Save card information',
-                          style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp, color: fillerColor, fontWeight: FontWeight.normal),
-                        ),
-                        Switch(
-                          value: saveCardInfo,
-                          activeColor: Colors.white,
-                          activeTrackColor: fillerColor,
-                          onChanged: (val) => setState(() {
-                            // TODO: Move to checkout state BLOC once created.
-                            saveCardInfo = val;
-                          }),
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 25),
-                    Divider(color: Color(0xff707070), thickness: 1.2),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
+                    ...buildFormFields(context),
+                    const SizedBox(height: 10),
+                    buildSaveCardInfoTab(context),
+                    const SizedBox(height: 25),
+                    const Divider(color: Color(0xff707070), thickness: 1.2),
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -357,6 +188,199 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
       ),
     );
+  }
+
+  List<Widget> buildFormFields(BuildContext context) {
+    return [Text(
+                    'Card number',
+                    style: Theme.of(context).textTheme.headline4!.copyWith(
+                          fontSize: 13.sp,
+                          color: fillerColor,
+                          fontWeight: FontWeight.normal,
+                        ),
+                  ),
+                  SizedBox(height: 5),
+                  buildCardNumberTextField(),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Expiry date',
+                              style: Theme.of(context).textTheme.headline4!.copyWith(
+                                    fontSize: 13.sp,
+                                    color: fillerColor,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                            ),
+                            SizedBox(height: 5),
+                            RawKeyboardListener(
+                              onKey: (event) {
+                                deletePressed = event.logicalKey == LogicalKeyboardKey.backspace;
+                              },
+                              focusNode: FocusNode(),
+                              child: buildExpirationDateTextField(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 5),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'CVV',
+                              style: Theme.of(context).textTheme.headline4!.copyWith(
+                                    fontSize: 13.sp,
+                                    color: fillerColor,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                            ),
+                            SizedBox(height: 5),
+                            buildCvvTextField(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Card holder name',
+                    style: Theme.of(context).textTheme.headline4!.copyWith(
+                          fontSize: 13.sp,
+                          color: fillerColor,
+                          fontWeight: FontWeight.normal,
+                        ),
+                  ),
+                  buildNameTextField()];
+  }
+
+  TextFormField buildCardNumberTextField() {
+    return TextFormField(
+                    controller: cardNumberController,
+                    validator: ValidationBuilder()
+                        .minLength(16)
+                        .maxLength(16)
+                        .add((String? value) => value == null
+                            ? "Must be a number"
+                            : double.tryParse(value) != null
+                                ? null
+                                : "Must be a number")
+                        .build(),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: fillerColor,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    obscureText: true,
+                    obscuringCharacter: '*',
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.all(10),
+                      border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
+                      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
+                    ),
+                  );
+  }
+
+  TextFormField buildExpirationDateTextField() {
+    return TextFormField(
+                                controller: dateController,
+                                validator: ValidationBuilder().add((value) {
+                                  if (value == null || value.length != 5) return 'Follow format: MM/YY';
+                                  List<String> dates = value.split('/');
+                                  if (double.tryParse(dates[0]) == null || double.tryParse(dates[1]) == null) {
+                                    return 'Follow format: MM/YY';
+                                  }
+
+                                  return null;
+                                }).build(),
+                                onChanged: (_) => handleDateInput(),
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: fillerColor,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                                keyboardType: TextInputType.datetime,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.all(10),
+                                  hintText: "MM/YY",
+                                  hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                                  border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
+                                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
+                                ),
+                              );
+  }
+
+  TextFormField buildCvvTextField() {
+    return TextFormField(
+                              controller: cvvController,
+                              validator: ValidationBuilder()
+                                  .minLength(3)
+                                  .maxLength(3)
+                                  .add((String? value) => value == null
+                                      ? "Must be a number"
+                                      : double.tryParse(value) != null
+                                          ? null
+                                          : "Must be a number")
+                                  .build(),
+                              style: TextStyle(fontSize: 12.sp, color: Colors.black),
+                              obscureText: true,
+                              obscuringCharacter: '*',
+                              onChanged: (String? value) {
+                                if (value == null) return;
+                                if (value.length > 3) dateController.text = dateController.text.substring(0, dateController.text.length - 1);
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(10),
+                                border: OutlineInputBorder(borderSide: BorderSide(color: fillerColor)),
+                                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
+                              ),
+                            );
+  }
+
+  TextFormField buildNameTextField() {
+    return TextFormField(
+                    controller: nameController,
+                    validator: ValidationBuilder().minLength(1).maxLength(100).build(),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: fillerColor,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.all(10),
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: fillerColor,
+                      )),
+                      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: fillerColor, width: 0.7)),
+                    ),
+                  );
+  }
+
+  Row buildSaveCardInfoTab(BuildContext context) {
+    return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Save card information',
+                        style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp, color: fillerColor, fontWeight: FontWeight.normal),
+                      ),
+                      Switch(
+                        value: saveCardInfo,
+                        activeColor: Colors.white,
+                        activeTrackColor: fillerColor,
+                        onChanged: (val) => setState(() {
+                          // TODO: Move to checkout state BLOC once created.
+                          saveCardInfo = val;
+                        }),
+                      )
+                    ],
+                  );
   }
 
   void handleSuccessfulSubmission(

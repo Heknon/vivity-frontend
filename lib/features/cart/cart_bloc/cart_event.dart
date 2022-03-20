@@ -32,3 +32,9 @@ class CartShipmentMethodUpdateEvent extends CartEvent {
 
   CartShipmentMethodUpdateEvent(this.shippingMethod);
 }
+
+class CartSyncToUserStateEvent extends CartEvent {
+  final UserLoggedInState state;
+
+  CartSyncToUserStateEvent(this.state);
+}

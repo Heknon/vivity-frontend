@@ -30,7 +30,10 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
         return;
       }
 
-      securelyStoreCredentials(event.email, event.password);
+      if (event.stayLoggedIn) {
+        securelyStoreCredentials(event.email, event.password);
+      }
+
       _setPreviouslyLoggedInFlag();
       emit(AuthLoggedInState(token: token));
     });

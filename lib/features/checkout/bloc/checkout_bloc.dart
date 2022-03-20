@@ -22,6 +22,34 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       emit(state);
     });
 
+    on<CheckoutApplyCuponEvent>((event, emit) async {
+      if (this.state is! CheckoutStateConfirmationStage) return;
+
+      CheckoutState state = CheckoutStateConfirmationStage(
+        items: (this.state as CheckoutStateConfirmationStage).items,
+        shippingMethod: (this.state as CheckoutStateConfirmationStage).shippingMethod,
+        cuponCode: event.cuponCode,
+      );
+
+      emit(CheckoutLoadingState());
+      await state.init();
+      emit(state);
+    });
+
+    on<CheckoutApplyShippingMethodEvent>((event, emit) async {
+      if (this.state is! CheckoutStateConfirmationStage) return;
+
+      CheckoutState state = CheckoutStateConfirmationStage(
+        items: (this.state as CheckoutStateConfirmationStage).items,
+        shippingMethod: event.shippingMethod,
+        cuponCode: (this.state as CheckoutStateConfirmationStage).cuponCode,
+      );
+
+      emit(CheckoutLoadingState());
+      await state.init();
+      emit(state);
+    });
+
     on<CheckoutApplyShippingEvent>((event, emit) async {
       CheckoutState state = CheckoutStateShippingStage(
         items: (this.state as CheckoutStateConfirmationStage).items,

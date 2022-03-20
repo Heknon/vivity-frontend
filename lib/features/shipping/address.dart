@@ -9,9 +9,12 @@ class Address extends StatelessWidget {
   final String country;
   final String city;
   final String street;
-  final String houseNumber;
+  final String extraInfo;
+  final String province;
   final String zipCode;
   final String phone;
+  final VoidCallback? onTap;
+  final Color? color;
 
   const Address({
     Key? key,
@@ -19,9 +22,12 @@ class Address extends StatelessWidget {
     required this.country,
     required this.city,
     required this.street,
-    required this.houseNumber,
+    required this.province,
+    required this.extraInfo,
     required this.zipCode,
     required this.phone,
+    required this.onTap,
+    this.color
   }) : super(key: key);
 
   @override
@@ -30,7 +36,11 @@ class Address extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8, left: 5, right: 5),
       child: Card(
         elevation: 2,
-        child: buildCardBody(context),
+        color: color,
+        child: InkWell(
+          child: buildCardBody(context),
+          onTap: onTap,
+        ),
       ),
     );
   }
@@ -48,15 +58,15 @@ class Address extends StatelessWidget {
               Material(
                 elevation: 5,
                 child: SvgPicture.asset(
-                  'icons/flags/svg/${countryNameToCode(country.toLowerCase())!.toLowerCase()}.svg',
+                  'icons/flags/svg/${country.toLowerCase()}.svg',
                   package: 'country_icons',
                   width: 25,
                 ),
               ),
             ],
           ),
-          Text('$street $houseNumber', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
-          Text('$city $zipCode', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
+          Text('$street $extraInfo', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
+          Text('$province, $city $zipCode', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
           Text('Phone: $phone', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
         ],
       ),

@@ -21,31 +21,46 @@ class UserLoginFailedState extends UserLoggedOutState {
 }
 
 class UserLoggedInState extends UserState {
-  final String _token;
+  final String token;
 
-  late List<int> id;
+  late ObjectId id;
   late String name;
   late String email;
   late String phone;
   late UserOptions userOptions;
   late List<Address> addresses;
   late List<ItemModel> likedItems;
+  late List<CartItemModel> cart;
   late List<Order> orderHistory;
 
-  UserLoggedInState(this._token);
+  UserLoggedInState(this.token);
+
+  UserLoggedInState.copyConstructor({
+    required this.token,
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.userOptions,
+    required this.addresses,
+    required this.likedItems,
+    required this.cart,
+    required this.orderHistory,
+  });
 
   Future<String?> init() async {
-    Map<String, dynamic>? mapUser = await getUserFromToken(_token);
+    Map<String, dynamic>? mapUser = await getUserFromToken(token);
     if (mapUser == null) return 'Token expired';
 
-    print(mapUser);
+    id = ObjectId.fromHexString(mapUser['_id']);
     email = mapUser['email'];
     name = mapUser['name'];
     phone = mapUser['phone'];
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
     addresses = buildAddressesFromUserMap(mapUser['addresses']);
-    likedItems = buildLikedItemsFromUserMap(mapUser['liked_items']);
+    likedItems = await buildLikedItemsFromUserMap(mapUser['liked_items']);
     orderHistory = buildOrderHistoryFromUserMap(mapUser['order_history'] ?? []);
+    cart = await buildCartFromUserMap(mapUser['cart'] ?? []);
 
     return null;
   }
@@ -63,30 +78,16 @@ class UserLoggedInState extends UserState {
 
   List<Address> buildAddressesFromUserMap(List<dynamic> addresses) {
     return addresses
-        .map((e) => Address(
-              city: e["city"],
-              houseNumber: e["house_number"],
-              country: e["country"],
-              name: e["name"],
-              phone: e["phone"],
-              street: e["street"],
-              zipCode: e["zip_code"],
-            ))
+        .map((e) => Address.fromMap(e))
         .toList();
   }
 
-  List<ItemModel> buildLikedItemsFromUserMap(Map<String, dynamic> likedItems) {
-    List<ItemModel> items = List.empty(growable: true);
+  Future<List<ItemModel>> buildLikedItemsFromUserMap(List<dynamic> likedItems) async {
+    if (likedItems.isEmpty) return List.empty(growable: true);
 
-    for (var entry in likedItems.entries) {
-      // TODO: Move to thread pools
-      for (var itemId in entry.value) {
-        ItemModel? item = getItemFromId(stringToByteUuid(entry.key), stringToByteUuid(itemId));
-        if (item != null) items.add(item);
-      }
-    }
+    List<String> itemIds = likedItems.map((e) => e as String).toList();
 
-    return items;
+    return await getItemsFromStringIds(token, itemIds);
   }
 
   List<Order> buildOrderHistoryFromUserMap(List<dynamic> ordersMap) {
@@ -96,12 +97,12 @@ class UserLoggedInState extends UserState {
       List<OrderItem> items = (orderMap["items"] as List<dynamic>)
           .map(
             (e) => OrderItem(
-              businessId: stringToByteUuid(e["business_id"]),
-              itemId: stringToByteUuid(e["item_id"]),
+              businessId: ObjectId.fromHexString(e["business_id"]),
+              itemId: ObjectId.fromHexString(e["item_id"]),
               previewImage: e["preview_image"],
               title: e["title"],
               selectedModifiers: (orderMap["selected_modification_button_data"] as List<dynamic>)
-                  .map((e) => ModificationButtonDataHost(name: e["name"], dataType: e["data_type"], dataChosen: e["selected_data"]))
+                  .map((e) => ModificationButtonDataHost(name: e["name"], dataType: e["data_type"], selectedData: e["selected_data"]))
                   .toList(),
               subtitle: e["subtitle"],
               description: e["description"],
@@ -115,4 +116,66 @@ class UserLoggedInState extends UserState {
 
     return orders;
   }
+
+  Future<List<CartItemModel>> buildCartFromUserMap(List<dynamic> cartMap) async {
+    if (cartMap.isEmpty) {
+      return List<CartItemModel>.empty(growable: true);
+    }
+    return await getCartFromDBCart(token, cartMap);
+  }
+
+  UserLoggedInState copyWith({
+    String? token,
+    ObjectId? id,
+    String? name,
+    String? email,
+    String? phone,
+    UserOptions? userOptions,
+    List<Address>? addresses,
+    List<ItemModel>? likedItems,
+    List<CartItemModel>? cart,
+    List<Order>? orderHistory,
+  }) {
+    return UserLoggedInState.copyConstructor(
+      token: token ?? this.token,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      userOptions: userOptions ?? this.userOptions,
+      addresses: addresses ?? this.addresses,
+      likedItems: likedItems ?? this.likedItems,
+      cart: cart ?? this.cart,
+      orderHistory: orderHistory ?? this.orderHistory,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserLoggedInState &&
+          runtimeType == other.runtimeType &&
+          token == other.token &&
+          id == other.id &&
+          name == other.name &&
+          email == other.email &&
+          phone == other.phone &&
+          userOptions == other.userOptions &&
+          listEquals(addresses, other.addresses) &&
+          listEquals(likedItems, other.likedItems) &&
+          listEquals(cart, other.cart) &&
+          listEquals(orderHistory, other.orderHistory);
+
+  @override
+  int get hashCode =>
+      token.hashCode ^
+      id.hashCode ^
+      name.hashCode ^
+      email.hashCode ^
+      phone.hashCode ^
+      userOptions.hashCode ^
+      addresses.hashCode ^
+      likedItems.hashCode ^
+      cart.hashCode ^
+      orderHistory.hashCode;
 }
