@@ -1,10 +1,13 @@
 import 'package:objectid/objectid/objectid.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:latlong2/latlong.dart';
+
 
 const String mapBoxToken = "pk.eyJ1IjoiaGVrbm9uIiwiYSI6ImNreHVmemwyeDFtYWIyc212cGx3bmJudHIifQ.wHNQF9MwcyfeR06Isivv3g";
 const String ipApiPath = 'http://ip-api.com/json';
 ItemModel itemModelDemo = ItemModel(
+  location: LatLng(32.2276, 35.0007),
   id: ObjectId.fromHexString("6236f084b590f1f7ab188e78"),
   businessId: ObjectId.fromHexString("6236f0f9b590f1f7ab188e79"),
   businessName: "Vivity",
@@ -55,6 +58,7 @@ ItemModel itemModelDemo = ItemModel(
 );
 
 ItemModel itemModelDemo2 = ItemModel(
+  location: LatLng(32.1751, 34.9099),
   id: ObjectId.fromHexString("6236f6c9b590f1f7ab188e7b"),
   businessId: ObjectId.fromHexString("6236fb13b590f1f7ab188e8c"),
   businessName: "Vivity",

@@ -15,11 +15,11 @@ import 'cart_bloc/cart_bloc.dart';
 
 Future<Response> replaceDBCart(String token, List<CartItemModel> cartItems) async {
   List<Map<String, dynamic>> replacement = convertToDBCartItems(cartItems);
-  return await sendPostRequest(subRoute: cartPath, token: token, data: replacement);
+  return await sendPostRequest(subRoute: cartRoute, token: token, data: replacement);
 }
 
 Future<Map<String, ItemModel>> getFullItemModelCartData(String token) async {
-  Response res = await sendGetRequest(subRoute: cartPath, token: token);
+  Response res = await sendGetRequest(subRoute: cartRoute, token: token);
   if (res.statusCode != 200) {
     throw res;
   }

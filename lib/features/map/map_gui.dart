@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:map/location_service.dart';
-
+import '../explore/bloc/explore_bloc.dart';
+import '../user/bloc/user_bloc.dart';
+import 'bloc/map_bloc.dart' as map_bloc;
+import 'location_service.dart';
 import 'map_widget.dart';
 
 class MapGui extends StatefulWidget {
@@ -25,8 +28,6 @@ class MapGui extends StatefulWidget {
     this.controller,
   }) : super(key: key);
 
-
-
   @override
   _MapGuiState createState() => _MapGuiState();
 }
@@ -34,26 +35,29 @@ class MapGui extends StatefulWidget {
 class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   late LatLng fallbackLocation;
 
-  final Set<MapWidget> _mapWidgets = {};
-
   final Completer<LatLng> positionFutureImpl = Completer();
   late Completer<MapControllerImpl> controllerFutureImpl = Completer();
   bool initializedLocation = false;
 
   late MapGuiController _mapGuiController;
+  late String token;
 
   @override
   void initState() {
     super.initState();
     fallbackLocation = LatLng(32.0668, 34.7649);
+    token = (context.read<UserBloc>().state as UserLoggedInState).token;
     LocationService().getPosition(getCountryIfFail: true).then((loc) {
-      // move to BLOC initialized when program starts.
-
       if (initializedLocation) return;
 
       positionFutureImpl.complete(loc);
 
       controllerFutureImpl.future.then((controller) {
+        controller.mapEventStream.listen((event) {
+          if (event is! MapEventWithMove) return;
+
+          registerMovementWithExploreBloc(controller.center, controller.bounds!);
+        });
         if (loc != fallbackLocation) controller.move(loc, 13);
       });
 
@@ -61,7 +65,9 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     });
 
     _mapGuiController = widget.controller ?? MapGuiController();
-    _mapGuiController._setState(this);
+    _mapGuiController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -74,46 +80,13 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     controllerFutureImpl.complete(controller);
   }
 
-  void addWidgetToMap(MapWidget mapWidget) {
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      setState(() {
-        _mapWidgets.add(mapWidget);
-      });
-    });
-  }
-
-  void addWidgetsToMap(Iterable<MapWidget> mapWidgets) {
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      setState(() {
-        _mapWidgets.addAll(mapWidgets);
-      });
-    });
-  }
-
-  void removeWidgetFromMap(LatLng position) {
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      setState(() {
-        _mapWidgets.remove(position);
-      });
-    });
-  }
-
-  void removeWidgetsFromMap(Iterable<LatLng> positions) {
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      setState(() {
-        _mapWidgets.removeAll(positions);
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    //super.build(context);
-
     return buildMapContents();
   }
 
   Widget buildMapContents() {
+    print("Building : ${_mapGuiController.mapWidgets}");
     return FlutterMap(
       options: MapOptions(
         center: fallbackLocation,
@@ -135,7 +108,7 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
           minNativeZoom: 4,
         ),
         MarkerLayerOptions(
-          markers: _mapWidgets.map((e) {
+          markers: _mapGuiController.mapWidgets.map((e) {
             return Marker(
               width: e.size.width,
               height: e.size.height,
@@ -150,28 +123,37 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   @override
   bool get wantKeepAlive => true;
+
+  void registerMovementWithExploreBloc(LatLng center, LatLngBounds bounds) {
+    context.read<ExploreBloc>().add(ExploreMapMovementEvent(center, bounds, token));
+  }
 }
 
-class MapGuiController {
-  late _MapGuiState _state;
+class MapGuiController extends ChangeNotifier {
+  late Set<MapWidget> _mapWidgets;
+  Iterable<MapWidget> get mapWidgets => _mapWidgets;
 
-  void _setState(_MapGuiState state) {
-    _state = state;
+  MapGuiController({Set<MapWidget>? mapWidgets}) {
+    _mapWidgets = mapWidgets ?? {};
   }
 
   void addWidgetToMap(MapWidget mapWidget) {
-    _state.addWidgetToMap(mapWidget);
+    _mapWidgets.add(mapWidget);
+    notifyListeners();
   }
 
   void addWidgetsToMap(Iterable<MapWidget> mapWidgets) {
-    _state.addWidgetsToMap(mapWidgets);
+    _mapWidgets.addAll(mapWidgets);
+    notifyListeners();
   }
 
   void removeWidgetFromMap(LatLng position) {
-    _state.removeWidgetFromMap(position);
+    _mapWidgets.removeWhere((e) => position == e.location);
+    notifyListeners();
   }
 
-  void removeWidgetsFromMap(Iterable<LatLng> positions) {
-    _state.removeWidgetsFromMap(positions);
+  void removeWidgetsFromMap(Set<LatLng> positions) {
+    _mapWidgets.removeWhere((e) => positions.contains(e.location));
+    notifyListeners();
   }
 }

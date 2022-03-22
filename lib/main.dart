@@ -20,6 +20,7 @@ import 'package:vivity/features/item/item_page.dart';
 import 'features/auth/auth_page.dart';
 import 'features/cart/cart_bloc/cart_bloc.dart';
 import 'features/checkout/checkout_service.dart';
+import 'features/explore/bloc/explore_bloc.dart';
 import 'features/home/home_page.dart';
 import 'package:http/http.dart' as http;
 
@@ -82,6 +83,9 @@ class Vivity extends StatelessWidget {
         ),
         BlocProvider<CheckoutBloc>(
           create: (BuildContext context) => CheckoutBloc(),
+        ),
+        BlocProvider<ExploreBloc>(
+          create: (BuildContext context) => ExploreBloc(),
         ),
       ],
       child: Sizer(

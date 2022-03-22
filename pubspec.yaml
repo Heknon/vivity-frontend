@@ -56,12 +56,12 @@ dependencies:
   jwt_decoder: ^2.0.1
   http: ^0.13.4
   charset: ^0.2.4
+  async: ^2.8.2
+  geolocator: ^8.2.0
+  flutter_map: ^0.14.0
 
   advanced_panel:
     path: ./packages/advanced_panel
-
-  map:
-    path: ./packages/map
 
   fade_in_widget:
     path: ./packages/fade_in_widget

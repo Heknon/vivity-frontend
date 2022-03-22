@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import '../cart/cart_bloc/cart_bloc.dart';
 import '../cart/shopping_cart.dart';
-import 'package:vivity/features/home/explore/explore.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
 import 'package:vivity/features/search_filter/filter_bar.dart';

@@ -5,6 +5,8 @@ import 'package:uuid/uuid.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/services/item_service.dart';
 import 'package:vivity/services/storage_service.dart';
+import 'package:latlong2/latlong.dart';
+
 
 class CartItemModel {
   final String previewImage;
@@ -132,6 +134,7 @@ class ItemModel {
   final ObjectId businessId;
   final ObjectId id;
   final String businessName;
+  final LatLng location;
   final double price;
   final List<String> images;
   final int previewImageIndex;
@@ -145,6 +148,7 @@ class ItemModel {
   const ItemModel({
     required this.id,
     required this.businessId,
+    required this.location,
     required this.businessName,
     required this.price,
     required this.images,
@@ -165,6 +169,7 @@ class ItemModel {
   ItemModel copyWith({
     ObjectId? id,
     ObjectId? businessId,
+    LatLng? location,
     String? businessName,
     double? price,
     List<String>? images,
@@ -178,6 +183,7 @@ class ItemModel {
   }) {
     return ItemModel(
       businessId: businessId ?? this.businessId,
+      location: location ?? this.location,
       id: id ?? this.id,
       businessName: businessName ?? this.businessName,
       price: price ?? this.price,
@@ -195,6 +201,7 @@ class ItemModel {
   factory ItemModel.fromDBMap(Map<String, dynamic> map) {
     return ItemModel(
       businessId: ObjectId.fromHexString(map['business_id']),
+      location: LatLng(map['location'][0], map['location'][1]),
       id: ObjectId.fromHexString(map['_id']),
       businessName: map['business_name'] as String,
       price: map['price'] as double,
@@ -223,6 +230,7 @@ class ItemModel {
       'category': category,
       'tags': tags,
       'stock': stock,
+      'location': [location.latitude, location.longitude]
     };
   }
 }

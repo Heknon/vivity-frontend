@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vivity/widgets/appbar/appbar.dart';
+import '../explore/explore.dart';
 import 'feed/feed.dart';
-
-import 'explore/explore.dart';
 
 class HomePage extends StatelessWidget {
   @override

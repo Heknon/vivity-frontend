@@ -10,7 +10,7 @@ const FlutterSecureStorage storage = FlutterSecureStorage();
 
 /// logs in and returns token. returning null signals login failed
 Future<String?> login(String email, String password) async {
-  http.Response res = await sendPostRequest(subRoute: "$userPath/login", data: {
+  http.Response res = await sendPostRequest(subRoute: "$userRoute/login", data: {
     "email": email,
     "password": password,
   });
@@ -24,7 +24,7 @@ Future<String?> login(String email, String password) async {
 
 Future<RegisterResult> register(String email, String password, String name, String phone) async {
   http.Response res = await sendPostRequest(
-    subRoute: "$userPath/register",
+    subRoute: "$userRoute/register",
     data: {
       "email": email,
       "password": password,
@@ -42,7 +42,7 @@ Future<RegisterResult> register(String email, String password, String name, Stri
 }
 
 Future<bool> verifyToken(String token) async {
-  http.Response res = await sendGetRequest(subRoute: "$userPath/verify?token=$token");
+  http.Response res = await sendGetRequest(subRoute: "$userRoute/verify?token=$token");
   return res.statusCode == 200;
 }
 
