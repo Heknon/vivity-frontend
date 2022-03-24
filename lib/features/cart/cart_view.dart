@@ -112,6 +112,7 @@ class _CartViewState extends State<CartView> {
             height: itemSize.height,
             onQuantityIncrement: onQuantityIncrement,
             onQuantityDecrement: onQuantityDecrement,
+            onQuantityDelete: onDelete,
             quantityController: state.getItemQuantityController(state.items[i].insertionId),
             id: state.items[i].insertionId,
           ),
@@ -196,6 +197,12 @@ class _CartViewState extends State<CartView> {
 
   void onQuantityDecrement(QuantityController quantityController, int? id) {
     BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!));
+  }
+
+  void onDelete(QuantityController quantityController, int? id) {
+    BlocProvider.of<CartBloc>(context).add(CartDeleteItemEvent(id!));
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleting item')));
   }
 
   void updateCost(double priceTotal) {

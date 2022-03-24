@@ -27,9 +27,11 @@ Future<List<ItemModel>> getItemsFromStringIds(String token, List<String> ids) as
 }
 
 Future<List<ItemModel>> searchByCoordinates(String token, LatLng position, double radius, {String query = "*", String category = "*"}) async {
+  String searchQuery =
+      "$exploreRoute?radius=$radius&radius_center_latitude=${position.latitude}&radius_center_longitude=${position.longitude}&query=$query&category=$category";
+
   Response response = await sendGetRequest(
-    subRoute:
-        "$exploreRoute?radius=$radius&radius_center_latitude=${position.latitude}&radius_center_longitude=${position.longitude}&query=$query&category=$category",
+    subRoute: searchQuery,
     token: token,
   );
 

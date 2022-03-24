@@ -241,6 +241,7 @@ class _ItemPageState extends State<ItemPage> {
           );
         },
         child: Ink(
+          decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),
           child: Container(
             height: 7.h,
             decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),

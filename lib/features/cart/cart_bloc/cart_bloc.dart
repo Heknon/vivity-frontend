@@ -34,6 +34,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       emit(state.copyWith().updateShipmentMethod(event.shippingMethod).copyWith());
     });
 
+    on<CartDeleteItemEvent>((event, emit) {
+      emit(state.copyWith().removeItem(event.index).copyWith());
+    });
+
     on<CartSyncToUserStateEvent>((event, emit) {
       emit(CartState.fromState(event.state));
     });

@@ -23,18 +23,17 @@ class ExploreLoaded extends ExploreState {
     required this.itemModels,
   });
 
-  Future<String?> fetchItemModels() async {
-    double radius = Geolocator.distanceBetween(
+  Future<void> fetchItemModels() async {
+    int radius = Geolocator.distanceBetween(
       registeredPosition.latitude,
       registeredPosition.longitude,
       registeredBounds.southEast.latitude,
       registeredBounds.southEast.longitude,
-    );
+    ).round();
+
     itemModels.clear();
-    print("fetching items");
-    List<ItemModel> models = await searchByCoordinates(token, position, radius);
+    List<ItemModel> models = await searchByCoordinates(token, position, radius.toDouble());
     itemModels.addAll(models);
-    return null;
   }
 
   @override

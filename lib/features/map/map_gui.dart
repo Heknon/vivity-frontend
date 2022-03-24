@@ -47,7 +47,7 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     super.initState();
     fallbackLocation = LatLng(32.0668, 34.7649);
     token = (context.read<UserBloc>().state as UserLoggedInState).token;
-    LocationService().getPosition(getCountryIfFail: true).then((loc) {
+    LocationService().getPosition(getCountryIfFail: true, defaultLocation: fallbackLocation).then((loc) {
       if (initializedLocation) return;
 
       positionFutureImpl.complete(loc);
@@ -58,7 +58,7 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
           registerMovementWithExploreBloc(controller.center, controller.bounds!);
         });
-        if (loc != fallbackLocation) controller.move(loc, 13);
+        controller.move(loc, 13);
       });
 
       initializedLocation = true;
@@ -86,7 +86,6 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   }
 
   Widget buildMapContents() {
-    print("Building : ${_mapGuiController.mapWidgets}");
     return FlutterMap(
       options: MapOptions(
         center: fallbackLocation,

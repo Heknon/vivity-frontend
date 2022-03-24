@@ -83,6 +83,7 @@ class CartItem extends StatelessWidget {
                           color: Theme.of(context).primaryColor,
                           onDecrement: onQuantityDecrement,
                           onIncrement: onQuantityIncrement,
+                          deletable: true,
                           onDelete: onQuantityDelete,
                           controller: quantityController,
                           id: id,

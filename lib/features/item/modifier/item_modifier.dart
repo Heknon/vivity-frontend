@@ -22,15 +22,15 @@ class ItemModifier extends StatefulWidget {
 
   final ItemModifierSelectorController? selectorController;
 
-  const ItemModifier(
-      {Key? key,
-      required this.modificationButton,
-      this.imageRadius = 9,
-      this.colorSize = 18,
-      this.textSize = 14,
-      this.separatingHeight = 10,
-      this.selectorController})
-      : super(key: key);
+  const ItemModifier({
+    Key? key,
+    required this.modificationButton,
+    this.imageRadius = 9,
+    this.colorSize = 18,
+    this.textSize = 14,
+    this.separatingHeight = 10,
+    this.selectorController,
+  }) : super(key: key);
 
   @override
   State<ItemModifier> createState() => _ItemModifierState();
@@ -76,6 +76,7 @@ class _ItemModifierState extends State<ItemModifier> {
                 selectableData: widget.modificationButton.data,
                 dataType: widget.modificationButton.dataType,
                 sizeScale: sizeScale,
+                multiSelect: widget.modificationButton.multiSelect,
                 controller: _selectorController,
                 heightScale: heightFactor,
                 padding: EdgeInsets.only(bottom: 7, right: 4, left: 4),

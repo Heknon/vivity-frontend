@@ -22,8 +22,7 @@ class ItemModifierSelector extends StatefulWidget {
   final double imageRadius;
   final double sizeScale;
   final double heightScale;
-
-  final bool allowMultiSelect;
+  final bool multiSelect;
 
   final ItemModifierSelectorController? controller;
 
@@ -31,13 +30,13 @@ class ItemModifierSelector extends StatefulWidget {
     Key? key,
     required this.selectableData,
     required this.dataType,
+    required this.multiSelect,
     this.padding = const EdgeInsets.all(0),
     this.itemPadding = const EdgeInsets.all(8),
     this.textSize = 14,
     this.colorSize = 18,
     this.imageRadius = 9,
     this.sizeScale = 9,
-    this.allowMultiSelect = false,
     this.controller,
     this.heightScale = 30,
   }) : super(key: key);
@@ -108,9 +107,17 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
             child: InkWell(
               borderRadius: const BorderRadius.all(Radius.circular(50)),
               onTap: () {
-                chosenIndices.contains(idx)
-                    ? BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierRemoveItemEvent(idx))
-                    : BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierAddItemEvent(idx));
+                if (widget.multiSelect) {
+                  chosenIndices.contains(idx)
+                      ? BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierRemoveItemEvent(idx))
+                      : BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierAddItemEvent(idx));
+                } else {
+                  if (chosenIndices.contains(idx)) {
+                    BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierRemoveItemEvent(idx));
+                  } else if (chosenIndices.isEmpty) {
+                    BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierAddItemEvent(idx));
+                  }
+                }
               },
               child: child,
             ),

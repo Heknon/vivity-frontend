@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/cart/cart_bloc/cart_bloc.dart';
 
+import '../../widgets/quantity.dart';
 import '../cart/cart_bloc/cart_state.dart';
 import 'cart_item.dart';
 
@@ -40,6 +41,7 @@ class CartItemList extends StatelessWidget {
           height: itemSize.height,
           onQuantityIncrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!)),
           onQuantityDecrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!)),
+          onQuantityDelete: (controller, id) => onDelete(controller, id, context),
           quantityController: state.getItemQuantityController(state.items[i].insertionId),
           id: state.items[i].insertionId,
           borderRadius: itemBorderRadius,
@@ -58,5 +60,11 @@ class CartItemList extends StatelessWidget {
             : emptyCartWidget,
       );
     });
+  }
+
+  void onDelete(QuantityController quantityController, int? id, BuildContext context) {
+    BlocProvider.of<CartBloc>(context).add(CartDeleteItemEvent(id!));
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleting item')));
   }
 }

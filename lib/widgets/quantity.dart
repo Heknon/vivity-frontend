@@ -12,26 +12,28 @@ class Quantity extends StatefulWidget {
   final SnackBar? minFailSnackbar;
   final QuantityController? controller;
   final int? id;
+  final bool deletable;
   final void Function(QuantityController, int?)? onDelete;
   final void Function(QuantityController, int?)? onIncrement;
   final void Function(QuantityController, int?)? onDecrement;
 
-  const Quantity(
-      {Key? key,
-      this.initialCount = 1,
-      this.min = 1,
-      this.max = 10,
-      this.controller,
-      this.color = Colors.white,
-      this.maxFailSnackbar = const SnackBar(
-        content: Text("Can't buy more"),
-      ),
-      this.minFailSnackbar,
-      this.onDelete,
-      this.onIncrement,
-      this.onDecrement,
-      this.id})
-      : super(key: key);
+  const Quantity({
+    Key? key,
+    this.initialCount = 1,
+    this.min = 1,
+    this.max = 10,
+    this.controller,
+    this.color = Colors.white,
+    this.maxFailSnackbar = const SnackBar(
+      content: Text("Can't buy more"),
+    ),
+    this.minFailSnackbar,
+    this.onDelete,
+    this.onIncrement,
+    this.onDecrement,
+    this.id,
+    this.deletable = false,
+  }) : super(key: key);
 
   @override
   _QuantityState createState() => _QuantityState();
@@ -39,6 +41,7 @@ class Quantity extends StatefulWidget {
 
 class _QuantityState extends State<Quantity> {
   late QuantityController _controller;
+  bool preparedToDelete = false;
 
   @override
   void initState() {
@@ -55,7 +58,7 @@ class _QuantityState extends State<Quantity> {
         }
         _controller.updateCurrentQuantity(_controller.max);
         return;
-      } else if (_controller.quantity < _controller.min) {
+      } else if (_controller.quantity < _controller.min && !preparedToDelete) {
         if (widget.minFailSnackbar != null && mounted) {
           ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(widget.minFailSnackbar!);
@@ -117,6 +120,7 @@ class _QuantityState extends State<Quantity> {
       }
       _controller.incrementQuantity();
       if (widget.onIncrement != null) widget.onIncrement!(_controller, widget.id);
+      preparedToDelete = false;
       return;
     }
 
@@ -125,7 +129,17 @@ class _QuantityState extends State<Quantity> {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(widget.minFailSnackbar!);
       }
-      if (widget.onDelete != null) widget.onDelete!(_controller, widget.id);
+
+      if (widget.deletable && _controller.quantity == _controller.min) {
+        if (preparedToDelete) {
+          _controller.updateCurrentQuantity(0);
+          if (widget.onDelete != null) widget.onDelete!(_controller, widget.id);
+          return;
+        }
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Press again to delete')));
+        preparedToDelete = true;
+      }
       return;
     }
 
@@ -162,7 +176,6 @@ class QuantityController extends ChangeNotifier {
   }
 
   void updateCurrentQuantity(int quantity) {
-
     _quantity = quantity;
     notifyListeners();
   }
@@ -179,9 +192,6 @@ class QuantityController extends ChangeNotifier {
 
   void _quantityCheck(int newQuantity) {
     if (newQuantity > max) {
-
-    } else if (newQuantity < min) {
-
-    }
+    } else if (newQuantity < min) {}
   }
 }

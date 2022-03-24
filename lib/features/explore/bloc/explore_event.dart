@@ -11,4 +11,9 @@ class ExploreMapMovementEvent extends ExploreEvent {
   ExploreMapMovementEvent(this.center, this.bounds, this.token);
 }
 
-class ExploreMapRegisteredMovementEvent extends ExploreEvent {}
+class ExploreMapRegisteredMovementEvent extends ExploreEvent {
+  final LatLng? center;
+  final LatLngBounds? bounds;
+
+  ExploreMapRegisteredMovementEvent({this.center, this.bounds});
+}

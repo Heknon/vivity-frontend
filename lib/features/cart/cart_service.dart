@@ -53,7 +53,6 @@ Future<List<CartItemModel>> getCartFromDBCart(String token, List<dynamic> dbCart
     ));
   }
 
-  print(result);
   return result;
 }
 

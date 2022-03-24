@@ -3,14 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vivity/features/item/item_page.dart';
 import 'package:vivity/features/item/map_preview_icon.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/search_filter/filter_bar.dart';
 import 'package:vivity/features/search_filter/filter_side_bar.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 import '../cart/shopping_cart.dart';
+import '../item/preview_item.dart';
 import '../map/map_gui.dart';
 import '../map/map_widget.dart';
 import 'bloc/explore_bloc.dart';
@@ -24,7 +27,17 @@ class Explore extends StatefulWidget {
 class _ExploreState extends State<Explore> {
   final mapGuiController = MapGuiController();
   final _widgetSwapController = WidgetSwapperController();
-  final List<ItemModel> exploreItemModels = List.empty(growable: true);
+  late final ExploreController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = ExploreController();
+    _controller.addListener(() {
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +46,20 @@ class _ExploreState extends State<Explore> {
         listener: (ctx, state) {
           // print(state);
           if (state is! ExploreLoaded) return;
-          if (listEquals(exploreItemModels, state.itemModels)) return;
+          if (listEquals(_controller.exploreItems, state.itemModels)) return;
 
-          mapGuiController.removeWidgetsFromMap(exploreItemModels.map((e) => e.location).toSet());
-          exploreItemModels.clear();
-          exploreItemModels.addAll(state.itemModels);
-          mapGuiController.addWidgetsToMap(exploreItemModels.map((e) => buildMapWidget(location: e.location, child: MapPreviewIcon(item: e))));
+          mapGuiController.removeWidgetsFromMap(_controller.exploreItems.map((e) => e.location).toSet());
+          mapGuiController.addWidgetsToMap(state.itemModels.map((e) {
+            Size textSize = MapPreviewIcon.getTextSize(e.price, context);
+            return buildMapWidget(
+              location: e.location,
+              size: Size(textSize.width + 15, textSize.height + 10),
+              child: MapPreviewIcon(
+                item: e,
+                exploreController: _controller,
+              ));
+          }));
+          _controller.updateExploreItems(List.of(state.itemModels));
         },
         child: Stack(
           children: [
@@ -73,6 +94,21 @@ class _ExploreState extends State<Explore> {
                 constraints: constraints,
               ),
             ),
+            _controller.previewItem != null
+                ? Positioned(
+                    bottom: 100,
+                    left: (100 - 80).w / 2,
+                    child: ConstrainedBox(
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(itemModel: _controller.previewItem!))),
+                        child: PreviewItem(
+                          item: _controller.previewItem!,
+                        ),
+                      ),
+                      constraints: BoxConstraints(maxWidth: 80.w, maxHeight: 80),
+                    ),
+                  )
+                : Container(),
             Positioned(
               child: ConstrainedBox(
                 child: const SlideableItemTab(),
@@ -92,8 +128,28 @@ class _ExploreState extends State<Explore> {
   }) {
     return MapWidget(
       location: location,
-      size: const Size(75, 25),
+      size: size,
       child: child,
     );
+  }
+}
+
+class ExploreController extends ChangeNotifier {
+  late List<ItemModel> exploreItems;
+  ItemModel? previewItem;
+
+  ExploreController() {
+    exploreItems = List.empty(growable: true);
+  }
+
+  void updateExploreItems(List<ItemModel> items) {
+    exploreItems.clear();
+    exploreItems = items;
+    notifyListeners();
+  }
+
+  void updatePreviewItem(ItemModel item) {
+    previewItem = item;
+    notifyListeners();
   }
 }

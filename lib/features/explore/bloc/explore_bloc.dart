@@ -35,7 +35,8 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
           itemModels: List.empty(growable: true),
           token: event.token!,
         );
-        resState.fetchItemModels();
+
+        await resState.fetchItemModels();
       } else if (state is ExploreLoaded) {
         double distanceBetweenRegisteredLocation = Geolocator.distanceBetween(
             state.registeredPosition.latitude, state.registeredPosition.longitude, event.center.latitude, event.center.longitude);
@@ -56,12 +57,11 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       ExploreState state = this.state;
       if (state is ExploreLoaded) {
         ExploreLoaded resultState = state.copyWith(
-          registeredPosition: state.position,
-          registeredBounds: state.bounds,
+          registeredPosition: event.center ?? state.position,
+          registeredBounds: event.bounds ?? state.bounds,
         );
 
-        String? res = await resultState.fetchItemModels();
-        print("RES: $res");
+        await resultState.fetchItemModels();
         emit(resultState);
         return;
       }
