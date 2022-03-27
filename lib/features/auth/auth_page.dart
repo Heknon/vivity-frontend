@@ -7,7 +7,7 @@ import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
-import 'package:vivity/features/home/home_page.dart';
+import 'package:vivity/main.dart' as main;
 
 import '../user/bloc/user_bloc.dart';
 
@@ -41,27 +41,32 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     return Scaffold(
       backgroundColor: const Color(0xffdddddd),
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 10),
-            Center(
-              child: SvgPicture.asset(
-                "assets/icons/abstract_logo.svg",
-                color: primaryComplementaryColor,
-                height: 110,
+        child: BlocListener<UserBloc, UserState>(
+          listener: (ctx, state) {
+            if (state is UserLoggedInState) main.loginRoutine(state, context);
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 10),
+              Center(
+                child: SvgPicture.asset(
+                  "assets/icons/abstract_logo.svg",
+                  color: primaryComplementaryColor,
+                  height: 110,
+                ),
               ),
-            ),
-            SizedBox(height: 25),
-            Center(
-              child: SvgPicture.asset(
-                "assets/icons/text_logo_simple.svg",
-                width: 90.w,
+              SizedBox(height: 25),
+              Center(
+                child: SvgPicture.asset(
+                  "assets/icons/text_logo_simple.svg",
+                  width: 90.w,
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            buildAuthenticationSplashscreen(),
-          ],
+              SizedBox(height: 20),
+              buildAuthenticationSplashscreen(),
+            ],
+          ),
         ),
       ),
     );

@@ -4,3 +4,4 @@ const cartRoute = "/user/cart";
 const addressRoute = "/user/address";
 const globalBusinessItemRoute = "/business/item";
 const exploreRoute = "/user/explore";
+const businessRoute = '/business';

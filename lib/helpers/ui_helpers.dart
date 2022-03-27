@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sizer/sizer.dart';
 
 Future<RenderBox> getRenderBox(GlobalKey key) async {
-
   Completer<RenderBox> completer = Completer();
 
   WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
@@ -15,4 +16,21 @@ Future<RenderBox> getRenderBox(GlobalKey key) async {
   return completer.future;
 }
 
+Widget gradientBackground({required Widget child, required List<Color> colors, required List<double> stops}) {
+  return Container(
+    height: 100.h - kToolbarHeight,
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: colors,
+        stops: stops,
+      ),
+    ),
+    child: child,
+  );
+}
 
+Widget defaultGradientBackground({required Widget child}) {
+  return gradientBackground(child: child, colors: [Color(0xffF3F1F2), Color(0xffEAEAEC)], stops: [0, 1]);
+}

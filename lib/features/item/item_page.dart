@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
+import '../base_page.dart';
 import '../cart/cart_bloc/cart_bloc.dart';
 import '../cart/shopping_cart.dart';
 import 'package:vivity/features/item/models/item_model.dart';
@@ -68,21 +70,12 @@ class _ItemPageState extends State<ItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return BasePage(
       appBar: VivityAppBar(
         bottom: buildTitle(context),
       ),
       body: LayoutBuilder(
-        builder: (context, constraints) => Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xffF3F1F2), Color(0xffEAEAEC)],
-              stops: [0, 1],
-            ),
-          ),
+        builder: (context, constraints) => defaultGradientBackground(
           child: Stack(
             children: [
               Positioned.fill(

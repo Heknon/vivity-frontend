@@ -31,7 +31,9 @@ class VivityAppBar extends PreferredSize {
         alignment: Alignment.topLeft,
         child: IconButton(
           key: key,
-          onPressed: () {},
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
           icon: const Icon(
             Icons.menu,
             color: Colors.white,

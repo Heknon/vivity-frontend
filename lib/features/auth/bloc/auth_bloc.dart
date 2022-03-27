@@ -24,7 +24,7 @@ class AuthBloc extends HydratedBloc<AuthEvent, AuthState> {
         emit(const AuthLoggedOutState());
         rethrow;
       }
-      print(token);
+
       if (token == null) {
         emit(const AuthLoggedOutState());
         return;

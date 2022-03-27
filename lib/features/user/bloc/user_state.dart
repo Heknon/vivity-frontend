@@ -5,7 +5,13 @@ abstract class UserState {
   const UserState();
 }
 
-class UserLoggedOutState extends UserState {}
+class UserLoggedOutState extends UserState {
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is UserLoggedOutState && runtimeType == other.runtimeType;
+
+  @override
+  int get hashCode => 0;
+}
 
 class UserLoadingState extends UserState {}
 
@@ -18,15 +24,25 @@ class UserLoginFailedState extends UserLoggedOutState {
   String toString() {
     return 'UserLoginFailedState{reason: $reason}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || super == other && other is UserLoginFailedState && runtimeType == other.runtimeType && reason == other.reason;
+
+  @override
+  int get hashCode => super.hashCode ^ reason.hashCode;
 }
 
 class UserLoggedInState extends UserState {
   final String token;
 
   late ObjectId id;
+  late ObjectId? businessId;
+  late bool isSystemAdmin;
   late String name;
   late String email;
   late String phone;
+  late String? profilePicture;
   late UserOptions userOptions;
   late List<Address> addresses;
   late List<ItemModel> likedItems;
@@ -46,6 +62,8 @@ class UserLoggedInState extends UserState {
     required this.likedItems,
     required this.cart,
     required this.orderHistory,
+    this.businessId,
+    this.isSystemAdmin = false,
   });
 
   Future<String?> init() async {
@@ -53,9 +71,12 @@ class UserLoggedInState extends UserState {
     if (mapUser == null) return 'Token expired';
 
     id = ObjectId.fromHexString(mapUser['_id']);
+    businessId = mapUser.containsKey('business_id') ? ObjectId.fromHexString(mapUser['business_id']) : null;
+    isSystemAdmin = mapUser['is_system_admin'] ?? false;
     email = mapUser['email'];
     name = mapUser['name'];
     phone = mapUser['phone'];
+    profilePicture = mapUser['profile_picture'];
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
     addresses = buildAddressesFromUserMap(mapUser['addresses']);
     likedItems = await buildLikedItemsFromUserMap(mapUser['liked_items']);
@@ -77,9 +98,7 @@ class UserLoggedInState extends UserState {
   }
 
   List<Address> buildAddressesFromUserMap(List<dynamic> addresses) {
-    return addresses
-        .map((e) => Address.fromMap(e))
-        .toList();
+    return addresses.map((e) => Address.fromMap(e)).toList();
   }
 
   Future<List<ItemModel>> buildLikedItemsFromUserMap(List<dynamic> likedItems) async {
@@ -124,6 +143,18 @@ class UserLoggedInState extends UserState {
     return await getCartFromDBCart(token, cartMap);
   }
 
+  Future<BusinessUserLoggedInState> createBusiness(UserRegisterBusinessEvent e) async {
+    Response res = await sendPostRequest(
+        subRoute:
+            "$businessRoute?name=${e.businessName}&email=${e.businessEmail}&phone=${e.businessPhone}&latitude=${e.location.latitude}&longitude=${e.location.longitude}&business_national_number=${e.businessNationalId}",
+        token: token,
+        contentType: 'image/png',
+        data: await e.ownerId.readAsBytes());
+
+    dynamic parsed = jsonDecode(res.body);
+    return BusinessUserLoggedInState.fromCreationObject(parsed['token'], this, parsed['business']);
+  }
+
   UserLoggedInState copyWith({
     String? token,
     ObjectId? id,
@@ -135,6 +166,8 @@ class UserLoggedInState extends UserState {
     List<ItemModel>? likedItems,
     List<CartItemModel>? cart,
     List<Order>? orderHistory,
+    ObjectId? businessId,
+    bool? isSystemAdmin,
   }) {
     return UserLoggedInState.copyConstructor(
       token: token ?? this.token,
@@ -147,6 +180,8 @@ class UserLoggedInState extends UserState {
       likedItems: likedItems ?? this.likedItems,
       cart: cart ?? this.cart,
       orderHistory: orderHistory ?? this.orderHistory,
+      businessId: businessId ?? this.businessId,
+      isSystemAdmin: isSystemAdmin ?? this.isSystemAdmin,
     );
   }
 
@@ -178,4 +213,35 @@ class UserLoggedInState extends UserState {
       likedItems.hashCode ^
       cart.hashCode ^
       orderHistory.hashCode;
+}
+
+class BusinessUserLoggedInState extends UserLoggedInState {
+  late final Business business;
+
+  BusinessUserLoggedInState(String token) : super(token);
+
+  @override
+  Future<String?> init() async {
+    await super.init();
+    dynamic businessData = await sendGetRequest(subRoute: businessRoute, token: token);
+    business = Business.fromMap(businessData);
+  }
+
+  BusinessUserLoggedInState.fromCreationObject(String token, UserLoggedInState state, dynamic businessData)
+      : super.copyConstructor(
+          token: token,
+          addresses: state.addresses,
+          phone: state.phone,
+          name: state.name,
+          id: state.id,
+          cart: state.cart,
+          email: state.email,
+          likedItems: state.likedItems,
+          orderHistory: state.orderHistory,
+          userOptions: state.userOptions,
+          isSystemAdmin: state.isSystemAdmin,
+          businessId: state.businessId,
+        ) {
+    business = Business.fromMap(businessData);
+  }
 }

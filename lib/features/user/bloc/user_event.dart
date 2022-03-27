@@ -18,3 +18,21 @@ class UserUpdateAddressesEvent extends UserEvent {
 
   UserUpdateAddressesEvent(this.addresses);
 }
+
+class UserRegisterBusinessEvent extends UserEvent {
+  final String businessName;
+  final String businessEmail;
+  final String businessPhone;
+  final String businessNationalId;
+  final File ownerId;
+  final LatLng location;
+
+  UserRegisterBusinessEvent({
+    required this.businessName,
+    required this.businessEmail,
+    required this.businessPhone,
+    required this.businessNationalId,
+    required this.ownerId,
+    required this.location,
+  });
+}

@@ -59,6 +59,14 @@ dependencies:
   async: ^2.8.2
   geolocator: ^8.2.0
   flutter_map: ^0.14.0
+  file_picker: ^4.5.1
+  place_picker: ^0.9.20-nullsafety
+#  google_maps_flutter: ^0.5.30
+#  google_map_location_picker:
+#    git:
+#      url: https://github.com/Heknon/google_map_location_picker.git
+#  flutter_localizations:
+#    sdk: flutter
 
   advanced_panel:
     path: ./packages/advanced_panel

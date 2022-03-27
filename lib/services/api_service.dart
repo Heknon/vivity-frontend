@@ -11,10 +11,10 @@ Future<http.Response> sendGetRequest({required String subRoute, String? token}) 
   );
 }
 
-Future<http.Response> sendPostRequest({required String subRoute, String? token, dynamic data}) async {
+Future<http.Response> sendPostRequest({required String subRoute, String? token, dynamic data, String contentType = 'application/json'}) async {
   Map<String, String> headers = {
     HttpHeaders.acceptHeader: '*',
-    HttpHeaders.contentTypeHeader: 'application/json',
+    HttpHeaders.contentTypeHeader: contentType,
   };
 
   if (token != null) {
@@ -36,10 +36,10 @@ Future<http.Response> sendDeleteRequest({required String subRoute, String? token
   );
 }
 
-Future<http.Response> sendPatchRequest({required String subRoute, String? token, dynamic data}) {
+Future<http.Response> sendPatchRequest({required String subRoute, String? token, dynamic data, String contentType = 'application/json'}) {
   return http.patch(
     Uri.parse(host + subRoute),
-    headers: token != null ? {"Authorization": "Bearer: $token", "Content-Type": "application/json"} : {"Content-Type": "application/json"},
+    headers: token != null ? {"Authorization": "Bearer: $token", "Content-Type": contentType} : {"Content-Type": contentType},
     body: json.encode(data),
   );
 }
@@ -51,5 +51,3 @@ String byteUuidToString(List<int> uuid) {
 List<int> stringToByteUuid(String uuid) {
   return cp437.encode(uuid);
 }
-
-

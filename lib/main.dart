@@ -56,6 +56,11 @@ void main() async {
   HydratedStorage storage = await initializeStorage();
   // await storage.clear();
 
+  // PluginGooglePlacePicker.initialize(
+  //   androidApiKey: "AIzaSyCXcalnoEaLEAqGHYGsj7ebH-ufqAQid-c",
+  //   iosApiKey: "AIzaSyCXcalnoEaLEAqGHYGsj7ebH-ufqAQid-c",
+  // );
+
   HydratedBlocOverrides.runZoned(
     () => runApp(const Vivity()),
     storage: storage,
@@ -96,14 +101,10 @@ class Vivity extends StatelessWidget {
             home: Builder(builder: (ctxWithBloc) {
               return BlocListener<UserBloc, UserState>(
                 listener: (ctx, userState) {
-                  if (userState is UserLoggedOutState) {
-                    ctxWithBloc.read<AuthBloc>().add(AuthLogoutEvent());
-                    Navigator.popUntil(ctx, (route) => route.isFirst);
-                    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => AuthPage()));
+                  if (userState is UserLoggedOutState  && userState is! UserLoginFailedState) {
+                    logoutRoutine(ctx);
                   } else if (userState is UserLoggedInState) {
-                    Navigator.popUntil(ctx, (route) => route.isFirst);
-                    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => HomePage()));
-                    ctxWithBloc.read<CartBloc>().add(CartSyncToUserStateEvent(userState));
+                    loginRoutine(userState, ctx);
                   }
                 },
                 child: AuthPage(),
@@ -114,4 +115,16 @@ class Vivity extends StatelessWidget {
       ),
     );
   }
+}
+
+void logoutRoutine(BuildContext context) {
+  context.read<AuthBloc>().add(AuthLogoutEvent());
+  Navigator.popUntil(context, (route) => route.isFirst);
+  Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => AuthPage()));
+}
+
+void loginRoutine(UserLoggedInState userState, BuildContext context) {
+  Navigator.popUntil(context, (route) => route.isFirst);
+  Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => HomePage()));
+  context.read<CartBloc>().add(CartSyncToUserStateEvent(userState));
 }
