@@ -8,7 +8,7 @@ class Business {
   final List<ObjectId> items;
   final Map<String, List<ObjectId>> categories;
   final ContactInformation contact;
-  final String nationalBusinessId;
+  final int nationalBusinessId;
   final String? ownerId; // TODO: If null ask to resubmit id.
 
   Business({
@@ -27,7 +27,7 @@ class Business {
     List<ObjectId>? items,
     Map<String, List<ObjectId>>? categories,
     ContactInformation? contact,
-    String? nationalBusinessId,
+    int? nationalBusinessId,
     String? ownerId,
   }) {
     if ((name == null || identical(name, this.name)) &&
@@ -60,7 +60,7 @@ class Business {
           .asMap()
           .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
       contact: ContactInformation.fromMap(map['contact']),
-      nationalBusinessId: map['national_business_id'] as String,
+      nationalBusinessId: map['national_business_id'] as int,
       ownerId: map['owner_id_card'] as String?,
     );
   }

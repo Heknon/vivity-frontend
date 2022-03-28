@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/auth/register_result.dart';
 import 'package:vivity/services/api_service.dart';
@@ -10,7 +10,7 @@ const FlutterSecureStorage storage = FlutterSecureStorage();
 
 /// logs in and returns token. returning null signals login failed
 Future<String?> login(String email, String password) async {
-  http.Response res = await sendPostRequest(subRoute: "$userRoute/login", data: {
+  Response res = await sendPostRequest(subRoute: "$userRoute/login", data: {
     "email": email,
     "password": password,
   });
@@ -19,11 +19,11 @@ Future<String?> login(String email, String password) async {
     return null;
   }
 
-  return jsonDecode(res.body)['token'];
+  return res.data['token'];
 }
 
 Future<RegisterResult> register(String email, String password, String name, String phone) async {
-  http.Response res = await sendPostRequest(
+  Response res = await sendPostRequest(
     subRoute: "$userRoute/register",
     data: {
       "email": email,
@@ -33,8 +33,7 @@ Future<RegisterResult> register(String email, String password, String name, Stri
     },
   );
 
-  Map<String, dynamic> decoded = jsonDecode(res.body);
-
+  dynamic decoded = res.data;
   return RegisterResult(
     decoded.containsKey("token") ? decoded['token'] : null,
     decoded.containsKey("auth_result") ? AuthenticationResult.values[decoded['auth_result'] as int] : null,
@@ -42,7 +41,7 @@ Future<RegisterResult> register(String email, String password, String name, Stri
 }
 
 Future<bool> verifyToken(String token) async {
-  http.Response res = await sendGetRequest(subRoute: "$userRoute/verify?token=$token");
+  Response res = await sendGetRequest(subRoute: "$userRoute/verify?token=$token");
   return res.statusCode == 200;
 }
 

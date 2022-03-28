@@ -287,7 +287,9 @@ class _AddAddressState extends State<AddAddress> {
           province: province,
           zipCode: zipCode,
           phone: phoneNumber,
-        ));
+        ),
+      context: context
+    );
     Navigator.pop(context);
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address added!')));

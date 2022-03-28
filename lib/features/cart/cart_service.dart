@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:charset/charset.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart';
-import 'package:http/src/response.dart';
 import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
@@ -13,9 +12,9 @@ import '../../services/api_service.dart';
 import '../user/bloc/user_bloc.dart';
 import 'cart_bloc/cart_bloc.dart';
 
-Future<Response> replaceDBCart(String token, List<CartItemModel> cartItems) async {
+Future<Response> replaceDBCart(String token, List<CartItemModel> cartItems, {BuildContext? context}) async {
   List<Map<String, dynamic>> replacement = convertToDBCartItems(cartItems);
-  return await sendPostRequest(subRoute: cartRoute, token: token, data: replacement);
+  return await sendPostRequest(subRoute: cartRoute, token: token, data: replacement, context: context);
 }
 
 Future<Map<String, ItemModel>> getFullItemModelCartData(String token) async {
@@ -24,10 +23,9 @@ Future<Map<String, ItemModel>> getFullItemModelCartData(String token) async {
     throw res;
   }
 
-  List<dynamic> body = jsonDecode(res.body);
   Map<String, ItemModel> result = {};
 
-  for (var element in body) {
+  for (var element in res.data) {
     ItemModel item = ItemModel.fromDBMap(element);
     result[item.id.hexString] = item;
   }
@@ -68,11 +66,11 @@ List<Map<String, dynamic>> convertToDBCartItems(Iterable<CartItemModel> cartItem
   return cartItems.map((e) => convertToDBCartItem(e)).toList();
 }
 
-void saveCart(BuildContext  context) {
+void saveCart(BuildContext context) {
   UserState userState = context.read<UserBloc>().state;
   if (userState is! UserLoggedInState) return;
   List<CartItemModel> cartItems = context.read<CartBloc>().state.items;
   if (listEquals(cartItems, userState.cart)) return;
 
-  replaceDBCart(userState.token, cartItems);
+  replaceDBCart(userState.token, cartItems, context: context);
 }

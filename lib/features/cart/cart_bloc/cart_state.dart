@@ -1,5 +1,6 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/src/response.dart';
 import 'package:vivity/features/cart/cart_service.dart';
 import 'package:vivity/models/shipping_method.dart';
 import 'package:vivity/widgets/quantity.dart';
@@ -122,8 +123,8 @@ class CartState {
     return -1;
   }
 
-  Future<Response> saveToDatabase(String token) async {
-    return await replaceDBCart(token, _items);
+  Future<Response> saveToDatabase(String token, {BuildContext? context}) async {
+    return await replaceDBCart(token, _items, context: context);
   }
 
   @override

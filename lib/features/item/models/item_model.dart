@@ -67,13 +67,14 @@ class CartItemModel {
   }
 
   factory CartItemModel.fromMap(Map<String, dynamic> map) {
-    ItemModel item;
-    try {
-      // TODO: Implement check to see if item no longer exists. if it doesn't remove. An error can also be a connection error.
-      item = getItemFromId(map['businessId'], map['id']) ?? itemModelDemo2;
-    } catch (ex) {
-      rethrow;
-    }
+    // ItemModel? item;
+    // try {
+    //   // TODO: Implement check to see if item no longer exists. if it doesn't remove. An error can also be a connection error.
+    //   item = getItemFromId(ObjectId.fromHexString(map['id']));
+    // } catch (ex) {
+    //   rethrow;
+    // }
+    // if (item ==null) throw Exception('Item with ID ${map['id']} not found but tried to be initialized.');
 
     return CartItemModel(
       previewImage: map['previewImage'] as String,
@@ -81,7 +82,7 @@ class CartItemModel {
       modifiersChosen: (map['modifiersChosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
       price: map['price'] as double,
       quantity: map['quantity'] as int,
-      item: item,
+      item: itemModelDemo,
     );
   }
 

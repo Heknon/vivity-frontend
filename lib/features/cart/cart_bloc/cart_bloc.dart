@@ -1,9 +1,5 @@
-import 'dart:async';
-
-import 'package:equatable/equatable.dart';
-import 'package:fade_in_widget/fade_in_widget.dart';
+import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:meta/meta.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
 import '../../../models/shipping_method.dart';

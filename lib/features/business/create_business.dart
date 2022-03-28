@@ -13,6 +13,7 @@ import 'package:place_picker/place_picker.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/base_page.dart';
+import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/explore/bloc/explore_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -43,8 +44,33 @@ class _CreateBusinessState extends State<CreateBusiness> {
   LocationResult? locationData;
 
   @override
+  void initState() {
+    super.initState();
+
+    if (context.read<UserBloc>().state is BusinessUserLoggedInState) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You already have a business registered!')));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // print("build business");
+    // if (context.read<UserBloc>().state is BusinessUserLoggedInState) {
+    //   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
+    //   ScaffoldMessenger.of(context).clearSnackBars();
+    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You already have a business registered!')));
+    // }
+
     return BasePage(
+      userStateListener: (ctx, state) {
+        if (state is BusinessUserLoggedInState) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered your business!')));
+        }
+      },
       body: defaultGradientBackground(
         child: SingleChildScrollView(
           child: Form(
@@ -119,10 +145,11 @@ class _CreateBusinessState extends State<CreateBusiness> {
                   ),
                 ],
                 Divider(thickness: 0, color: Colors.transparent),
-                if (locationData != null) Text(
-                  'Selected: ${locationData!.name}',
-                  style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
-                ),
+                if (locationData != null)
+                  Text(
+                    'Selected: ${locationData!.name}',
+                    style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
+                  ),
                 TextButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(primaryComplementaryColor),
@@ -211,6 +238,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
           businessNationalId: nationalBusinessNumber,
           ownerId: ownerId,
           location: location,
+          context: context,
         ));
   }
 

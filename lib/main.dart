@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart';
+import 'package:http/io_client.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sizer/sizer.dart';
@@ -14,6 +16,7 @@ import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/models/shipping_method.dart';
+import 'package:vivity/services/http_service.dart';
 import 'package:vivity/services/storage_service.dart';
 import 'package:vivity/features/item/item_page.dart';
 
@@ -22,17 +25,7 @@ import 'features/cart/cart_bloc/cart_bloc.dart';
 import 'features/checkout/checkout_service.dart';
 import 'features/explore/bloc/explore_bloc.dart';
 import 'features/home/home_page.dart';
-import 'package:http/http.dart' as http;
 
-class VivityOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    HttpClient client = super.createHttpClient(context);
-    client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    client.connectionTimeout = const Duration(seconds: 5);
-    return client;
-  }
-}
 
 /*
 Check if CheckoutBloc is good
@@ -50,7 +43,7 @@ Add hamburger menu for logout
  */
 
 void main() async {
-  HttpOverrides.global = VivityOverrides();
+  initDioHttpServices();
   WidgetsFlutterBinding.ensureInitialized();
 
   HydratedStorage storage = await initializeStorage();
@@ -101,7 +94,7 @@ class Vivity extends StatelessWidget {
             home: Builder(builder: (ctxWithBloc) {
               return BlocListener<UserBloc, UserState>(
                 listener: (ctx, userState) {
-                  if (userState is UserLoggedOutState  && userState is! UserLoginFailedState) {
+                  if (userState is UserLoggedOutState && userState is! UserLoginFailedState) {
                     logoutRoutine(ctx);
                   } else if (userState is UserLoggedInState) {
                     loginRoutine(userState, ctx);

@@ -5,8 +5,15 @@ class LikeButton extends StatefulWidget {
   final LikeButtonController? controller;
   final Color? color;
   final void Function(bool liked)? onClick;
+  final bool initialLiked;
 
-  const LikeButton({Key? key, this.controller, this.color = Colors.white, this.onClick}) : super(key: key);
+  const LikeButton({
+    Key? key,
+    this.controller,
+    this.color = Colors.white,
+    this.onClick,
+    this.initialLiked = false,
+  }) : super(key: key);
 
   @override
   _LikeButtonState createState() => _LikeButtonState();
@@ -33,6 +40,7 @@ class _LikeButtonState extends State<LikeButton> {
     );
 
     _controller = widget.controller ?? LikeButtonController();
+    _controller.liked = widget.initialLiked;
     _controller.addListener(() {
       setState(() {});
     });

@@ -42,7 +42,7 @@ class UserLoggedInState extends UserState {
   late String name;
   late String email;
   late String phone;
-  late String? profilePicture;
+  late File? profilePicture;
   late UserOptions userOptions;
   late List<Address> addresses;
   late List<ItemModel> likedItems;
@@ -62,6 +62,7 @@ class UserLoggedInState extends UserState {
     required this.likedItems,
     required this.cart,
     required this.orderHistory,
+    this.profilePicture,
     this.businessId,
     this.isSystemAdmin = false,
   });
@@ -76,12 +77,12 @@ class UserLoggedInState extends UserState {
     email = mapUser['email'];
     name = mapUser['name'];
     phone = mapUser['phone'];
-    profilePicture = mapUser['profile_picture'];
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
     addresses = buildAddressesFromUserMap(mapUser['addresses']);
     likedItems = await buildLikedItemsFromUserMap(mapUser['liked_items']);
     orderHistory = buildOrderHistoryFromUserMap(mapUser['order_history'] ?? []);
     cart = await buildCartFromUserMap(mapUser['cart'] ?? []);
+    profilePicture = await getProfilePicture(token);
 
     return null;
   }
@@ -104,9 +105,9 @@ class UserLoggedInState extends UserState {
   Future<List<ItemModel>> buildLikedItemsFromUserMap(List<dynamic> likedItems) async {
     if (likedItems.isEmpty) return List.empty(growable: true);
 
-    List<String> itemIds = likedItems.map((e) => e as String).toList();
+    List<ObjectId> itemIds = likedItems.map((e) => ObjectId.fromHexString(e as String)).toList();
 
-    return await getItemsFromStringIds(token, itemIds);
+    return await getItemsFromIds(token, itemIds);
   }
 
   List<Order> buildOrderHistoryFromUserMap(List<dynamic> ordersMap) {
@@ -143,16 +144,19 @@ class UserLoggedInState extends UserState {
     return await getCartFromDBCart(token, cartMap);
   }
 
-  Future<BusinessUserLoggedInState> createBusiness(UserRegisterBusinessEvent e) async {
-    Response res = await sendPostRequest(
-        subRoute:
-            "$businessRoute?name=${e.businessName}&email=${e.businessEmail}&phone=${e.businessPhone}&latitude=${e.location.latitude}&longitude=${e.location.longitude}&business_national_number=${e.businessNationalId}",
-        token: token,
-        contentType: 'image/png',
-        data: await e.ownerId.readAsBytes());
+  Future<BusinessUserLoggedInState?> createBusiness(UserRegisterBusinessEvent e) async {
+    String route = businessRoute +
+        "?name=${e.businessName}" +
+        "&email=${e.businessEmail}" +
+        "&phone=${e.businessPhone}" +
+        "&latitude=${e.location.latitude}" +
+        "&longitude=${e.location.longitude}" +
+        "&business_national_number=${e.businessNationalId}";
+    Response res = await sendPostRequestUploadFile(subRoute: route, file: e.ownerId, token: token, context: e.context);
 
-    dynamic parsed = jsonDecode(res.body);
-    return BusinessUserLoggedInState.fromCreationObject(parsed['token'], this, parsed['business']);
+    if (res.statusCode != 200) return null;
+
+    return BusinessUserLoggedInState.fromCreationObject(res.data['token'], this, res.data['business']);
   }
 
   UserLoggedInState copyWith({
@@ -168,6 +172,7 @@ class UserLoggedInState extends UserState {
     List<Order>? orderHistory,
     ObjectId? businessId,
     bool? isSystemAdmin,
+    File? profilePicture,
   }) {
     return UserLoggedInState.copyConstructor(
       token: token ?? this.token,
@@ -182,6 +187,7 @@ class UserLoggedInState extends UserState {
       orderHistory: orderHistory ?? this.orderHistory,
       businessId: businessId ?? this.businessId,
       isSystemAdmin: isSystemAdmin ?? this.isSystemAdmin,
+      profilePicture: profilePicture,
     );
   }
 
@@ -196,6 +202,9 @@ class UserLoggedInState extends UserState {
           email == other.email &&
           phone == other.phone &&
           userOptions == other.userOptions &&
+          isSystemAdmin == other.isSystemAdmin &&
+          businessId == other.businessId &&
+          profilePicture == other.profilePicture &&
           listEquals(addresses, other.addresses) &&
           listEquals(likedItems, other.likedItems) &&
           listEquals(cart, other.cart) &&
@@ -212,7 +221,10 @@ class UserLoggedInState extends UserState {
       addresses.hashCode ^
       likedItems.hashCode ^
       cart.hashCode ^
-      orderHistory.hashCode;
+      orderHistory.hashCode ^
+      isSystemAdmin.hashCode ^
+      businessId.hashCode ^
+      profilePicture.hashCode;
 }
 
 class BusinessUserLoggedInState extends UserLoggedInState {
@@ -223,8 +235,8 @@ class BusinessUserLoggedInState extends UserLoggedInState {
   @override
   Future<String?> init() async {
     await super.init();
-    dynamic businessData = await sendGetRequest(subRoute: businessRoute, token: token);
-    business = Business.fromMap(businessData);
+    Response businessData = await sendGetRequest(subRoute: businessRoute, token: token);
+    business = Business.fromMap(businessData.data);
   }
 
   BusinessUserLoggedInState.fromCreationObject(String token, UserLoggedInState state, dynamic businessData)
@@ -239,9 +251,18 @@ class BusinessUserLoggedInState extends UserLoggedInState {
           likedItems: state.likedItems,
           orderHistory: state.orderHistory,
           userOptions: state.userOptions,
+          profilePicture: state.profilePicture,
           isSystemAdmin: state.isSystemAdmin,
-          businessId: state.businessId,
+          businessId: ObjectId.fromHexString(businessData['_id']),
         ) {
     business = Business.fromMap(businessData);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      super == other && other is BusinessUserLoggedInState && runtimeType == other.runtimeType && business == other.business;
+
+  @override
+  int get hashCode => super.hashCode ^ business.hashCode;
 }

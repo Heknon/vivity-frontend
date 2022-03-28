@@ -20,6 +20,7 @@ class UserUpdateAddressesEvent extends UserEvent {
 }
 
 class UserRegisterBusinessEvent extends UserEvent {
+  final BuildContext context;
   final String businessName;
   final String businessEmail;
   final String businessPhone;
@@ -34,5 +35,26 @@ class UserRegisterBusinessEvent extends UserEvent {
     required this.businessNationalId,
     required this.ownerId,
     required this.location,
+    required this.context,
   });
+}
+
+class UserRenewTokenEvent extends UserEvent {}
+
+class UserUpdateProfilePictureEvent extends UserEvent {
+  final File? picture;
+
+  UserUpdateProfilePictureEvent(this.picture);
+}
+
+class UserAddFavoriteEvent extends UserEvent {
+  final ObjectId itemId;
+
+  UserAddFavoriteEvent(this.itemId);
+}
+
+class UserRemoveFavoriteEvent extends UserEvent {
+  final ObjectId itemId;
+
+  UserRemoveFavoriteEvent(this.itemId);
 }

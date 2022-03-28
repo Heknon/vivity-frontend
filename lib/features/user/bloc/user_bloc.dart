@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:meta/meta.dart';
 import 'package:objectid/objectid/objectid.dart';
+import 'package:vivity/features/auth/auth_service.dart';
 import 'package:vivity/features/cart/cart_service.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/user_options.dart';
@@ -29,7 +32,10 @@ part 'user_event.dart';
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
+  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 20), tokenRenewalRoutine);
+
   UserBloc() : super(UserLoggedOutState()) {
+    _renewTokenTimer.reset();
     on<UserLoginEvent>((event, emit) async {
       UserLoggedInState state =
           JwtDecoder.decode(event.token)['business_id'] == null ? UserLoggedInState(event.token) : BusinessUserLoggedInState(event.token);
@@ -63,8 +69,60 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
     on<UserRegisterBusinessEvent>((event, emit) async {
       if (state is! UserLoggedInState) return;
-      BusinessUserLoggedInState newState = await (state as UserLoggedInState).createBusiness(event);
+      BusinessUserLoggedInState? newState = await (state as UserLoggedInState).createBusiness(event);
+      if (newState == null) return;
       emit(newState);
     });
+
+    on<UserRenewTokenEvent>((event, emit) async {
+      if (state is! UserLoggedInState) return;
+      String? email = await getStoredEmail();
+      String? password = await getStoredPassword();
+      if (email == null || password == null) {
+        emit(UserLoggedOutState());
+        return;
+      }
+
+      String? token = await login(email, password);
+      if (token == null) {
+        emit(UserLoggedOutState());
+        return;
+      }
+
+      UserLoggedInState renewedState = (state as UserLoggedInState).copyWith(token: token);
+      emit(renewedState);
+    });
+
+    on<UserUpdateProfilePictureEvent>((event, emit) async {
+      Response? response = await updateProfilePicture((state as UserLoggedInState).token, event.picture);
+      if (response == null) return;
+
+      File? picture = await getProfilePicture((state as UserLoggedInState).token);
+      UserLoggedInState newState = (state as UserLoggedInState).copyWith(profilePicture: picture);
+      emit(newState);
+    });
+
+    on<UserAddFavoriteEvent>((event, emit) async {
+      List<ObjectId>? likedIds = (await addFavoriteItem((state as UserLoggedInState).token, event.itemId))?.toList();
+      if (likedIds == null) return;
+
+      List<ItemModel> items = await getItemsFromIds((state as UserLoggedInState).token, likedIds);
+      UserLoggedInState newState = (state as UserLoggedInState).copyWith(likedItems: items);
+      emit(newState);
+    });
+
+    on<UserRemoveFavoriteEvent>((event, emit) async {
+      List<ObjectId>? likedIds = (await removeFavoriteItem((state as UserLoggedInState).token, event.itemId))?.toList();
+      if (likedIds == null) return;
+
+      List<ItemModel> items = await getItemsFromIds((state as UserLoggedInState).token, likedIds);
+      UserLoggedInState newState = (state as UserLoggedInState).copyWith(likedItems: items);
+      emit(newState);
+    });
+  }
+
+  void tokenRenewalRoutine() {
+    add(UserRenewTokenEvent());
+    _renewTokenTimer.reset();
   }
 }
