@@ -225,10 +225,6 @@ class BusinessMetrics {
   BusinessMetrics copyWith({
     int? views,
   }) {
-    if ((views == null || identical(views, this.views))) {
-      return this;
-    }
-
     return BusinessMetrics(
       views: views ?? this.views,
     );

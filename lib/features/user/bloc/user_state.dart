@@ -78,7 +78,7 @@ class UserLoggedInState extends UserState {
     name = mapUser['name'];
     phone = mapUser['phone'];
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
-    addresses = buildAddressesFromUserMap(mapUser['addresses']);
+    addresses = buildAddressesFromUserMap(mapUser['shipping_addresses']);
     likedItems = await buildLikedItemsFromUserMap(mapUser['liked_items']);
     orderHistory = await buildOrderHistoryFromUserMap(mapUser['order_history'] ?? []);
     cart = await buildCartFromUserMap(mapUser['cart'] ?? []);

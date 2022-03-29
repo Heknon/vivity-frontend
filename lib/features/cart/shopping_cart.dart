@@ -15,7 +15,6 @@ import 'cart_view.dart';
 
 class ShoppingCart extends StatelessWidget {
   final double heightOffsetFactor;
-  final List<CartItemModel> models = [cartItemModel, cartItemModel2];
 
   ShoppingCart({Key? key, this.heightOffsetFactor = 0.4}) : super(key: key);
 
