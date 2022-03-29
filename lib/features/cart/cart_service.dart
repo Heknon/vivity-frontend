@@ -26,7 +26,7 @@ Future<Map<String, ItemModel>> getFullItemModelCartData(String token) async {
   Map<String, ItemModel> result = {};
 
   for (var element in res.data) {
-    ItemModel item = ItemModel.fromDBMap(element);
+    ItemModel item = ItemModel.fromMap(element);
     result[item.id.hexString] = item;
   }
 

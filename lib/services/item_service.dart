@@ -24,7 +24,7 @@ Future<List<ItemModel>> getItemsFromStringIds(String token, List<String> ids) as
     throw Exception('Failed to get items. $response');
   }
 
-  return (response.data as List<dynamic>).map((e) => ItemModel.fromDBMap(e)).toList();
+  return (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList();
 }
 
 Future<List<ItemModel>> searchByCoordinates(String token, LatLng position, double radius, {String query = "*", String category = "*"}) async {
@@ -40,7 +40,7 @@ Future<List<ItemModel>> searchByCoordinates(String token, LatLng position, doubl
     throw Exception('Failed to search. $response');
   }
 
-  return (response.data as List<dynamic>).map((e) => ItemModel.fromDBMap(e)).toList();
+  return (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList();
 }
 
 Future<Iterable<ObjectId>?> addFavoriteItem(String token, ObjectId itemId) async {

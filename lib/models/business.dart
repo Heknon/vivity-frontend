@@ -9,6 +9,7 @@ class Business {
   final Map<String, List<ObjectId>> categories;
   final ContactInformation contact;
   final int nationalBusinessId;
+  final BusinessMetrics metrics;
   final String? ownerId; // TODO: If null ask to resubmit id.
 
   Business({
@@ -19,6 +20,7 @@ class Business {
     required this.contact,
     required this.nationalBusinessId,
     required this.ownerId,
+    required this.metrics,
   });
 
   Business copyWith({
@@ -29,6 +31,7 @@ class Business {
     ContactInformation? contact,
     int? nationalBusinessId,
     String? ownerId,
+    BusinessMetrics? metrics,
   }) {
     if ((name == null || identical(name, this.name)) &&
         (location == null || identical(location, this.location)) &&
@@ -36,33 +39,34 @@ class Business {
         (categories == null || identical(categories, this.categories)) &&
         (contact == null || identical(contact, this.contact)) &&
         (nationalBusinessId == null || identical(nationalBusinessId, this.nationalBusinessId)) &&
+        (ownerId == null || identical(ownerId, this.ownerId)) &&
         (ownerId == null || identical(ownerId, this.ownerId))) {
       return this;
     }
 
     return Business(
-      name: name ?? this.name,
-      location: location ?? this.location,
-      items: items ?? this.items,
-      categories: categories ?? this.categories,
-      contact: contact ?? this.contact,
-      nationalBusinessId: nationalBusinessId ?? this.nationalBusinessId,
-      ownerId: ownerId ?? this.ownerId,
-    );
+        name: name ?? this.name,
+        location: location ?? this.location,
+        items: items ?? this.items,
+        categories: categories ?? this.categories,
+        contact: contact ?? this.contact,
+        nationalBusinessId: nationalBusinessId ?? this.nationalBusinessId,
+        ownerId: ownerId ?? this.ownerId,
+        metrics: metrics ?? this.metrics);
   }
 
   factory Business.fromMap(Map<String, dynamic> map) {
     return Business(
-      name: map['name'] as String,
-      location: LatLng(map['location'][0], map['location'][1]),
-      items: (map['items'] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),
-      categories: (map['categories'] as List<dynamic>)
-          .asMap()
-          .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
-      contact: ContactInformation.fromMap(map['contact']),
-      nationalBusinessId: map['national_business_id'] as int,
-      ownerId: map['owner_id_card'] as String?,
-    );
+        name: map['name'] as String,
+        location: LatLng(map['location'][0], map['location'][1]),
+        items: (map['items'] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),
+        categories: (map['categories'] as List<dynamic>)
+            .asMap()
+            .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
+        contact: ContactInformation.fromMap(map['contact']),
+        nationalBusinessId: map['national_business_id'] as int,
+        ownerId: map['owner_id_card'] as String?,
+        metrics: BusinessMetrics.fromMap(map["metrics"]));
   }
 
   Map<String, dynamic> toMap() {
@@ -83,6 +87,7 @@ class Business {
       'contact': contact.toMap(),
       'national_business_id': nationalBusinessId,
       'owner_id_card': ownerId,
+      'metrics': metrics.toMap()
     } as Map<String, dynamic>;
   }
 
@@ -97,15 +102,23 @@ class Business {
           mapEquals(categories, other.categories) &&
           contact == other.contact &&
           nationalBusinessId == other.nationalBusinessId &&
-          ownerId == other.ownerId;
+          ownerId == other.ownerId &&
+          metrics == other.metrics;
 
   @override
   int get hashCode =>
-      name.hashCode ^ location.hashCode ^ items.hashCode ^ categories.hashCode ^ contact.hashCode ^ nationalBusinessId.hashCode ^ ownerId.hashCode;
+      name.hashCode ^
+      location.hashCode ^
+      items.hashCode ^
+      categories.hashCode ^
+      contact.hashCode ^
+      nationalBusinessId.hashCode ^
+      ownerId.hashCode ^
+      metrics.hashCode;
 
   @override
   String toString() {
-    return 'Business{name: $name, location: $location, items: $items, categories: $categories, contact: $contact, nationalBusinessId: $nationalBusinessId, ownerId: $ownerId}';
+    return 'Business{name: $name, location: $location, items: $items, categories: $categories, contact: $contact, nationalBusinessId: $nationalBusinessId, ownerId: $ownerId, metrics: $metrics}';
   }
 }
 
@@ -187,4 +200,48 @@ class ContactInformation {
   String toString() {
     return 'ContactInformation{phone: $phone, email: $email, instagram: $instagram, twitter: $twitter, facebook: $facebook}';
   }
+}
+
+class BusinessMetrics {
+  final int views;
+
+  BusinessMetrics({
+    required this.views,
+  });
+
+  factory BusinessMetrics.fromMap(Map<String, dynamic> map) {
+    return BusinessMetrics(
+      views: map['views'] as int,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    // ignore: unnecessary_cast
+    return {
+      'views': views,
+    } as Map<String, dynamic>;
+  }
+
+  BusinessMetrics copyWith({
+    int? views,
+  }) {
+    if ((views == null || identical(views, this.views))) {
+      return this;
+    }
+
+    return BusinessMetrics(
+      views: views ?? this.views,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'BusinessMetrics{views: $views}';
+  }
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || other is BusinessMetrics && runtimeType == other.runtimeType && views == other.views;
+
+  @override
+  int get hashCode => views.hashCode;
 }

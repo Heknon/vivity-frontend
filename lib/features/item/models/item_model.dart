@@ -7,7 +7,6 @@ import 'package:vivity/services/item_service.dart';
 import 'package:vivity/services/storage_service.dart';
 import 'package:latlong2/latlong.dart';
 
-
 class CartItemModel {
   final String previewImage;
   final String title;
@@ -136,6 +135,7 @@ class ItemModel {
   final String category;
   final List<String> tags;
   final int stock;
+  final ItemMetrics metrics;
 
   const ItemModel({
     required this.id,
@@ -151,6 +151,7 @@ class ItemModel {
     required this.category,
     required this.tags,
     required this.stock,
+    required this.metrics,
   });
 
   @override
@@ -172,6 +173,7 @@ class ItemModel {
     String? category,
     List<String>? tags,
     int? stock,
+    ItemMetrics? metrics,
   }) {
     return ItemModel(
       businessId: businessId ?? this.businessId,
@@ -187,10 +189,11 @@ class ItemModel {
       category: category ?? this.category,
       tags: tags ?? this.tags,
       stock: stock ?? this.stock,
+      metrics: metrics ?? this.metrics,
     );
   }
 
-  factory ItemModel.fromDBMap(Map<String, dynamic> map) {
+  factory ItemModel.fromMap(Map<String, dynamic> map) {
     return ItemModel(
       businessId: ObjectId.fromHexString(map['business_id']),
       location: LatLng(map['location'][0], map['location'][1]),
@@ -205,10 +208,11 @@ class ItemModel {
       category: map['category'] as String,
       tags: (map['tags'] as List<dynamic>).map((e) => e as String).toList(),
       stock: map['stock'] as int,
+      metrics: ItemMetrics.fromMap(map["metrics"]),
     );
   }
 
-  Map<String, dynamic> toDBMap() {
+  Map<String, dynamic> toMap() {
     return {
       'business_id': businessId.bytes,
       '_id': id.bytes,
@@ -222,7 +226,8 @@ class ItemModel {
       'category': category,
       'tags': tags,
       'stock': stock,
-      'location': [location.latitude, location.longitude]
+      'location': [location.latitude, location.longitude],
+      'metrics': metrics.toMap(),
     };
   }
 }
@@ -483,4 +488,64 @@ class ModificationButton {
 
   @override
   int get hashCode => name.hashCode ^ side.hashCode ^ data.hashCode ^ dataType.hashCode ^ multiSelect.hashCode;
+}
+
+class ItemMetrics {
+  final int views;
+  final int orders;
+  final int likes;
+
+  ItemMetrics({
+    required this.views,
+    required this.orders,
+    required this.likes,
+  });
+
+  ItemMetrics copyWith({
+    int? views,
+    int? orders,
+    int? likes,
+  }) {
+    if ((views == null || identical(views, this.views)) &&
+        (orders == null || identical(orders, this.orders)) &&
+        (likes == null || identical(likes, this.likes))) {
+      return this;
+    }
+
+    return ItemMetrics(
+      views: views ?? this.views,
+      orders: orders ?? this.orders,
+      likes: likes ?? this.likes,
+    );
+  }
+
+  factory ItemMetrics.fromMap(Map<String, dynamic> map) {
+    return ItemMetrics(
+      views: map['views'] as int,
+      orders: map['orders'] as int,
+      likes: map['likes'] as int,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    // ignore: unnecessary_cast
+    return {
+      'views': views,
+      'orders': orders,
+      'likes': likes,
+    } as Map<String, dynamic>;
+  }
+
+  @override
+  String toString() {
+    return 'ItemMetrics{views: $views, orders: $orders, likes: $likes}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ItemMetrics && runtimeType == other.runtimeType && views == other.views && orders == other.orders && likes == other.likes;
+
+  @override
+  int get hashCode => views.hashCode ^ orders.hashCode ^ likes.hashCode;
 }
