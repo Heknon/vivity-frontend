@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/helpers/conversion_helper.dart';
 
 class Address extends StatelessWidget {
@@ -14,6 +15,7 @@ class Address extends StatelessWidget {
   final String zipCode;
   final String phone;
   final VoidCallback? onTap;
+  final VoidCallback? onDeleteTap;
   final Color? color;
 
   const Address({
@@ -26,8 +28,9 @@ class Address extends StatelessWidget {
     required this.extraInfo,
     required this.zipCode,
     required this.phone,
-    required this.onTap,
-    this.color
+    this.onTap,
+    this.onDeleteTap,
+    this.color,
   }) : super(key: key);
 
   @override
@@ -37,10 +40,10 @@ class Address extends StatelessWidget {
       child: Card(
         elevation: 2,
         color: color,
-        child: InkWell(
+        child: onTap != null ? InkWell(
           child: buildCardBody(context),
           onTap: onTap,
-        ),
+        ) : buildCardBody(context),
       ),
     );
   }
@@ -67,7 +70,22 @@ class Address extends StatelessWidget {
           ),
           Text('$street $extraInfo', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
           Text('$province, $city $zipCode', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
-          Text('Phone: $phone', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Phone: $phone', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
+              IconButton(
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                constraints: BoxConstraints(),
+                onPressed: onDeleteTap,
+                icon: Icon(
+                  Icons.delete_forever,
+                  color: primaryComplementaryColor,
+                ),
+              )
+            ],
+          ),
         ],
       ),
     );

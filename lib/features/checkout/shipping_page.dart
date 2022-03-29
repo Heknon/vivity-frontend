@@ -5,6 +5,7 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/checkout/checkout_progress.dart';
 import 'package:vivity/features/checkout/payment_page.dart';
+import 'package:vivity/features/checkout/ui_checkout_helper.dart';
 import 'package:vivity/models/payment_method.dart';
 import 'package:vivity/models/shipping_method.dart';
 import '../shipping/add_address.dart';
@@ -64,63 +65,26 @@ class _ShippingPageState extends State<ShippingPage> {
                     }
 
                     return SizedBox(
-                      height: 30.h,
-                      child: ListView.builder(
-                        itemCount: state.addresses.length,
-                        itemBuilder: (ctx, i) {
-                          Address curr = state.addresses[i];
-                          address_widget.Address widget = address_widget.Address(
-                            name: curr.name,
-                            country: curr.country,
-                            city: curr.city,
-                            street: curr.street,
-                            extraInfo: curr.extraInfo,
-                            province: curr.province,
-                            zipCode: curr.zipCode,
-                            phone: curr.phone,
-                            color: selectedAddress == i ? Colors.white70 : Colors.white,
-                            onTap: () => checkoutState.shippingMethod == ShippingMethod.pickup
-                                ? null
-                                : setState(() {
-                                    if (selectedAddress == i) {
-                                      selectedAddress = null;
-                                      return;
-                                    }
-                                    selectedAddress = i;
-                                  }),
-                          );
-
-                          return widget;
-                        },
-                      ),
-                    );
+                        height: 30.h,
+                        child: buildShippingAddressList(
+                          state.addresses,
+                          context,
+                          token: state.token,
+                          highlightIndex: selectedAddress,
+                          onTap: (i) => checkoutState.shippingMethod == ShippingMethod.pickup
+                              ? null
+                              : setState(() {
+                                  if (selectedAddress == i) {
+                                    selectedAddress = null;
+                                    return;
+                                  }
+                                  selectedAddress = i;
+                                }),
+                        ));
                   },
                 ),
                 SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () => showDialog(context: context, builder: (ctx) => AddAddress()),
-                  child: Container(
-                    width: 250,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Theme.of(context).colorScheme.secondaryVariant, width: 1.5),
-                      borderRadius: const BorderRadius.all(Radius.circular(7)),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.add,
-                          size: 50.sp,
-                        ),
-                        Text(
-                          'Add New Address',
-                          style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.black),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
+                buildAddressCreationWidget(context),
                 SizedBox(height: 50),
                 TextButton(
                   style: ButtonStyle(

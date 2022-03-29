@@ -1,18 +1,35 @@
 import 'package:vivity/features/user/models/order_item.dart';
 
+import 'address.dart';
+
 class Order {
   final DateTime orderDate;
+  final double subtotal;
+  final double shippingCost;
+  final double cuponDiscount;
+  final double total;
+  final Address? address;
   final List<OrderItem> items;
 
   const Order({
     required this.orderDate,
     required this.items,
+    required this.subtotal,
+    required this.shippingCost,
+    required this.cuponDiscount,
+    required this.total,
+    required this.address,
   });
 
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
       orderDate: map['order_date'] as DateTime,
       items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
+      address: map.containsKey('shipping_address') ? Address.fromMap(map['shipping_address']) : null,
+      cuponDiscount: map['cupon_discount'],
+      shippingCost: map['shipping_cost'],
+      subtotal: map['subtotal'],
+      total: map['total'],
     );
   }
 
@@ -21,6 +38,64 @@ class Order {
     return {
       'order_date': orderDate,
       'items': items.map((e) => e.toMap()).toList(),
+      'address': address?.toMap(),
+      'cupon_discount': cuponDiscount,
+      'shipping_cost': shippingCost,
+      'subtotal': subtotal,
+      'total': total,
     } as Map<String, dynamic>;
   }
+
+  Order copyWith({
+    DateTime? orderDate,
+    double? subtotal,
+    double? shippingCost,
+    double? cuponDiscount,
+    double? total,
+    Address? address,
+    List<OrderItem>? items,
+  }) {
+    if ((orderDate == null || identical(orderDate, this.orderDate)) &&
+        (subtotal == null || identical(subtotal, this.subtotal)) &&
+        (shippingCost == null || identical(shippingCost, this.shippingCost)) &&
+        (cuponDiscount == null || identical(cuponDiscount, this.cuponDiscount)) &&
+        (total == null || identical(total, this.total)) &&
+        (address == null || identical(address, this.address)) &&
+        (items == null || identical(items, this.items))) {
+      return this;
+    }
+
+    return Order(
+      orderDate: orderDate ?? this.orderDate,
+      subtotal: subtotal ?? this.subtotal,
+      shippingCost: shippingCost ?? this.shippingCost,
+      cuponDiscount: cuponDiscount ?? this.cuponDiscount,
+      total: total ?? this.total,
+      address: address ?? this.address,
+      items: items ?? this.items,
+    );
+  }
+
+
+  @override
+  String toString() {
+    return 'Order{orderDate: $orderDate, subtotal: $subtotal, shippingCost: $shippingCost, cuponDiscount: $cuponDiscount, total: $total, address: $address, items: $items}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Order &&
+          runtimeType == other.runtimeType &&
+          orderDate == other.orderDate &&
+          subtotal == other.subtotal &&
+          shippingCost == other.shippingCost &&
+          cuponDiscount == other.cuponDiscount &&
+          total == other.total &&
+          address == other.address &&
+          items == other.items;
+
+  @override
+  int get hashCode =>
+      orderDate.hashCode ^ subtotal.hashCode ^ shippingCost.hashCode ^ cuponDiscount.hashCode ^ total.hashCode ^ address.hashCode ^ items.hashCode;
 }
