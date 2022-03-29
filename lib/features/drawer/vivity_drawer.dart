@@ -10,6 +10,7 @@ import 'package:vivity/features/business/create_business.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
+import 'package:vivity/features/user/profile_page.dart';
 import 'package:vivity/main.dart';
 
 import '../../config/themes/themes_config.dart';
@@ -96,7 +97,7 @@ class VivityDrawer extends StatelessWidget {
                   ],
                 ),
                 const Divider(thickness: 0),
-                buildMenuButton(text: 'Profile', onPressed: () => print("Pressed Profile"), context: context),
+                buildMenuButton(text: 'Profile', onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProfilePage())), context: context),
                 const Divider(thickness: 0),
                 buildMenuButton(text: 'Settings', onPressed: () => print("Pressed Settings"), context: context),
                 SizedBox(height: 7.h),

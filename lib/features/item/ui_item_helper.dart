@@ -99,12 +99,12 @@ Widget buildItemContentGrid(
   );
 }
 
-Widget buildDatabaseLikeButton(ObjectId itemId, LikeButtonController controller, BuildContext context, bool initialLiked) {
+Widget buildDatabaseLikeButton(ItemModel item, LikeButtonController controller, BuildContext context, bool initialLiked) {
   return BlocListener<UserBloc, UserState>(
     listener: (ctx, state) {
       if (state is! UserLoggedInState) return;
       for (var element in state.likedItems) {
-        if (element.id == itemId) return controller.setLiked(true);
+        if (element.id == item.id) return controller.setLiked(true);
       }
 
       controller.setLiked(false);
@@ -115,9 +115,9 @@ Widget buildDatabaseLikeButton(ObjectId itemId, LikeButtonController controller,
       initialLiked: initialLiked,
       onClick: (liked) {
         if (liked) {
-          context.read<UserBloc>().add(UserAddFavoriteEvent(itemId));
+          context.read<UserBloc>().add(UserAddFavoriteEvent(item));
         } else {
-          context.read<UserBloc>().add(UserRemoveFavoriteEvent(itemId));
+          context.read<UserBloc>().add(UserRemoveFavoriteEvent(item.id));
         }
         controller.setLiked(!liked);
       },

@@ -100,7 +100,7 @@ class _PreviewItemState extends State<PreviewItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    buildDatabaseLikeButton(widget.item.id, likeController, context, initialLiked),
+                    buildDatabaseLikeButton(widget.item, likeController, context, initialLiked),
                     Text(
                       "₪${widget.item.price.toStringAsFixed(2)}",
                       maxLines: 1,

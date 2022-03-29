@@ -27,7 +27,8 @@ Future<File?> getProfilePicture(String token) async {
   Response response = await sendGetRequest(subRoute: profilePictureRoute, token: token, contentType: "image/png", responseType: ResponseType.bytes);
   if (response.statusCode != 200) return null;
 
-  return response.data.length < 10 ? null : File((await getTemporaryDirectory()).path + '/pfp_vivity_user.png').writeAsBytes(response.data);
+  String path = (await getTemporaryDirectory()).path;
+  return response.data.length < 10 ? null : File('$path/pfp_vivity_user.png').writeAsBytes(response.data);
 }
 
 Future<List<Order>?> getOrdersFromIds(String token, List<String> orderIds) async {

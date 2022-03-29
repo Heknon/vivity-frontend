@@ -98,15 +98,19 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       if (response == null) return;
 
       File? picture = await getProfilePicture((state as UserLoggedInState).token);
+      picture ??= File("");
+
       UserLoggedInState newState = (state as UserLoggedInState).copyWith(profilePicture: picture);
       emit(newState);
     });
 
     on<UserAddFavoriteEvent>((event, emit) async {
-      List<ObjectId>? likedIds = (await addFavoriteItem((state as UserLoggedInState).token, event.itemId))?.toList();
+      List<ObjectId>? likedIds = (await addFavoriteItem((state as UserLoggedInState).token, event.item.id))?.toList();
       if (likedIds == null) return;
 
-      List<ItemModel> items = await getItemsFromIds((state as UserLoggedInState).token, likedIds);
+      List<ItemModel> items = List.of((state as UserLoggedInState).likedItems);
+      items.removeWhere((element) => element.id == event.item.id);
+      items.add(event.item);
       UserLoggedInState newState = (state as UserLoggedInState).copyWith(likedItems: items);
       emit(newState);
     });
@@ -115,7 +119,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       List<ObjectId>? likedIds = (await removeFavoriteItem((state as UserLoggedInState).token, event.itemId))?.toList();
       if (likedIds == null) return;
 
-      List<ItemModel> items = await getItemsFromIds((state as UserLoggedInState).token, likedIds);
+      List<ItemModel> items = List.of((state as UserLoggedInState).likedItems);
+      items.removeWhere((element) => element.id == event.itemId);
       UserLoggedInState newState = (state as UserLoggedInState).copyWith(likedItems: items);
       emit(newState);
     });

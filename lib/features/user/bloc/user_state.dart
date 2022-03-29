@@ -151,6 +151,7 @@ class UserLoggedInState extends UserState {
     bool? isSystemAdmin,
     File? profilePicture,
   }) {
+    bool setPfpNull = profilePicture?.path.isEmpty ?? false;
     return UserLoggedInState.copyConstructor(
       token: token ?? this.token,
       id: id ?? this.id,
@@ -164,7 +165,7 @@ class UserLoggedInState extends UserState {
       orderHistory: orderHistory ?? this.orderHistory,
       businessId: businessId ?? this.businessId,
       isSystemAdmin: isSystemAdmin ?? this.isSystemAdmin,
-      profilePicture: profilePicture,
+      profilePicture: setPfpNull ? null : profilePicture ?? this.profilePicture,
     );
   }
 

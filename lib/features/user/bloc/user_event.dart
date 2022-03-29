@@ -48,9 +48,9 @@ class UserUpdateProfilePictureEvent extends UserEvent {
 }
 
 class UserAddFavoriteEvent extends UserEvent {
-  final ObjectId itemId;
+  final ItemModel item;
 
-  UserAddFavoriteEvent(this.itemId);
+  UserAddFavoriteEvent(this.item);
 }
 
 class UserRemoveFavoriteEvent extends UserEvent {

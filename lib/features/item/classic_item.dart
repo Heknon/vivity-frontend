@@ -115,7 +115,7 @@ class _ClassicItemState extends State<ClassicItem> {
                         ),
                       ),
                       Spacer(),
-                      buildDatabaseLikeButton(widget.item.id, _likeButtonController, context, initialLiked),
+                      buildDatabaseLikeButton(widget.item, _likeButtonController, context, initialLiked),
                     ],
                   ),
                 ),
