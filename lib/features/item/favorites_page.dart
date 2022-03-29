@@ -36,7 +36,7 @@ class FavoritesPage extends StatelessWidget {
                     crossAxisCount: 2,
                     mainAxisSpacing: 1,
                     crossAxisSpacing: 1,
-                    children: state.likedItems.map((e) => ClassicItem(itemModel: e)).toList(),
+                    children: state.likedItems.map((e) => ClassicItem(item: e)).toList(),
                   ),
                 ),
               )

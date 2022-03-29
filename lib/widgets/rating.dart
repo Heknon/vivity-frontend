@@ -35,10 +35,10 @@ class Rating extends StatelessWidget {
         SvgPicture.asset(
           "assets/icons/star.svg",
           color: Theme.of(context).colorScheme.primaryVariant,
-          width: 12,
+          height: 11.sp,
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 3.0, top: 2),
+          padding: const EdgeInsets.only(left: 3.0),
           child: Text(
             ratingStr.toString(),
             style: GoogleFonts.roboto(fontWeight: FontWeight.w500, fontSize: 12.sp).copyWith(color: color),

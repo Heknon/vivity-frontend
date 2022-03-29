@@ -81,11 +81,11 @@ class SlideableItemTab extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ConstrainedBox(
-          child: ClassicItem(itemModel: modelLeft),
+          child: ClassicItem(item: modelLeft),
           constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
         ),
         ConstrainedBox(
-          child: modelRight != null ? ClassicItem(itemModel: modelRight) : Container(),
+          child: modelRight != null ? ClassicItem(item: modelRight) : Container(),
           constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
         ),
       ],

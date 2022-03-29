@@ -7,4 +7,5 @@ const exploreRoute = "/user/explore";
 const businessRoute = '/business';
 const profilePictureRoute = '/user/profile_picture';
 const imageRoute = '/image';
+const multiImageRoute = '/image/multi';
 const favoritesRoute = '/user/favorite';
