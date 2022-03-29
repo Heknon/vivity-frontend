@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/item/classic_item.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 
 class FavoritesPage extends StatelessWidget {
@@ -16,6 +17,7 @@ class FavoritesPage extends StatelessWidget {
         builder: (ctx, state) {
           if (state is! UserLoggedInState) return const Text("Can't see this page without being logged in.\nHow are you even here?");
 
+          Size gridSize = Size(100.w, 70.h);
           return Column(
             children: [
               Padding(
@@ -28,18 +30,16 @@ class FavoritesPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 15),
-              SingleChildScrollView(
-                child: SizedBox(
-                  height: 90.h,
-                  width: 90.w,
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 1,
-                    crossAxisSpacing: 1,
-                    children: state.likedItems.map((e) => ClassicItem(item: e)).toList(),
-                  ),
-                ),
-              )
+              state.likedItems.isNotEmpty
+                  ? SizedBox.fromSize(
+                      size: gridSize, child: buildItemContentGrid(state.likedItems, gridSize, ScrollController(), itemHeightMultiplier: 0.55))
+                  : Center(
+                      child: Text(
+                        'Start by adding an item to your favorites',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                      ),
+                    ),
             ],
           );
         },

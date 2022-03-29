@@ -1,17 +1,22 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
+import '../../services/item_service.dart';
+import '../user/bloc/user_bloc.dart';
 import 'item_data_section.dart';
 
-
 class CartItem extends StatelessWidget {
-  final CartItemModel itemModel;
+  final CartItemModel item;
   final double? width;
   final double? height;
   final void Function(QuantityController, int?)? onQuantityIncrement;
@@ -20,22 +25,28 @@ class CartItem extends StatelessWidget {
   final QuantityController? quantityController;
   final int? id;
   final BorderRadius? borderRadius;
+  Future<Map<String, File>?>? itemImages;
 
-  const CartItem({
-    Key? key,
-    required this.itemModel,
-    this.width,
-    this.height,
-    this.onQuantityIncrement,
-    this.onQuantityDecrement,
-    this.onQuantityDelete,
-    this.quantityController,
-    this.id,
-    this.borderRadius
-  }) : super(key: key);
+  CartItem(
+      {Key? key,
+      required this.item,
+      this.width,
+      this.height,
+      this.onQuantityIncrement,
+      this.onQuantityDecrement,
+      this.onQuantityDelete,
+      this.quantityController,
+      this.id,
+      this.borderRadius})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    UserState state = context.read<UserBloc>().state;
+    if (state is! UserLoggedInState) return Text('You need to be logged in to see items.');
+
+    itemImages ??= getCachedItemImages(state.token, List.of([item.item]));
+
     return LayoutBuilder(
       builder: (ctx, constraints) {
         double usedWidth = width ?? constraints.maxWidth;
@@ -53,12 +64,12 @@ class CartItem extends StatelessWidget {
                 Container(
                   height: usedHeight,
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
-                  child: buildPreviewImage(),
+                  child: buildPreviewImage(itemImages, item.item, borderRadius: const BorderRadius.all(Radius.circular(50))),
                 ),
                 Expanded(
                   flex: 2,
                   child: ItemDataSection(
-                    itemModel: itemModel,
+                    itemModel: item,
                     contextWidth: usedWidth,
                     contextHeight: usedHeight,
                   ),
@@ -69,17 +80,14 @@ class CartItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '\$${itemModel.price.toStringAsFixed(2)}',
+                        '\$${item.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                       ),
                       const Spacer(),
                       ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth * 0.25,
-                          maxHeight: constraints.maxWidth * 0.25 / 3
-                        ),
+                        constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
                         child: Quantity(
-                          initialCount: itemModel.quantity,
+                          initialCount: item.quantity,
                           color: Theme.of(context).primaryColor,
                           onDecrement: onQuantityDecrement,
                           onIncrement: onQuantityIncrement,
@@ -97,16 +105,6 @@ class CartItem extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  ClipRRect buildPreviewImage() {
-    return ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(50)),
-      clipBehavior: Clip.antiAlias,
-      child: CachedNetworkImage(
-        imageUrl: itemModel.previewImage,
-      ),
     );
   }
 }

@@ -100,7 +100,7 @@ class _ExploreState extends State<Explore> {
                     left: (100 - 80).w / 2,
                     child: ConstrainedBox(
                       child: GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(itemModel: _controller.previewItem!))),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: _controller.previewItem!))),
                         child: PreviewItem(
                           item: _controller.previewItem!,
                         ),

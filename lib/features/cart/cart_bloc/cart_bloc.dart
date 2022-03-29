@@ -40,16 +40,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   @override
-  CartState fromJson(Map<String, dynamic> json) {
-    return CartState.fromMap(json);
-  }
-
-  @override
-  Map<String, dynamic> toJson(CartState state) {
-    return state.toMap();
-  }
-
-  @override
   void onTransition(Transition<CartEvent, CartState> transition) {
     super.onTransition(transition);
   }

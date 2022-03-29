@@ -10,6 +10,7 @@ import 'package:vivity/features/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
 import '../item/classic_item.dart';
+import '../item/ui_item_helper.dart';
 
 class SlideableItemTab extends StatelessWidget {
   const SlideableItemTab({Key? key}) : super(key: key);
@@ -38,15 +39,6 @@ class SlideableItemTab extends StatelessWidget {
   }
 
   Widget buildContent(Size itemViewSize, BoxConstraints constraints, ScrollController sc) {
-    Size itemSize = Size(itemViewSize.width * 0.45, itemViewSize.height * 0.6);
-    // 0, 1, 2, 3
-    [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    // 0 - 0, 1
-    // 1 - 2, 3
-    // 2 - 4, 5
-    // 3 - 6, 7
-    // 4 - 8, 9
-
     return Positioned(
       bottom: 1,
       width: itemViewSize.width,
@@ -55,40 +47,10 @@ class SlideableItemTab extends StatelessWidget {
         child: BlocBuilder<ExploreBloc, ExploreState>(builder: (context, state_) {
           if (state_ is ExploreUnloaded) return const CircularProgressIndicator();
           ExploreLoaded state = state_ as ExploreLoaded;
-          int itemCount = (state.itemModels.length / 2.0).ceil();
-          bool hasLastPlusOne = state.itemModels.length % 2 == 0;
 
-          return ListView.builder(
-            controller: sc,
-            itemCount: itemCount,
-            itemExtent: itemSize.height + 10,
-            itemBuilder: (ctx, i) => buildItemCoupling(
-                state.itemModels[2 * i],
-                itemCount - 1 != i
-                    ? state.itemModels[2 * i + 1]
-                    : hasLastPlusOne
-                        ? state.itemModels[2 * i + 1]
-                        : null,
-                itemSize),
-          );
+          return buildItemContentGrid(state.itemModels, itemViewSize, sc, itemHeightMultiplier: 0.6);
         }),
       ),
-    );
-  }
-
-  Widget buildItemCoupling(ItemModel modelLeft, ItemModel? modelRight, Size itemSize) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ConstrainedBox(
-          child: ClassicItem(item: modelLeft),
-          constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
-        ),
-        ConstrainedBox(
-          child: modelRight != null ? ClassicItem(item: modelRight) : Container(),
-          constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
-        ),
-      ],
     );
   }
 

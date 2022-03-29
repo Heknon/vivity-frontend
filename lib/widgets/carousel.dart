@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -6,7 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 
 class Carousel extends StatefulWidget {
-  final List<String> imageUrls;
+  final List<File> images;
 
   /// Scaling is applied to size. Sizes are a percentage of the screen.
   final Size imageSize;
@@ -29,7 +31,7 @@ class Carousel extends StatefulWidget {
     this.initialPage = 0,
     this.activeColor = const Color(0xff18112d),
     this.inactiveColor = Colors.grey,
-    required this.imageUrls,
+    required this.images,
   }) : super(key: key);
 
   @override
@@ -62,7 +64,7 @@ class _CarouselState extends State<Carousel> {
                 viewportFraction: 2,
                 reverse: false,
                 onPageChanged: (pageIndex, _) => setState(() => _currentPage = pageIndex)),
-            items: widget.imageUrls
+            items: widget.images
                 .map(
                   (e) => ClipRRect(
                     borderRadius: BorderRadius.only(
@@ -73,15 +75,12 @@ class _CarouselState extends State<Carousel> {
                     ),
                     child: Container(
                       color: Colors.white,
-                      child: CachedNetworkImage(
-                        imageUrl: e,
-                        imageBuilder: (ctx, prov) => Image(
-                          alignment: Alignment.topCenter,
-                          fit: BoxFit.fitHeight,
-                          width: widget.imageSize.width,
-                          height: widget.imageSize.height,
-                          image: prov,
-                        ),
+                      child: Image.file(
+                        e,
+                        alignment: Alignment.topCenter,
+                        fit: BoxFit.fitHeight,
+                        width: widget.imageSize.width,
+                        height: widget.imageSize.height,
                       ),
                     ),
                   ),
@@ -90,12 +89,12 @@ class _CarouselState extends State<Carousel> {
           ),
         ),
         Container(
-          width: (8.sp + 5) * widget.imageUrls.length,
+          width: (8.sp + 5) * widget.images.length,
           padding: EdgeInsets.only(top: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
-              widget.imageUrls.length,
+              widget.images.length,
               (index) => Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,

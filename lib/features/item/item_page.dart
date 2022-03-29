@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +7,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
+import 'package:vivity/services/item_service.dart';
 import '../base_page.dart';
 import '../cart/cart_bloc/cart_bloc.dart';
 import '../cart/shopping_cart.dart';
@@ -23,11 +27,11 @@ import 'package:vivity/widgets/simple_card.dart';
 import 'modifier/item_modifier.dart';
 
 class ItemPage extends StatefulWidget {
-  final ItemModel itemModel;
+  final ItemModel item;
 
   const ItemPage({
     Key? key,
-    required this.itemModel,
+    required this.item,
   }) : super(key: key);
 
   @override
@@ -38,11 +42,16 @@ class _ItemPageState extends State<ItemPage> {
   late List<ItemModifierSelectorController> _selectorControllers;
   late QuantityController _quantityController;
   late WidgetSwapperController _widgetSwapController;
+  late final Future<Map<String, File>?>? itemImages;
 
   @override
   void initState() {
+    super.initState();
+
+    itemImages = getCachedItemImages((context.read<UserBloc>().state as UserLoggedInState).token, List.of([widget.item]));
+
     _selectorControllers = List.generate(
-      widget.itemModel.itemStoreFormat.modificationButtons.length,
+      widget.item.itemStoreFormat.modificationButtons.length,
       (index) => ItemModifierSelectorController(),
     );
 
@@ -64,8 +73,6 @@ class _ItemPageState extends State<ItemPage> {
 
     _quantityController = QuantityController();
     _widgetSwapController = WidgetSwapperController();
-
-    super.initState();
   }
 
   @override
@@ -87,13 +94,28 @@ class _ItemPageState extends State<ItemPage> {
                       child: Stack(
                         alignment: Alignment.topCenter,
                         children: [
-                          Carousel(
-                            imageUrls: widget.itemModel.images,
-                            bottomRightRadius: 30,
-                            bottomLeftRadius: 30,
-                            initialPage: widget.itemModel.previewImageIndex,
-                            imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
-                          ),
+                          FutureBuilder(
+                              future: itemImages,
+                              builder: (context, snapshot) {
+                                Size size = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5);
+                                if (!snapshot.hasData) {
+                                  return buildImagesLoadingIndicator(size);
+                                }
+
+                                Map<String, File>? data = snapshot.data as Map<String, File>?;
+                                if (data == null) {
+                                  return buildImagesLoadingIndicator(size);
+                                }
+
+                                List<File> images = data.entries.map((e) => e.value).toList();
+                                return Carousel(
+                                  images: images,
+                                  bottomRightRadius: 30,
+                                  bottomLeftRadius: 30,
+                                  initialPage: widget.item.previewImageIndex,
+                                  imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
+                                );
+                              }),
                           Positioned(
                             bottom: 0,
                             child: buildModificationButtons(),
@@ -140,6 +162,21 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
+  Container buildImagesLoadingIndicator(Size size) {
+    return Container(
+      width: size.width,
+      height: size.height,
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30))),
+      child: SizedBox(
+        width: size.width * 0.8,
+        height: size.height * 0.8,
+        child: const CircularProgressIndicator(),
+      ),
+    );
+  }
+
   ClipRRect buildDetailsTab(BoxConstraints constraints, BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
@@ -170,7 +207,7 @@ class _ItemPageState extends State<ItemPage> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '\$${widget.itemModel.price.toStringAsFixed(2)}',
+                      '\$${widget.item.price.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 16.sp, color: Colors.white),
                     ),
                   ),
@@ -226,7 +263,7 @@ class _ItemPageState extends State<ItemPage> {
           BlocProvider.of<CartBloc>(context).add(
             CartAddItemEvent(
               CartItemModel.fromItemModel(
-                model: widget.itemModel,
+                model: widget.item,
                 quantity: _quantityController.quantity,
                 dataChosen: generateChosenData(),
               ),
@@ -256,7 +293,7 @@ class _ItemPageState extends State<ItemPage> {
       children: [
         Rating(rating: calculateRating()),
         Text(
-          '(${widget.itemModel.reviews.length} reviews)',
+          '(${widget.item.reviews.length} reviews)',
           style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
         )
       ],
@@ -268,7 +305,7 @@ class _ItemPageState extends State<ItemPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          widget.itemModel.itemStoreFormat.title,
+          widget.item.itemStoreFormat.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 16.sp),
@@ -277,7 +314,7 @@ class _ItemPageState extends State<ItemPage> {
           height: 4,
         ),
         Text(
-          "${widget.itemModel.businessName}'s shop",
+          "${widget.item.businessName}'s shop",
           style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 10.sp),
         ),
       ],
@@ -288,9 +325,9 @@ class _ItemPageState extends State<ItemPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(
-        widget.itemModel.itemStoreFormat.modificationButtons.length,
+        widget.item.itemStoreFormat.modificationButtons.length,
         (index) {
-          ModificationButton button = widget.itemModel.itemStoreFormat.modificationButtons[index];
+          ModificationButton button = widget.item.itemStoreFormat.modificationButtons[index];
           return ItemModifier(
             modificationButton: button,
             selectorController: _selectorControllers[index],
@@ -314,7 +351,7 @@ class _ItemPageState extends State<ItemPage> {
               SizedBox(
                 width: 75.w,
                 child: Text(
-                  widget.itemModel.itemStoreFormat.title,
+                  widget.item.itemStoreFormat.title,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 11.sp),
                 ),
@@ -322,7 +359,7 @@ class _ItemPageState extends State<ItemPage> {
               SizedBox(
                 width: 50.w,
                 child: Text(
-                  "${widget.itemModel.businessName}'s shop",
+                  "${widget.item.businessName}'s shop",
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
                 ),
@@ -349,10 +386,10 @@ class _ItemPageState extends State<ItemPage> {
   double calculateRating() {
     double sumRatings = 0;
 
-    widget.itemModel.reviews.forEach((element) {
+    widget.item.reviews.forEach((element) {
       sumRatings += element.rating;
     });
 
-    return sumRatings / widget.itemModel.reviews.length;
+    return sumRatings / widget.item.reviews.length;
   }
 }

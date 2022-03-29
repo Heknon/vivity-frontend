@@ -36,7 +36,7 @@ class CartItemList extends StatelessWidget {
       List<CartItem> cartItems = List.generate(
         state.items.length,
         (i) => CartItem(
-          itemModel: state.items[i],
+          item: state.items[i],
           width: itemSize.width,
           height: itemSize.height,
           onQuantityIncrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!)),

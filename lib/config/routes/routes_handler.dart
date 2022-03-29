@@ -4,6 +4,6 @@ import 'package:vivity/features/item/item_page.dart';
 
 var itemHandler = Handler(handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
   return ItemPage(
-    itemModel: null,
+    item: null,
   );
 });

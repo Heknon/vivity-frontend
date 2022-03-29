@@ -139,21 +139,6 @@ class CartState {
   @override
   int get hashCode => _items.hashCode ^ priceTotal.hashCode ^ shippingMethod.index.hashCode;
 
-  factory CartState.fromMap(Map<String, dynamic> map) {
-    return CartState(
-      (map["items"] as List<dynamic>).map((e) => CartItemModel.fromMap(e)).toList(),
-      ShippingMethod.values[(map['shippingMethod'] as int)],
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    // ignore: unnecessary_cast
-    return {
-      'items': _items.map((e) => e.toMap()).toList(),
-      'shippingMethod': shippingMethod.index,
-    } as Map<String, dynamic>;
-  }
-
   CartState copyWith({
     List<CartItemModel>? items,
     ShippingMethod? shippingMethod,

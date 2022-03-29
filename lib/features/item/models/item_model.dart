@@ -66,23 +66,14 @@ class CartItemModel {
     );
   }
 
-  factory CartItemModel.fromMap(Map<String, dynamic> map) {
-    // ItemModel? item;
-    // try {
-    //   // TODO: Implement check to see if item no longer exists. if it doesn't remove. An error can also be a connection error.
-    //   item = getItemFromId(ObjectId.fromHexString(map['id']));
-    // } catch (ex) {
-    //   rethrow;
-    // }
-    // if (item ==null) throw Exception('Item with ID ${map['id']} not found but tried to be initialized.');
-
+  factory CartItemModel.fromMap(Map<String, dynamic> map, ItemModel itemModel) {
     return CartItemModel(
       previewImage: map['previewImage'] as String,
       title: map['title'] as String,
       modifiersChosen: (map['modifiersChosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
       price: map['price'] as double,
       quantity: map['quantity'] as int,
-      item: itemModelDemo,
+      item: itemModel,
     );
   }
 

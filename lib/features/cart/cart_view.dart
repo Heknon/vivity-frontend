@@ -107,7 +107,7 @@ class _CartViewState extends State<CartView> {
         child: Align(
           alignment: Alignment.centerLeft,
           child: CartItem(
-            itemModel: state.items[i],
+            item: state.items[i],
             width: itemSize.width,
             height: itemSize.height,
             onQuantityIncrement: onQuantityIncrement,

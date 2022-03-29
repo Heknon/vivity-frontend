@@ -120,8 +120,7 @@ Future<Map<String, File>?> getItemImagesBase(String token, Map<String, Set<Strin
   for (var entry in resData.entries) {
     String b64 = entry.value as String;
     Uint8List data = base64Decode(b64);
-    result[entry.key] =
-        await File('${tempDir.path}/item_${imageIdToItemId[entry.key]}_${entry.key}.png').writeAsBytes(data);
+    result[entry.key] = await File('${tempDir.path}/item_${imageIdToItemId[entry.key]}_${entry.key}.png').writeAsBytes(data);
   }
 
   return result;
