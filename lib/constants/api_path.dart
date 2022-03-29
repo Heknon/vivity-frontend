@@ -9,3 +9,4 @@ const profilePictureRoute = '/user/profile_picture';
 const imageRoute = '/image';
 const multiImageRoute = '/image/multi';
 const favoritesRoute = '/user/favorite';
+const ordersRoute = 'user/order';

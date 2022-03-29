@@ -4,7 +4,6 @@ import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/order.dart';
 
 class OrderItem {
-  final ObjectId businessId;
   final ObjectId itemId;
   final String previewImage;
   final String title;
@@ -13,7 +12,6 @@ class OrderItem {
   final List<ModificationButtonDataHost> selectedModifiers;
 
   OrderItem({
-    required this.businessId,
     required this.itemId,
     required this.previewImage,
     required this.title,
@@ -22,22 +20,21 @@ class OrderItem {
     required this.selectedModifiers,
   });
 
-  factory OrderItem.fromModifiers(
-      {required ObjectId businessId,
-      required ObjectId itemId,
-      required String previewImage,
-      required String title,
-      String? subtitle,
-      String? description,
-      required List<ModificationButton> modifiers,
-      required Map<int, Iterable<int>> dataChosen}) {
+  factory OrderItem.fromModifiers({
+    required ObjectId itemId,
+    required String previewImage,
+    required String title,
+    String? subtitle,
+    String? description,
+    required List<ModificationButton> modifiers,
+    required Map<int, Iterable<int>> dataChosen,
+  }) {
     List<ModificationButtonDataHost> chosenData = List.empty(growable: true);
     dataChosen.forEach(
       (key, value) => chosenData.add(ModificationButtonDataHost.fromModificationButton(modifiers[key], value)),
     );
 
     return OrderItem(
-      businessId: businessId,
       itemId: itemId,
       previewImage: previewImage,
       selectedModifiers: chosenData,
@@ -49,7 +46,6 @@ class OrderItem {
 
   factory OrderItem.fromCartItem(CartItemModel cartItem) {
     return OrderItem(
-      businessId: cartItem.item.businessId,
       itemId: cartItem.item.id,
       previewImage: cartItem.previewImage,
       title: cartItem.title,
@@ -59,35 +55,31 @@ class OrderItem {
 
   factory OrderItem.fromMap(Map<String, dynamic> map) {
     return OrderItem(
-      businessId: ObjectId.fromHexString(map['businessId']),
-      itemId: ObjectId.fromHexString(map['itemId']),
-      previewImage: map['previewImage'] as String,
+      itemId: ObjectId.fromHexString(map['item_id']),
+      previewImage: map['preview_image'] as String,
       title: map['title'] as String,
       subtitle: map['subtitle'] as String?,
       description: map['description'] as String?,
-      selectedModifiers: (map['selectedModifiers'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
+      selectedModifiers: (map['selected_modifiers'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'businessId': businessId,
-      'itemId': itemId,
-      'previewImage': previewImage,
+      'item_id': itemId,
+      'preview_image': previewImage,
       'title': title,
       'subtitle': subtitle,
       'description': description,
-      'selectedModifiers': selectedModifiers.map((e) => e.toMap()).toList(),
+      'selected_modifiers': selectedModifiers.map((e) => e.toMap()).toList(),
     };
   }
-
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is OrderItem &&
           runtimeType == other.runtimeType &&
-          businessId == other.businessId &&
           itemId == other.itemId &&
           previewImage == other.previewImage &&
           title == other.title &&
@@ -97,16 +89,10 @@ class OrderItem {
 
   @override
   int get hashCode =>
-      businessId.hashCode ^
-      itemId.hashCode ^
-      previewImage.hashCode ^
-      title.hashCode ^
-      subtitle.hashCode ^
-      description.hashCode ^
-      selectedModifiers.hashCode;
+      itemId.hashCode ^ previewImage.hashCode ^ title.hashCode ^ subtitle.hashCode ^ description.hashCode ^ selectedModifiers.hashCode;
 
   @override
   String toString() {
-    return 'OrderItem{businessId: $businessId, itemId: $itemId, previewImage: $previewImage, title: $title, subtitle: $subtitle, description: $description, selectedModifiers: $selectedModifiers}';
+    return 'OrderItem{itemId: $itemId, previewImage: $previewImage, title: $title, subtitle: $subtitle, description: $description, selectedModifiers: $selectedModifiers}';
   }
 }

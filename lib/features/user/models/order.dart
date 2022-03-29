@@ -11,7 +11,7 @@ class Order {
 
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
-      orderDate: map['orderDate'] as DateTime,
+      orderDate: map['order_date'] as DateTime,
       items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
     );
   }
@@ -19,7 +19,7 @@ class Order {
   Map<String, dynamic> toMap() {
     // ignore: unnecessary_cast
     return {
-      'orderDate': orderDate,
+      'order_date': orderDate,
       'items': items.map((e) => e.toMap()).toList(),
     } as Map<String, dynamic>;
   }

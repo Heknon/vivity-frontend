@@ -80,7 +80,7 @@ class UserLoggedInState extends UserState {
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
     addresses = buildAddressesFromUserMap(mapUser['addresses']);
     likedItems = await buildLikedItemsFromUserMap(mapUser['liked_items']);
-    orderHistory = buildOrderHistoryFromUserMap(mapUser['order_history'] ?? []);
+    orderHistory = await buildOrderHistoryFromUserMap(mapUser['order_history'] ?? []);
     cart = await buildCartFromUserMap(mapUser['cart'] ?? []);
     profilePicture = await getProfilePicture(token);
 
@@ -110,31 +110,8 @@ class UserLoggedInState extends UserState {
     return await getItemsFromIds(token, itemIds);
   }
 
-  List<Order> buildOrderHistoryFromUserMap(List<dynamic> ordersMap) {
-    List<Order> orders = List.empty(growable: true);
-
-    for (var orderMap in ordersMap) {
-      List<OrderItem> items = (orderMap["items"] as List<dynamic>)
-          .map(
-            (e) => OrderItem(
-              businessId: ObjectId.fromHexString(e["business_id"]),
-              itemId: ObjectId.fromHexString(e["item_id"]),
-              previewImage: e["preview_image"],
-              title: e["title"],
-              selectedModifiers: (orderMap["selected_modification_button_data"] as List<dynamic>)
-                  .map((e) => ModificationButtonDataHost(name: e["name"], dataType: e["data_type"], selectedData: e["selected_data"]))
-                  .toList(),
-              subtitle: e["subtitle"],
-              description: e["description"],
-            ),
-          )
-          .toList();
-
-      Order order = Order(orderDate: DateTime.fromMillisecondsSinceEpoch(orderMap["order_date"] as int), items: items);
-      orders.add(order);
-    }
-
-    return orders;
+  Future<List<Order>> buildOrderHistoryFromUserMap(List<dynamic> ordersMap) async {
+    return (await getOrdersFromIds(token, ordersMap.map((e) => e as String).toList())) ?? [];
   }
 
   Future<List<CartItemModel>> buildCartFromUserMap(List<dynamic> cartMap) async {
