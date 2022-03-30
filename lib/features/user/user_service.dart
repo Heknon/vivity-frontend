@@ -6,8 +6,9 @@ import 'package:dio/dio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vivity/constants/api_path.dart';
-import 'package:vivity/features/user/models/order.dart';
 import 'package:vivity/services/api_service.dart';
+
+import '../../models/order.dart';
 
 Future<Map<String, dynamic>?> getUserFromToken(String token) async {
   if (JwtDecoder.isExpired(token)) return null;

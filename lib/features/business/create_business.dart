@@ -12,6 +12,7 @@ import 'package:place_picker/entities/location_result.dart';
 import 'package:place_picker/place_picker.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
+import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/explore/bloc/explore_bloc.dart';
@@ -277,7 +278,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
 
     LocationResult result = await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PlacePicker(
-              "AIzaSyCXcalnoEaLEAqGHYGsj7ebH-ufqAQid-c",
+              googleApiKey,
               displayLocation: loc_interface.LatLng(loc.latitude, loc.longitude),
             )));
 

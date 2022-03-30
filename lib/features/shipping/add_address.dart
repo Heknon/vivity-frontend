@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/shipping/address_service.dart';
-import 'package:vivity/features/user/models/address.dart';
+import '../../models/address.dart';
 
 import '../user/bloc/user_bloc.dart';
 

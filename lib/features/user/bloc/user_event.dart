@@ -58,3 +58,9 @@ class UserRemoveFavoriteEvent extends UserEvent {
 
   UserRemoveFavoriteEvent(this.itemId);
 }
+
+class BusinessUserFrontendUpdateItem extends UserEvent {
+  final ItemModel item;
+
+  BusinessUserFrontendUpdateItem(this.item);
+}

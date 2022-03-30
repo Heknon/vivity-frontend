@@ -27,6 +27,24 @@ Future<List<ItemModel>> getItemsFromStringIds(String token, List<String> ids) as
   return (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList();
 }
 
+Future<ItemModel> updateItemStock(String token, String id, int stock) async {
+  Response response = await sendPostRequest(subRoute: businessViewMetricRoute.replaceFirst("{item_id}", id) + "?stock=$stock", token: token);
+  if (response.statusCode != 200) {
+    throw Exception('Failed to update item stock. $response');
+  }
+
+  return ItemModel.fromMap(response.data);
+}
+
+Future<int> addItemView(String token, String itemId) async {
+  Response response = await sendPostRequest(subRoute: itemViewMetricRoute.replaceFirst("{item_id}", itemId), token: token);
+  if (response.statusCode != 200) {
+    throw Exception('Failed to update view count. $response');
+  }
+
+  return response.data;
+}
+
 Future<List<ItemModel>> searchByCoordinates(String token, LatLng position, double radius, {String query = "*", String category = "*"}) async {
   String searchQuery =
       "$exploreRoute?radius=$radius&radius_center_latitude=${position.latitude}&radius_center_longitude=${position.longitude}&query=$query&category=$category";

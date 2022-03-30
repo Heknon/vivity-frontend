@@ -71,6 +71,7 @@ class UserLoggedInState extends UserState {
     Map<String, dynamic>? mapUser = await getUserFromToken(token);
     if (mapUser == null) return 'Token expired';
 
+    print(mapUser['order_history']);
     id = ObjectId.fromHexString(mapUser['_id']);
     businessId = mapUser.containsKey('business_id') ? ObjectId.fromHexString(mapUser['business_id']) : null;
     isSystemAdmin = mapUser['is_system_admin'] ?? false;
@@ -203,6 +204,11 @@ class UserLoggedInState extends UserState {
       isSystemAdmin.hashCode ^
       businessId.hashCode ^
       profilePicture.hashCode;
+
+  @override
+  String toString() {
+    return 'UserLoggedInState{token: $token, id: $id, businessId: $businessId, isSystemAdmin: $isSystemAdmin, name: $name, email: $email, phone: $phone, profilePicture: $profilePicture, userOptions: $userOptions, addresses: $addresses, likedItems: $likedItems, cart: $cart, orderHistory: $orderHistory}';
+  }
 }
 
 class BusinessUserLoggedInState extends UserLoggedInState {
@@ -214,8 +220,39 @@ class BusinessUserLoggedInState extends UserLoggedInState {
   Future<String?> init() async {
     await super.init();
     Response businessData = await sendGetRequest(subRoute: businessRoute, token: token);
-    business = Business.fromMap(businessData.data);
+    business = Business.fromMap(token, businessData.data);
   }
+
+  BusinessUserLoggedInState.copyConstructor({
+    required this.business,
+    token,
+    id,
+    name,
+    email,
+    phone,
+    userOptions,
+    addresses,
+    likedItems,
+    cart,
+    orderHistory,
+    profilePicture,
+    businessId,
+    isSystemAdmin,
+  }) : super.copyConstructor(
+          token: token,
+          id: id,
+          name: name,
+          email: email,
+          phone: phone,
+          userOptions: userOptions,
+          addresses: addresses,
+          likedItems: likedItems,
+          cart: cart,
+          orderHistory: orderHistory,
+          businessId: businessId,
+          profilePicture: profilePicture,
+          isSystemAdmin: isSystemAdmin,
+        );
 
   BusinessUserLoggedInState.fromCreationObject(String token, UserLoggedInState state, dynamic businessData)
       : super.copyConstructor(
@@ -233,7 +270,7 @@ class BusinessUserLoggedInState extends UserLoggedInState {
           isSystemAdmin: state.isSystemAdmin,
           businessId: ObjectId.fromHexString(businessData['_id']),
         ) {
-    business = Business.fromMap(businessData);
+    business = Business.fromMap(token, businessData);
   }
 
   @override
@@ -243,4 +280,45 @@ class BusinessUserLoggedInState extends UserLoggedInState {
 
   @override
   int get hashCode => super.hashCode ^ business.hashCode;
+
+  @override
+  BusinessUserLoggedInState copyWith({
+    Business? business,
+    String? token,
+    ObjectId? id,
+    String? name,
+    String? email,
+    String? phone,
+    UserOptions? userOptions,
+    List<Address>? addresses,
+    List<ItemModel>? likedItems,
+    List<CartItemModel>? cart,
+    List<Order>? orderHistory,
+    ObjectId? businessId,
+    bool? isSystemAdmin,
+    File? profilePicture,
+  }) {
+    bool setPfpNull = profilePicture?.path.isEmpty ?? false;
+    return BusinessUserLoggedInState.copyConstructor(
+      token: token ?? this.token,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      userOptions: userOptions ?? this.userOptions,
+      addresses: addresses ?? this.addresses,
+      likedItems: likedItems ?? this.likedItems,
+      cart: cart ?? this.cart,
+      orderHistory: orderHistory ?? this.orderHistory,
+      businessId: businessId ?? this.businessId,
+      isSystemAdmin: isSystemAdmin ?? this.isSystemAdmin,
+      profilePicture: setPfpNull ? null : profilePicture ?? this.profilePicture,
+      business: business ?? this.business,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'BusinessUserLoggedInState{business: $business}';
+  }
 }

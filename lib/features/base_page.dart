@@ -37,8 +37,51 @@ class BasePage extends StatelessWidget {
       child: Scaffold(
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
         appBar: appBar ?? VivityAppBar(),
-        drawer: drawer ?? VivityDrawer(),
+        drawer: drawer ?? const VivityDrawer(),
         body: body,
+      ),
+    );
+  }
+}
+
+class BasePageBlocBuilder<B extends StateStreamable<S>, S> extends BasePage {
+  final BlocWidgetBuilder<S> builder;
+  final BlocBuilderCondition<S>? buildWhen;
+
+  const BasePageBlocBuilder({
+    Key? key,
+    bool resizeToAvoidBottomInset = false,
+    PreferredSizeWidget? appBar,
+    Widget? drawer,
+    required this.builder,
+    this.buildWhen,
+    void Function(BuildContext, UserState)? userStateListener,
+  }) : super(
+          key: key,
+          body: null,
+          appBar: appBar,
+          drawer: drawer,
+          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+          userStateListener: userStateListener,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<UserBloc, UserState>(
+      listener: (ctx, state) {
+        if (userStateListener != null) userStateListener!(ctx, state);
+        if (state is UserLoggedOutState) {
+          logoutRoutine(context);
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        appBar: appBar ?? VivityAppBar(),
+        drawer: drawer ?? const VivityDrawer(),
+        body: BlocBuilder<B, S>(
+          builder: builder,
+          buildWhen: buildWhen,
+        ),
       ),
     );
   }

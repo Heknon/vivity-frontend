@@ -34,3 +34,10 @@ Widget gradientBackground({required Widget child, required List<Color> colors, r
 Widget defaultGradientBackground({required Widget child}) {
   return gradientBackground(child: child, colors: [Color(0xffF3F1F2), Color(0xffEAEAEC)], stops: [0, 1]);
 }
+
+Size getTextSize(Text text) {
+  final TextPainter textPainter =
+      TextPainter(text: TextSpan(text: text.data, style: text.style), maxLines: 1, textDirection: text.textDirection ?? TextDirection.ltr)
+        ..layout(minWidth: 0, maxWidth: double.infinity);
+  return textPainter.size;
+}

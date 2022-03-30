@@ -1,6 +1,6 @@
-import 'package:vivity/features/user/models/order_item.dart';
+import 'order_item.dart';
 
-import 'address.dart';
+import '../../../models/address.dart';
 
 class Order {
   final DateTime orderDate;
@@ -10,6 +10,7 @@ class Order {
   final double total;
   final Address? address;
   final List<OrderItem> items;
+  final OrderStatus status;
 
   const Order({
     required this.orderDate,
@@ -19,30 +20,32 @@ class Order {
     required this.cuponDiscount,
     required this.total,
     required this.address,
+    required this.status,
   });
 
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
-      orderDate: map['order_date'] as DateTime,
-      items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
-      address: map.containsKey('shipping_address') ? Address.fromMap(map['shipping_address']) : null,
-      cuponDiscount: map['cupon_discount'],
-      shippingCost: map['shipping_cost'],
-      subtotal: map['subtotal'],
-      total: map['total'],
-    );
+        orderDate: DateTime.fromMillisecondsSinceEpoch((map['order_date'] as num).toInt() * 1000),
+        items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
+        address: map.containsKey('shipping_address') ? Address.fromMap(map['shipping_address']) : null,
+        cuponDiscount: (map['cupon_discount'] as num).toDouble(),
+        shippingCost: (map['shipping_cost'] as num).toDouble(),
+        subtotal: (map['subtotal'] as num).toDouble(),
+        total: (map['total'] as num).toDouble(),
+        status: OrderStatus.values[map['status']]);
   }
 
   Map<String, dynamic> toMap() {
     // ignore: unnecessary_cast
     return {
-      'order_date': orderDate,
+      'order_date': orderDate.millisecondsSinceEpoch,
       'items': items.map((e) => e.toMap()).toList(),
       'address': address?.toMap(),
       'cupon_discount': cuponDiscount,
       'shipping_cost': shippingCost,
       'subtotal': subtotal,
       'total': total,
+      'status': status.index
     } as Map<String, dynamic>;
   }
 
@@ -54,6 +57,7 @@ class Order {
     double? total,
     Address? address,
     List<OrderItem>? items,
+    OrderStatus? status,
   }) {
     if ((orderDate == null || identical(orderDate, this.orderDate)) &&
         (subtotal == null || identical(subtotal, this.subtotal)) &&
@@ -73,9 +77,9 @@ class Order {
       total: total ?? this.total,
       address: address ?? this.address,
       items: items ?? this.items,
+      status: status ?? this.status,
     );
   }
-
 
   @override
   String toString() {
@@ -93,9 +97,18 @@ class Order {
           cuponDiscount == other.cuponDiscount &&
           total == other.total &&
           address == other.address &&
-          items == other.items;
+          items == other.items &&
+          status == other.status;
 
   @override
   int get hashCode =>
-      orderDate.hashCode ^ subtotal.hashCode ^ shippingCost.hashCode ^ cuponDiscount.hashCode ^ total.hashCode ^ address.hashCode ^ items.hashCode;
+      orderDate.hashCode ^
+      subtotal.hashCode ^
+      shippingCost.hashCode ^
+      cuponDiscount.hashCode ^
+      total.hashCode ^
+      address.hashCode ^
+      items.hashCode & status.index;
 }
+
+enum OrderStatus { processing, processed, shipping, shipped, readyForPickup, complete }

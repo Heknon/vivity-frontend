@@ -11,11 +11,12 @@ import 'package:sizer/sizer.dart';
 
 import '../../config/themes/themes_config.dart';
 import '../../widgets/appbar/appbar.dart';
+import '../base_page.dart';
 import '../cart/cart_bloc/cart_bloc.dart';
 import 'checkout_progress.dart';
 
 class PaymentPage extends StatefulWidget {
-  PaymentPage({Key? key}) : super(key: key);
+  const PaymentPage({Key? key}) : super(key: key);
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -34,7 +35,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BasePage(
       resizeToAvoidBottomInset: true,
       appBar: VivityAppBar(
         bottom: buildTitle(context),

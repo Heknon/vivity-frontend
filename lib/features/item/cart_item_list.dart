@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/cart/cart_bloc/cart_bloc.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
 
 import '../../widgets/quantity.dart';
 import '../cart/cart_bloc/cart_state.dart';
@@ -33,31 +34,17 @@ class CartItemList extends StatelessWidget {
       Size itemSize =
           Size(listSize.width * listWidthItemWidthRatio, ((listSize.height) - (state.items.length - 1) * itemPadding.bottom) / itemsToFitInList);
 
-      List<CartItem> cartItems = List.generate(
-        state.items.length,
-        (i) => CartItem(
-          item: state.items[i],
-          width: itemSize.width,
-          height: itemSize.height,
-          onQuantityIncrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!)),
-          onQuantityDecrement: (_, id) => BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!)),
-          onQuantityDelete: (controller, id) => onDelete(controller, id, context),
-          quantityController: state.getItemQuantityController(state.items[i].insertionId),
-          id: state.items[i].insertionId,
-          borderRadius: itemBorderRadius,
-        ),
-      );
-      return SizedBox(
-        width: listSize.width,
-        height: state.items.length < 2 ? listSize.height / 3 : state.items.length < 3 ? listSize.height / 1.5 : listSize.height,
-        child: state.items.isNotEmpty
-            ? ListView.separated(
-                padding: itemPadding.add(EdgeInsets.only(bottom: 6)),
-                itemCount: cartItems.length,
-                separatorBuilder: (ctx, i) => SizedBox(height: itemPadding.bottom),
-                itemBuilder: (ctx, i) => cartItems[i],
-              )
-            : emptyCartWidget,
+      return buildCartItemList(
+        state.items,
+        listSize,
+        context,
+        onQuantityDelete: (controller, id) => onDelete(controller, id, context),
+        emptyCart: emptyCartWidget,
+        quantityController: (i) => state.getItemQuantityController(state.items[i].insertionId),
+        hasQuantity: true,
+        itemBorderRadius: itemBorderRadius,
+        itemPadding: itemPadding,
+        itemSize: itemSize
       );
     });
   }

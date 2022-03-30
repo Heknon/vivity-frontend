@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vivity/constants/api_path.dart';
-import 'package:vivity/features/user/models/address.dart';
+import '../../models/address.dart';
 import 'package:vivity/services/api_service.dart';
 
 Future<List<Address>> getAddress(String token, Address address, {BuildContext? context}) async {

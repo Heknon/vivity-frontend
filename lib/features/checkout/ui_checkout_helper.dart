@@ -6,43 +6,83 @@ import 'package:vivity/features/shipping/address_service.dart';
 import '../shipping/add_address.dart';
 import '../shipping/address.dart' as address_widget;
 import '../user/bloc/user_bloc.dart';
-import '../user/models/address.dart';
+import '../../models/address.dart';
+import 'bloc/checkout_bloc.dart';
 
-Widget buildShippingAddressList(List<Address> addresses, BuildContext context, {
+Widget buildShippingAddressList(
+  List<Address> addresses,
+  BuildContext context, {
   required String token,
   int? highlightIndex,
+  Set<int>? expandedIndices,
   bool canHighlight = true,
   void Function(int)? onTap,
   Color highlightedColor = Colors.white,
   Color unselectedColor = Colors.white70,
+  bool canDelete = true,
+  Widget Function(BuildContext, Address)? expandedBuilder,
+  void Function(int, bool)? onExpandTap,
 }) {
-  return ListView.builder(
-    itemCount: addresses.length,
-    itemBuilder: (ctx, i) {
-      Address curr = addresses[i];
-      address_widget.Address widget = address_widget.Address(
-          name: curr.name,
-          country: curr.country,
-          city: curr.city,
-          street: curr.street,
-          extraInfo: curr.extraInfo,
-          province: curr.province,
-          zipCode: curr.zipCode,
-          phone: curr.phone,
-          color: !canHighlight
-              ? highlightedColor
-              : highlightIndex == i
-              ? unselectedColor
-              : highlightedColor,
-          onTap: onTap != null ? () => onTap(i) : null,
-          onDeleteTap: () async {
-            List<Address> newAddresses = await removeAddress(token, i);
+  return expandedBuilder != null && expandedIndices != null
+      ? ExpansionPanelList(
+          expansionCallback: onExpandTap,
+          children: List.generate(addresses.length, (index) {
+            Address curr = addresses[index];
+            address_widget.Address widget = buildAddress(curr, token, context, canHighlight: canHighlight, index: index, canDelete: canDelete);
+
+            return ExpansionPanel(
+              headerBuilder: (ctx, isOpen) => widget,
+              body: expandedBuilder(context, curr),
+              isExpanded: expandedIndices.contains(index),
+              canTapOnHeader: false,
+            );
+          }),
+        )
+      : ListView.builder(
+          itemCount: addresses.length,
+          itemBuilder: (ctx, i) {
+            Address curr = addresses[i];
+            address_widget.Address widget = buildAddress(curr, token, context, canHighlight: canHighlight, index: i, canDelete: canDelete);
+
+            return widget;
+          },
+        );
+}
+
+address_widget.Address buildAddress(
+  Address address,
+  String token,
+  BuildContext context, {
+  required bool canHighlight,
+  required int index,
+  int? highlightIndex,
+  Color highlightedColor = Colors.white,
+  Color unselectedColor = Colors.white70,
+  bool canDelete = true,
+  void Function(int)? onTap,
+}) {
+  return address_widget.Address(
+    name: address.name,
+    country: address.country,
+    city: address.city,
+    street: address.street,
+    extraInfo: address.extraInfo,
+    province: address.province,
+    zipCode: address.zipCode,
+    phone: address.phone,
+    color: !canHighlight
+        ? highlightedColor
+        : highlightIndex == index
+            ? unselectedColor
+            : highlightedColor,
+    onTap: onTap != null ? () => onTap(index) : null,
+    onDeleteTap: canDelete
+        ? () async {
+            List<Address> newAddresses = await removeAddress(token, index);
             context.read<UserBloc>().add(UserUpdateAddressesEvent(newAddresses));
           }
-      );
-
-      return widget;
-    },
+        : null,
+    canDelete: canDelete,
   );
 }
 
@@ -53,10 +93,7 @@ Widget buildAddressCreationWidget(BuildContext context) {
       width: 250,
       height: 120,
       decoration: BoxDecoration(
-        border: Border.all(color: Theme
-            .of(context)
-            .colorScheme
-            .secondaryVariant, width: 1.5),
+        border: Border.all(color: Theme.of(context).colorScheme.secondaryVariant, width: 1.5),
         borderRadius: const BorderRadius.all(Radius.circular(7)),
       ),
       child: Column(
@@ -68,13 +105,43 @@ Widget buildAddressCreationWidget(BuildContext context) {
           ),
           Text(
             'Add New Address',
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline4!
-                .copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.black),
+            style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.black),
           )
         ],
+      ),
+    ),
+  );
+}
+
+TextButton buildPaymentButton(BuildContext context, {required VoidCallback onPressed}) {
+  return TextButton(
+    style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(
+          Theme.of(context).colorScheme.secondaryVariant,
+        ),
+        overlayColor: MaterialStateProperty.all(Colors.grey),
+        fixedSize: MaterialStateProperty.all(Size(90.w, 15.sp * 3))),
+    child: Text(
+      'Proceed To Payment',
+      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
+    ),
+    onPressed: onPressed,
+  );
+}
+
+PreferredSize buildTitle(BuildContext context, String title) {
+  return PreferredSize(
+    preferredSize: const Size(double.infinity, kToolbarHeight),
+    child: Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        color: Theme.of(context).colorScheme.primary,
+        padding: EdgeInsets.only(bottom: 8),
+        child: Text(
+          title,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 24.sp),
+        ),
       ),
     ),
   );

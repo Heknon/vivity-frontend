@@ -7,7 +7,10 @@ import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/like_button.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
+import '../../widgets/quantity.dart';
+import '../cart/cart_bloc/cart_bloc.dart';
 import '../user/bloc/user_bloc.dart';
+import 'cart_item.dart';
 import 'classic_item.dart';
 
 Widget buildPreviewImage(
@@ -58,16 +61,46 @@ Widget buildPreviewImage(
   );
 }
 
-Widget buildItemCoupling(ItemModel modelLeft, ItemModel? modelRight, Size itemSize) {
+Widget buildItemCoupling(
+  ItemModel modelLeft,
+  ItemModel? modelRight,
+  Size itemSize, {
+  bool hasEditButton = false,
+  void Function(ItemModel)? onEditTap,
+  void Function(ItemModel)? onTap,
+  void Function(ItemModel)? onLongTap,
+  Widget Function(ItemModel, ClassicItem)? builder,
+}) {
+  ClassicItem leftItem = ClassicItem(
+    item: modelLeft,
+    editButton: hasEditButton,
+    onEditTap: onEditTap != null ? () => onEditTap(modelLeft) : null,
+    onTap: onTap != null ? () => onTap(modelLeft) : null,
+    onLongTap: onLongTap != null ? () => onLongTap(modelLeft) : null,
+  );
+
+  ClassicItem? rightItem = modelRight != null
+      ? ClassicItem(
+          item: modelRight,
+          editButton: hasEditButton,
+          onEditTap: onEditTap != null ? () => onEditTap(modelRight) : null,
+          onTap: onTap != null ? () => onTap(modelRight) : null,
+          onLongTap: onLongTap != null ? () => onLongTap(modelRight) : null,
+        )
+      : null;
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: [
       ConstrainedBox(
-        child: ClassicItem(item: modelLeft),
+        child: builder == null ? leftItem : builder(modelLeft, leftItem),
         constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
       ),
       ConstrainedBox(
-        child: modelRight != null ? ClassicItem(item: modelRight) : Container(),
+        child: builder == null
+            ? rightItem ?? Container()
+            : modelRight != null && rightItem != null
+                ? builder(modelRight, rightItem)
+                : Container(),
         constraints: BoxConstraints(maxWidth: itemSize.width, maxHeight: itemSize.height),
       ),
     ],
@@ -79,6 +112,11 @@ Widget buildItemContentGrid(
   Size itemViewSize,
   ScrollController sc, {
   double itemHeightMultiplier = 0.6,
+  bool hasEditButton = false,
+  void Function(ItemModel)? onEditTapped,
+  void Function(ItemModel)? onTap,
+  void Function(ItemModel)? onLongTap,
+  Widget Function(ItemModel, ClassicItem)? builder,
 }) {
   Size itemSize = Size(itemViewSize.width * 0.45, itemViewSize.height * itemHeightMultiplier);
   int itemCount = (items.length / 2.0).ceil();
@@ -89,13 +127,19 @@ Widget buildItemContentGrid(
     itemCount: itemCount,
     itemExtent: itemSize.height + 10,
     itemBuilder: (ctx, i) => buildItemCoupling(
-        items[2 * i],
-        itemCount - 1 != i
-            ? items[2 * i + 1]
-            : hasLastPlusOne
-                ? items[2 * i + 1]
-                : null,
-        itemSize),
+      items[2 * i],
+      itemCount - 1 != i
+          ? items[2 * i + 1]
+          : hasLastPlusOne
+              ? items[2 * i + 1]
+              : null,
+      itemSize,
+      hasEditButton: hasEditButton,
+      onEditTap: onEditTapped,
+      onTap: onTap,
+      onLongTap: onLongTap,
+      builder: builder,
+    ),
   );
 }
 
@@ -122,5 +166,55 @@ Widget buildDatabaseLikeButton(ItemModel item, LikeButtonController controller, 
         controller.setLiked(!liked);
       },
     ),
+  );
+}
+
+Widget buildCartItemList(
+  List<CartItemModel> items,
+  Size size,
+  BuildContext context, {
+  Size? itemSize,
+  bool hasQuantity = true,
+  void Function(QuantityController, int?)? onQuantityDelete,
+  QuantityController? Function(int)? quantityController,
+  BorderRadius? itemBorderRadius,
+  EdgeInsets? itemPadding,
+  Widget? emptyCart,
+  double elevation = 7,
+  bool includeQuantityControls = true,
+  bool onlyQuantity = false,
+}) {
+  List<CartItem> cartItems = List.generate(
+    items.length,
+    (i) => CartItem(
+      item: items[i],
+      width: itemSize?.width,
+      height: itemSize?.height,
+      onQuantityIncrement: hasQuantity && !onlyQuantity ? (_, id) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!)) : null,
+      onQuantityDecrement: hasQuantity && !onlyQuantity ? (_, id) => BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!)) : null,
+      onQuantityDelete: hasQuantity && !onlyQuantity ? onQuantityDelete : null,
+      quantityController: quantityController != null ? quantityController(i) : null,
+      id: items[i].insertionId,
+      borderRadius: itemBorderRadius,
+      elevation: elevation,
+      includeQuantityControls: includeQuantityControls,
+      onlyQuantity: onlyQuantity,
+    ),
+  );
+  return SizedBox(
+    width: size.width,
+    height: items.length < 2
+        ? size.height / 2
+        : items.length < 3
+            ? size.height / 1.1
+            : size.height,
+    child: items.isNotEmpty
+        ? ListView.separated(
+            padding: itemPadding?.add(EdgeInsets.only(bottom: 6)),
+            itemCount: cartItems.length,
+            separatorBuilder: (ctx, i) => SizedBox(height: itemPadding?.bottom),
+            itemBuilder: (ctx, i) => cartItems[i],
+          )
+        : emptyCart,
   );
 }

@@ -63,6 +63,8 @@ dependencies:
   place_picker: ^0.9.20-nullsafety
   path: ^1.8.0
   animations: ^2.0.2
+  geocoding: ^2.0.4
+  expandable: ^5.0.1
 
   advanced_panel:
     path: ./packages/advanced_panel

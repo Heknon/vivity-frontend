@@ -32,7 +32,9 @@ class FavoritesPage extends StatelessWidget {
               SizedBox(height: 15),
               state.likedItems.isNotEmpty
                   ? SizedBox.fromSize(
-                      size: gridSize, child: buildItemContentGrid(state.likedItems, gridSize, ScrollController(), itemHeightMultiplier: 0.55))
+                      size: gridSize,
+                      child: buildItemContentGrid(state.likedItems, gridSize, ScrollController(), itemHeightMultiplier: 0.55),
+                    )
                   : Center(
                       child: Text(
                         'Start by adding an item to your favorites',

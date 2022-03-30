@@ -1,22 +1,22 @@
 class Address {
-  final String name;
+  final String? name;
   final String country;
   final String city;
   final String street;
-  final String extraInfo;
+  final String? extraInfo;
   final String province;
-  final String zipCode;
-  final String phone;
+  final String? zipCode;
+  final String? phone;
 
   Address({
-    required this.name,
+    this.name,
     required this.country,
     required this.city,
     required this.street,
-    required this.extraInfo,
+    this.extraInfo,
     required this.province,
-    required this.zipCode,
-    required this.phone,
+    this.zipCode,
+    this.phone,
   });
 
   factory Address.fromMap(Map<String, dynamic> map) {

@@ -20,23 +20,25 @@ import 'package:vivity/services/api_service.dart';
 import 'package:vivity/services/item_service.dart';
 import '../../../constants/api_path.dart';
 import '../../../models/business.dart';
-import '../models/address.dart';
+import '../../../models/address.dart';
 import 'package:vivity/models/payment_method.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../models/order.dart';
-import '../models/order_item.dart';
+import '../../../models/order.dart';
+import '../../../models/order_item.dart';
 
 part 'user_event.dart';
 
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
-  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 20), tokenRenewalRoutine);
+  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
 
   UserBloc() : super(UserLoggedOutState()) {
     _renewTokenTimer.reset();
+    print("STARTED TIMER: ${_renewTokenTimer.isActive}, ${_renewTokenTimer.tick}");
     on<UserLoginEvent>((event, emit) async {
+      print(JwtDecoder.decode(event.token)['business_id']);
       UserLoggedInState state =
           JwtDecoder.decode(event.token)['business_id'] == null ? UserLoggedInState(event.token) : BusinessUserLoggedInState(event.token);
 
@@ -124,10 +126,20 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       UserLoggedInState newState = (state as UserLoggedInState).copyWith(likedItems: items);
       emit(newState);
     });
+
+    on<BusinessUserFrontendUpdateItem>((event, emit) {
+      if (state is! BusinessUserLoggedInState) return;
+
+      Business business = (state as BusinessUserLoggedInState).business..updateItem(event.item);
+      BusinessUserLoggedInState newState = (state as BusinessUserLoggedInState).copyWith(business: business);
+      emit(newState);
+    });
   }
 
   void tokenRenewalRoutine() {
+    print("Updating token");
     add(UserRenewTokenEvent());
     _renewTokenTimer.reset();
+    print("${_renewTokenTimer.tick}, ${_renewTokenTimer.isActive}");
   }
 }

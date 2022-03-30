@@ -6,16 +6,17 @@ import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/helpers/conversion_helper.dart';
 
 class Address extends StatelessWidget {
-  final String name;
+  final String? name;
   final String country;
   final String city;
   final String street;
-  final String extraInfo;
+  final String? extraInfo;
   final String province;
-  final String zipCode;
-  final String phone;
+  final String? zipCode;
+  final String? phone;
   final VoidCallback? onTap;
   final VoidCallback? onDeleteTap;
+  final bool canDelete;
   final Color? color;
 
   const Address({
@@ -30,6 +31,7 @@ class Address extends StatelessWidget {
     required this.phone,
     this.onTap,
     this.onDeleteTap,
+    this.canDelete = true,
     this.color,
   }) : super(key: key);
 
@@ -40,10 +42,12 @@ class Address extends StatelessWidget {
       child: Card(
         elevation: 2,
         color: color,
-        child: onTap != null ? InkWell(
-          child: buildCardBody(context),
-          onTap: onTap,
-        ) : buildCardBody(context),
+        child: onTap != null
+            ? InkWell(
+                child: buildCardBody(context),
+                onTap: onTap,
+              )
+            : buildCardBody(context),
       ),
     );
   }
@@ -57,7 +61,7 @@ class Address extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(name, style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 13.sp, fontWeight: FontWeight.normal)),
+              name != null ? buildNameText(context) : buildStreetInfo(context),
               Material(
                 elevation: 5,
                 child: SvgPicture.asset(
@@ -68,26 +72,50 @@ class Address extends StatelessWidget {
               ),
             ],
           ),
-          Text('$street $extraInfo', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
-          Text('$province, $city $zipCode', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Phone: $phone', style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal)),
-              IconButton(
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-                constraints: BoxConstraints(),
-                onPressed: onDeleteTap,
-                icon: Icon(
-                  Icons.delete_forever,
-                  color: primaryComplementaryColor,
-                ),
-              )
-            ],
-          ),
+          if (name != null) buildStreetInfo(context),
+          if (phone != null) buildGeneraLocationText(context),
+          canDelete
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    phone != null ? buildPhoneText(context) : buildGeneraLocationText(context),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      constraints: BoxConstraints(),
+                      onPressed: onDeleteTap,
+                      icon: Icon(
+                        Icons.delete_forever,
+                        color: primaryComplementaryColor,
+                      ),
+                    )
+                  ],
+                )
+              : phone != null
+                  ? buildPhoneText(context)
+                  : buildGeneraLocationText(context),
         ],
       ),
     );
   }
+
+  Text buildGeneraLocationText(BuildContext context) => Text(
+        '$province${city.length > 15 ? ',\n' : ', '}$city${zipCode != null ? ' $zipCode' : ''}',
+        style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
+      );
+
+  Text buildPhoneText(BuildContext context) => Text(
+        'Phone: $phone',
+        style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
+      );
+
+  Text buildNameText(BuildContext context) => Text(
+        name ?? '',
+        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 13.sp, fontWeight: FontWeight.normal),
+      );
+
+  Text buildStreetInfo(BuildContext context) => Text(
+        '$street${extraInfo != null ? " $extraInfo" : ""}',
+        style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
+      );
 }

@@ -24,21 +24,27 @@ class CartItem extends StatelessWidget {
   final void Function(QuantityController, int?)? onQuantityDelete;
   final QuantityController? quantityController;
   final int? id;
+  final double elevation;
+  final bool includeQuantityControls;
+  final bool onlyQuantity;
   final BorderRadius? borderRadius;
   Future<Map<String, File>?>? itemImages;
 
-  CartItem(
-      {Key? key,
-      required this.item,
-      this.width,
-      this.height,
-      this.onQuantityIncrement,
-      this.onQuantityDecrement,
-      this.onQuantityDelete,
-      this.quantityController,
-      this.id,
-      this.borderRadius})
-      : super(key: key);
+  CartItem({
+    Key? key,
+    required this.item,
+    this.width,
+    this.height,
+    this.onQuantityIncrement,
+    this.onQuantityDecrement,
+    this.onQuantityDelete,
+    this.quantityController,
+    this.id,
+    this.borderRadius,
+    this.elevation = 7,
+    this.includeQuantityControls = true,
+    this.onlyQuantity = true,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +62,7 @@ class CartItem extends StatelessWidget {
           width: usedWidth,
           height: usedHeight,
           child: SimpleCard(
-            elevation: 7,
+            elevation: elevation,
             borderRadius: borderRadius,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -84,7 +90,7 @@ class CartItem extends StatelessWidget {
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                       ),
                       const Spacer(),
-                      ConstrainedBox(
+                      if (includeQuantityControls || onlyQuantity) ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
                         child: Quantity(
                           initialCount: item.quantity,
@@ -94,6 +100,7 @@ class CartItem extends StatelessWidget {
                           deletable: true,
                           onDelete: onQuantityDelete,
                           controller: quantityController,
+                          onlyQuantity: onlyQuantity,
                           id: id,
                         ),
                       )

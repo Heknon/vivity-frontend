@@ -4,6 +4,7 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 
+import '../../helpers/ui_helpers.dart' as ui;
 import '../explore/explore.dart';
 import '../map/map_widget.dart';
 import 'package:latlong2/latlong.dart';
@@ -50,13 +51,6 @@ class MapPreviewIcon extends StatelessWidget {
   }
 
   static Size getTextSize(double price, BuildContext context) {
-    return _getTextSize(_buildTextWidget(price, context));
-  }
-
-  static Size _getTextSize(Text text) {
-    final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text.data, style: text.style), maxLines: 1, textDirection: text.textDirection ?? TextDirection.ltr)
-      ..layout(minWidth: 0, maxWidth: double.infinity);
-    return textPainter.size;
+    return ui.getTextSize(_buildTextWidget(price, context));
   }
 }

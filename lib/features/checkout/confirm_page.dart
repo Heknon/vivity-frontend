@@ -6,8 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:progress_bar/progress_bar.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
 import 'package:vivity/features/checkout/cupon.dart';
+import 'package:vivity/features/checkout/pickup_page.dart';
 import 'package:vivity/features/checkout/shipping_page.dart';
 import 'package:vivity/features/item/cart_item_list.dart';
 import 'package:vivity/models/shipping_method.dart';
@@ -31,7 +33,7 @@ class ConfirmPage extends StatelessWidget {
     Size listSize = Size(90.w, 35.h);
     Size itemSize = Size(listSize.width * 0.95, (listSize.height) / itemsToFitInList);
 
-    return Scaffold(
+    return BasePage(
       resizeToAvoidBottomInset: true,
       appBar: VivityAppBar(
         bottom: buildTitle(context),
@@ -45,8 +47,8 @@ class ConfirmPage extends StatelessWidget {
   Widget buildBody(BuildContext context, Size itemSize, Size listSize) {
     return BlocConsumer<CheckoutBloc, CheckoutState>(listener: (context, state) {
       if (state is CheckoutStateShippingStage && state is! CheckoutStatePaymentStage) {
-        print("pushing to shipping");
-        Navigator.push(context, MaterialPageRoute(builder: (ctx) => ShippingPage()));
+        print(state.shippingMethod);
+        Navigator.push(context, MaterialPageRoute(builder: (ctx) => state.shippingMethod == ShippingMethod.delivery ? ShippingPage() : PickupPage()));
       }
     }, builder: (context, state) {
       if (state is CheckoutLoadingState) {
@@ -107,7 +109,7 @@ class ConfirmPage extends StatelessWidget {
               context.read<CheckoutBloc>().add(
                     CheckoutInitializeEvent(
                       items: context.read<CartBloc>().state.items,
-                      shippingMethod: ShippingMethod.delivery,
+                      shippingMethod: context.read<CartBloc>().state.shippingMethod,
                       cuponCode: cuponController.text,
                     ),
                   );

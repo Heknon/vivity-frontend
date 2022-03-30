@@ -1,8 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:objectid/objectid/objectid.dart';
+import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/models/order.dart';
+import 'package:vivity/services/business_service.dart';
+import 'package:vivity/services/item_service.dart';
 
 class Business {
+  late Future<List<ItemModel>> _cachedItems;
+  late Future<List<Order>> _cachedOrders;
+  Future<List<ItemModel>>? _cachedOrderItems;
+  Map<ObjectId, ItemModel>? _cachedItemIdMap;
+
+  final String ownerToken;
   final String name;
   final LatLng location;
   final List<ObjectId> items;
@@ -10,9 +20,11 @@ class Business {
   final ContactInformation contact;
   final int nationalBusinessId;
   final BusinessMetrics metrics;
+  final List<Order> orders;
   final String? ownerId; // TODO: If null ask to resubmit id.
 
-  Business({
+  Business(
+    this.ownerToken, {
     required this.name,
     required this.location,
     required this.items,
@@ -21,7 +33,56 @@ class Business {
     required this.nationalBusinessId,
     required this.ownerId,
     required this.metrics,
-  });
+    required this.orders,
+  }) {
+    _cachedItems = getItemsFromIds(ownerToken, items);
+    _cachedOrders = getBusinessOrders(ownerToken);
+  }
+
+  Future<List<Order>> getOrders({bool updateCache = false}) async {
+    if (updateCache) {
+      _cachedOrders = getBusinessOrders(ownerToken);
+      _cachedOrderItems = getItemsFromOrders(ownerToken, await _cachedOrders);
+    }
+
+    return await _cachedOrders;
+  }
+
+  Future<List<ItemModel>> getCachedOrderItems() async {
+    _cachedOrderItems ??= getItemsFromOrders(ownerToken, await _cachedOrders);
+
+    return await _cachedOrderItems!;
+  }
+
+  Future<Map<ObjectId, ItemModel>> getIdItemMap({bool updateCache = false}) async {
+    if (updateCache) {
+      _cachedItems = getItemsFromIds(ownerToken, items);
+      _cachedItemIdMap == null;
+    }
+
+    if (_cachedItemIdMap == null) {
+      _cachedItemIdMap = {};
+
+      for (var item in await _cachedItems) {
+        _cachedItemIdMap![item.id] = item;
+      }
+    }
+
+    return _cachedItemIdMap!;
+  }
+
+  void updateItem(ItemModel item) async {
+    List<ItemModel> cached = await _cachedItems;
+    cached.removeWhere((element) => element.id == item.id);
+    cached.add(item);
+
+    if (_cachedItemIdMap != null) {
+      _cachedItemIdMap![item.id] = item;
+    }
+
+    items.removeWhere((element) => element == item.id);
+    items.add(item.id);
+  }
 
   Business copyWith({
     String? name,
@@ -32,6 +93,7 @@ class Business {
     int? nationalBusinessId,
     String? ownerId,
     BusinessMetrics? metrics,
+    List<Order>? orders,
   }) {
     if ((name == null || identical(name, this.name)) &&
         (location == null || identical(location, this.location)) &&
@@ -45,28 +107,34 @@ class Business {
     }
 
     return Business(
-        name: name ?? this.name,
-        location: location ?? this.location,
-        items: items ?? this.items,
-        categories: categories ?? this.categories,
-        contact: contact ?? this.contact,
-        nationalBusinessId: nationalBusinessId ?? this.nationalBusinessId,
-        ownerId: ownerId ?? this.ownerId,
-        metrics: metrics ?? this.metrics);
+      ownerToken,
+      name: name ?? this.name,
+      location: location ?? this.location,
+      items: items ?? this.items,
+      categories: categories ?? this.categories,
+      contact: contact ?? this.contact,
+      nationalBusinessId: nationalBusinessId ?? this.nationalBusinessId,
+      ownerId: ownerId ?? this.ownerId,
+      metrics: metrics ?? this.metrics,
+      orders: orders ?? this.orders,
+    );
   }
 
-  factory Business.fromMap(Map<String, dynamic> map) {
+  factory Business.fromMap(String token, Map<String, dynamic> map) {
     return Business(
-        name: map['name'] as String,
-        location: LatLng(map['location'][0], map['location'][1]),
-        items: (map['items'] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),
-        categories: (map['categories'] as List<dynamic>)
-            .asMap()
-            .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
-        contact: ContactInformation.fromMap(map['contact']),
-        nationalBusinessId: map['national_business_id'] as int,
-        ownerId: map['owner_id_card'] as String?,
-        metrics: BusinessMetrics.fromMap(map["metrics"]));
+      token,
+      name: map['name'] as String,
+      location: LatLng(map['location'][0], map['location'][1]),
+      items: (map['items'] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),
+      categories: (map['categories'] as List<dynamic>)
+          .asMap()
+          .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
+      contact: ContactInformation.fromMap(map['contact']),
+      nationalBusinessId: map['national_business_id'] as int,
+      ownerId: map['owner_id_card'] as String?,
+      metrics: BusinessMetrics.fromMap(map["metrics"]),
+      orders: (map["orders"] as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -87,7 +155,8 @@ class Business {
       'contact': contact.toMap(),
       'national_business_id': nationalBusinessId,
       'owner_id_card': ownerId,
-      'metrics': metrics.toMap()
+      'metrics': metrics.toMap(),
+      'orders': orders.map((e) => e.toMap()).toList(),
     } as Map<String, dynamic>;
   }
 
@@ -103,7 +172,9 @@ class Business {
           contact == other.contact &&
           nationalBusinessId == other.nationalBusinessId &&
           ownerId == other.ownerId &&
-          metrics == other.metrics;
+          metrics == other.metrics &&
+          mapEquals(_cachedItemIdMap, other._cachedItemIdMap) &&
+          listEquals(orders, other.orders);
 
   @override
   int get hashCode =>
@@ -114,11 +185,14 @@ class Business {
       contact.hashCode ^
       nationalBusinessId.hashCode ^
       ownerId.hashCode ^
-      metrics.hashCode;
+      metrics.hashCode ^
+      _cachedItems.hashCode ^
+      _cachedItemIdMap.hashCode ^
+      orders.hashCode;
 
   @override
   String toString() {
-    return 'Business{name: $name, location: $location, items: $items, categories: $categories, contact: $contact, nationalBusinessId: $nationalBusinessId, ownerId: $ownerId, metrics: $metrics}';
+    return 'Business{name: $name, location: $location, items: $items, categories: $categories, contact: $contact, nationalBusinessId: $nationalBusinessId, ownerId: $ownerId, metrics: $metrics, orders: $orders}';
   }
 }
 

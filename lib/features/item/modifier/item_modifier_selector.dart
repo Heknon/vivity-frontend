@@ -114,7 +114,10 @@ class _ItemModifierSelectorState extends State<ItemModifierSelector> {
                 } else {
                   if (chosenIndices.contains(idx)) {
                     BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierRemoveItemEvent(idx));
-                  } else if (chosenIndices.isEmpty) {
+                  } else {
+                    for (int i in chosenIndices) {
+                      BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierRemoveItemEvent(i));
+                    }
                     BlocProvider.of<ItemModifierBloc>(context).add(ItemModifierAddItemEvent(idx));
                   }
                 }

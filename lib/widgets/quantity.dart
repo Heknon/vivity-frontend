@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
 
 class Quantity extends StatefulWidget {
   final int initialCount;
@@ -13,6 +16,7 @@ class Quantity extends StatefulWidget {
   final QuantityController? controller;
   final int? id;
   final bool deletable;
+  final bool onlyQuantity;
   final void Function(QuantityController, int?)? onDelete;
   final void Function(QuantityController, int?)? onIncrement;
   final void Function(QuantityController, int?)? onDecrement;
@@ -33,6 +37,7 @@ class Quantity extends StatefulWidget {
     this.onDecrement,
     this.id,
     this.deletable = false,
+    this.onlyQuantity = false,
   }) : super(key: key);
 
   @override
@@ -74,20 +79,22 @@ class _QuantityState extends State<Quantity> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
+      Text text = Text(_controller.quantity.toStringAsFixed(0), style: TextStyle(fontSize: 9.5.sp, color: widget.color));
+      Size textSize = getTextSize(text);
       return Container(
         decoration: BoxDecoration(
           border: Border.all(color: widget.color),
           borderRadius: const BorderRadius.all(Radius.circular(20)),
         ),
-        width: constraints.maxWidth,
+        width: !widget.onlyQuantity ? constraints.maxWidth : max(constraints.maxHeight, textSize.width + 10.sp),
         height: constraints.maxHeight,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            buildIcon(Icons.remove, false),
-            Text(_controller.quantity.toStringAsFixed(0), style: TextStyle(fontSize: 9.5.sp, color: widget.color)),
-            buildIcon(Icons.add, true),
+            !widget.onlyQuantity ? buildIcon(Icons.remove, false) : Container(),
+            text,
+            !widget.onlyQuantity ? buildIcon(Icons.add, false) : Container(),
           ],
         ),
       );
