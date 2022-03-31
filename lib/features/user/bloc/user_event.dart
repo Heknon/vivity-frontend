@@ -64,3 +64,20 @@ class BusinessUserFrontendUpdateItem extends UserEvent {
 
   BusinessUserFrontendUpdateItem(this.item);
 }
+
+class BusinessUserFrontendUpdateOrder extends UserEvent {
+  final Order order;
+
+  BusinessUserFrontendUpdateOrder(this.order);
+}
+
+class UpdateProfileData extends UserEvent {
+  final bool addresses;
+  final bool orders;
+
+  UpdateProfileData({this.addresses = true, this.orders = true});
+}
+
+class UpdateBusinessDataEvent extends UserEvent {
+  UpdateBusinessDataEvent();
+}

@@ -11,6 +11,7 @@ import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/widgets/rating.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
+import '../../config/themes/themes_config.dart';
 import '../../services/item_service.dart';
 import '../user/bloc/user_bloc.dart';
 import 'models/item_model.dart';
@@ -100,7 +101,17 @@ class _PreviewItemState extends State<PreviewItem> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    buildDatabaseLikeButton(widget.item, likeController, context, initialLiked),
+                    buildDatabaseLikeButton(
+                      widget.item,
+                      likeController,
+                      context,
+                      initialLiked,
+                      color: primaryComplementaryColor,
+                      backgroundColor: Colors.transparent,
+                      splashColor: Colors.white.withOpacity(0.6),
+                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                      padding: const EdgeInsets.all(4),
+                    ),
                     Text(
                       "₪${widget.item.price.toStringAsFixed(2)}",
                       maxLines: 1,

@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
+import 'package:objectid/objectid/objectid.dart';
+
 import 'order_item.dart';
 
 import '../../../models/address.dart';
 
 class Order {
+  final ObjectId orderId;
   final DateTime orderDate;
   final double subtotal;
   final double shippingCost;
@@ -21,18 +25,21 @@ class Order {
     required this.total,
     required this.address,
     required this.status,
+    required this.orderId,
   });
 
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
-        orderDate: DateTime.fromMillisecondsSinceEpoch((map['order_date'] as num).toInt() * 1000),
-        items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
-        address: map.containsKey('shipping_address') ? Address.fromMap(map['shipping_address']) : null,
-        cuponDiscount: (map['cupon_discount'] as num).toDouble(),
-        shippingCost: (map['shipping_cost'] as num).toDouble(),
-        subtotal: (map['subtotal'] as num).toDouble(),
-        total: (map['total'] as num).toDouble(),
-        status: OrderStatus.values[map['status']]);
+      orderId: ObjectId.fromHexString(map['_id']),
+      orderDate: DateTime.fromMillisecondsSinceEpoch((map['order_date'] as num).toInt() * 1000),
+      items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
+      address: map.containsKey('shipping_address') ? Address.fromMap(map['shipping_address']) : null,
+      cuponDiscount: (map['cupon_discount'] as num).toDouble(),
+      shippingCost: (map['shipping_cost'] as num).toDouble(),
+      subtotal: (map['subtotal'] as num).toDouble(),
+      total: (map['total'] as num).toDouble(),
+      status: OrderStatus.values[map['status']],
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -45,7 +52,8 @@ class Order {
       'shipping_cost': shippingCost,
       'subtotal': subtotal,
       'total': total,
-      'status': status.index
+      'status': status.index,
+      '_id': orderId.hexString,
     } as Map<String, dynamic>;
   }
 
@@ -58,6 +66,7 @@ class Order {
     Address? address,
     List<OrderItem>? items,
     OrderStatus? status,
+    ObjectId? orderId,
   }) {
     if ((orderDate == null || identical(orderDate, this.orderDate)) &&
         (subtotal == null || identical(subtotal, this.subtotal)) &&
@@ -77,6 +86,7 @@ class Order {
       total: total ?? this.total,
       address: address ?? this.address,
       items: items ?? this.items,
+      orderId: orderId ?? this.orderId,
       status: status ?? this.status,
     );
   }
@@ -90,6 +100,7 @@ class Order {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Order &&
+          orderId == other.orderId &&
           runtimeType == other.runtimeType &&
           orderDate == other.orderDate &&
           subtotal == other.subtotal &&
@@ -97,7 +108,7 @@ class Order {
           cuponDiscount == other.cuponDiscount &&
           total == other.total &&
           address == other.address &&
-          items == other.items &&
+          listEquals(items, other.items) &&
           status == other.status;
 
   @override
@@ -108,7 +119,30 @@ class Order {
       cuponDiscount.hashCode ^
       total.hashCode ^
       address.hashCode ^
-      items.hashCode & status.index;
+      items.hashCode ^
+      status.index ^
+      orderId.hashCode;
 }
 
 enum OrderStatus { processing, processed, shipping, shipped, readyForPickup, complete }
+
+extension OrderStatusHelper on OrderStatus {
+  String getName() {
+    switch (this) {
+      case OrderStatus.processing:
+        return "Processing";
+      case OrderStatus.processed:
+        return "Processed";
+      case OrderStatus.shipping:
+        return "Shipping";
+      case OrderStatus.shipped:
+        return "Shipped";
+      case OrderStatus.readyForPickup:
+        return "Ready for pickup";
+      case OrderStatus.complete:
+        return "Complete";
+      default:
+        return "wat";
+    }
+  }
+}

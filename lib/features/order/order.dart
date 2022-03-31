@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
@@ -6,18 +8,36 @@ import '../../models/order.dart' as business_model;
 import '../item/ui_item_helper.dart';
 import '../shipping/address.dart';
 
-class Order extends StatelessWidget {
+class Order extends StatefulWidget {
   final business_model.Order order;
   final List<ItemModel> orderItems;
-  late final Map<String, ItemModel> _idToItemMap;
+  final bool dropdownStatus;
+  final Future<void> Function(business_model.OrderStatus?)? onDropdownChange;
 
-  Order({
+  const Order({
     Key? key,
     required this.order,
     required this.orderItems,
-  }) : super(key: key) {
+    this.dropdownStatus = false,
+    this.onDropdownChange,
+  }) : super(key: key);
+
+  @override
+  State<Order> createState() => _OrderState();
+}
+
+class _OrderState extends State<Order> {
+  late business_model.OrderStatus dropdownValue;
+
+  late final Map<String, ItemModel> _idToItemMap;
+
+  @override
+  void initState() {
+    super.initState();
+
+    dropdownValue = widget.order.status;
     _idToItemMap = {};
-    for (var item in orderItems) {
+    for (var item in widget.orderItems) {
       _idToItemMap[item.id.hexString] = item;
     }
   }
@@ -26,6 +46,7 @@ class Order extends StatelessWidget {
   Widget build(BuildContext context) {
     Size gridSize = Size(100.w, 30.h);
     EdgeInsets padding = const EdgeInsets.all(8);
+    List<business_model.OrderStatus> statusValues = business_model.OrderStatus.values;
 
     return ExpandablePanel(
       header: Padding(
@@ -36,11 +57,7 @@ class Order extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${addZero(order.orderDate.day)}/${addZero(order.orderDate.month)}/${order.orderDate.year}",
-                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
-                ),
-                Text(
-                  "Order ${order.status.name}",
+                  "${addZero(widget.order.orderDate.day)}/${addZero(widget.order.orderDate.month)}/${widget.order.orderDate.year}",
                   style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
                 ),
               ],
@@ -48,85 +65,139 @@ class Order extends StatelessWidget {
           ],
         ),
       ),
-      collapsed: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      collapsed: buildCollapsedBody(context, statusValues),
+      expanded: Column(
         children: [
-          if (order.address != null) Address(
-            name: order.address!.name,
-            province: order.address!.province,
-            extraInfo: order.address!.extraInfo,
-            zipCode: order.address!.zipCode,
-            street: order.address!.street,
-            phone: order.address!.phone,
-            country: order.address!.country,
-            city: order.address!.city,
+          buildCollapsedBody(context, statusValues),
+          SizedBox(
+            width: 90.w,
+            child: Divider(),
+          ),
+          buildCartItemList(
+            widget.order.items.map(
+              (e) {
+                ItemModel item = _idToItemMap[e.itemId.hexString]!;
+                return CartItemModel(
+                  previewImage: item.images[item.previewImageIndex],
+                  title: item.itemStoreFormat.title,
+                  modifiersChosen: e.selectedModifiers,
+                  quantity: e.amount,
+                  price: e.price,
+                  item: item,
+                );
+              },
+            ).toList(),
+            gridSize,
+            context,
+            hasQuantity: false,
+            itemBorderRadius: BorderRadius.all(Radius.circular(8)),
+            itemPadding: const EdgeInsets.all(8),
+            elevation: 2,
+            includeQuantityControls: false,
+            onlyQuantity: true,
+            itemSize: Size(gridSize.width * 0.7, ((gridSize.height) - (widget.order.items.length - 1) * padding.bottom) / 2.2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Column buildCollapsedBody(BuildContext context, List<business_model.OrderStatus> statusValues) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: !widget.dropdownStatus
+              ? Text(
+                  "Status: ${widget.order.status.getName()}",
+                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
+                )
+              : buildDropdown(statusValues, context),
+        ),
+        if (widget.order.address != null)
+          Address(
+            name: widget.order.address!.name,
+            province: widget.order.address!.province,
+            extraInfo: widget.order.address!.extraInfo,
+            zipCode: widget.order.address!.zipCode,
+            street: widget.order.address!.street,
+            phone: widget.order.address!.phone,
+            country: widget.order.address!.country,
+            city: widget.order.address!.city,
             canDelete: false,
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, top: 5, right: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 10, top: 5, right: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Subtotal - \$${widget.order.subtotal.toStringAsFixed(2)}",
+                    style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
+                  ),
+                  Text(
+                    "Cupon - \$${widget.order.cuponDiscount.toStringAsFixed(2)}",
+                    style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5),
+              if (widget.order.shippingCost > 0)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Subtotal - \$${order.subtotal.toStringAsFixed(2)}",
+                      "Shipping - \$${widget.order.shippingCost.toStringAsFixed(2)}",
                       style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                     ),
                     Text(
-                      "Cupon - \$${order.cuponDiscount.toStringAsFixed(2)}",
+                      "Total - \$${widget.order.total.toStringAsFixed(2)}",
                       style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                     ),
                   ],
                 ),
-                SizedBox(height: 5),
-                if (order.shippingCost > 0) Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Shipping - \$${order.shippingCost.toStringAsFixed(2)}",
-                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
-                    ),
-                    Text(
-                      "Total - \$${order.total.toStringAsFixed(2)}",
-                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
-                    ),
-                  ],
-                ),
-                if (order.shippingCost ==0)Text(
-                  "Total - \$${order.total.toStringAsFixed(2)}",
+              if (widget.order.shippingCost == 0)
+                Text(
+                  "Total - \$${widget.order.total.toStringAsFixed(2)}",
                   style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                 ),
-              ],
-            ),
+            ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  DropdownButton<business_model.OrderStatus> buildDropdown(List<business_model.OrderStatus> statusValues, BuildContext context) {
+    return DropdownButton<business_model.OrderStatus>(
+      value: dropdownValue,
+      items: List.generate(
+        statusValues.length,
+        (index) => DropdownMenuItem(
+          value: statusValues[index],
+          child: Text(
+            statusValues[index].getName(),
+            style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
+          ),
+        ),
       ),
-      expanded: buildCartItemList(
-        order.items.map(
-          (e) {
-            ItemModel item = _idToItemMap[e.itemId.hexString]!;
-            return CartItemModel(
-              previewImage: item.images[item.previewImageIndex],
-              title: item.itemStoreFormat.title,
-              modifiersChosen: e.selectedModifiers,
-              quantity: e.amount,
-              price: e.price,
-              item: item,
-            );
-          },
-        ).toList(),
-        gridSize,
-        context,
-        hasQuantity: false,
-        itemBorderRadius: BorderRadius.all(Radius.circular(8)),
-        itemPadding: const EdgeInsets.all(8),
-        elevation: 2,
-        includeQuantityControls: false,
-        onlyQuantity: true,
-        itemSize: Size(gridSize.width * 0.7, ((gridSize.height) - (order.items.length - 1) * padding.bottom) / 2.2),
+      selectedItemBuilder: (ctx) => List.generate(
+        statusValues.length,
+        (index) => Text(
+          "Status: ${statusValues[index].getName()}",
+          style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
+        ),
       ),
+      onChanged: (status) async {
+        if (widget.onDropdownChange != null) await widget.onDropdownChange!(status);
+        setState(() {
+          dropdownValue = status ?? widget.order.status;
+        });
+      },
     );
   }
 

@@ -35,10 +35,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
 
   UserBloc() : super(UserLoggedOutState()) {
-    _renewTokenTimer.reset();
-    print("STARTED TIMER: ${_renewTokenTimer.isActive}, ${_renewTokenTimer.tick}");
     on<UserLoginEvent>((event, emit) async {
-      print(JwtDecoder.decode(event.token)['business_id']);
       UserLoggedInState state =
           JwtDecoder.decode(event.token)['business_id'] == null ? UserLoggedInState(event.token) : BusinessUserLoggedInState(event.token);
 
@@ -57,6 +54,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         return;
       }
 
+      _renewTokenTimer.reset();
+      print("STARTED TIMER: ${_renewTokenTimer.isActive}, ${_renewTokenTimer.tick}");
       emit(state);
     });
 
@@ -91,7 +90,14 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         return;
       }
 
-      UserLoggedInState renewedState = (state as UserLoggedInState).copyWith(token: token);
+      UserLoggedInState renewedState;
+      UserLoggedInState prevState = state as UserLoggedInState;
+      if (prevState is BusinessUserLoggedInState) {
+        renewedState = prevState.copyWith(token: token, business: prevState.business.copyWith(ownerToken: token));
+      } else {
+        renewedState = prevState.copyWith(token: token);
+      }
+
       emit(renewedState);
     });
 
@@ -132,6 +138,38 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
       Business business = (state as BusinessUserLoggedInState).business..updateItem(event.item);
       BusinessUserLoggedInState newState = (state as BusinessUserLoggedInState).copyWith(business: business);
+      emit(newState);
+    });
+
+    on<BusinessUserFrontendUpdateOrder>((event, emit) {
+      if (state is! BusinessUserLoggedInState) return;
+
+      Business business = (state as BusinessUserLoggedInState).business..updateOrderStatus(event.order);
+      BusinessUserLoggedInState newState = (state as BusinessUserLoggedInState).copyWith(business: business);
+      emit(newState);
+    });
+
+    on<UpdateProfileData>((event, emit) async {
+      if (state is! UserLoggedInState) return;
+
+      UserLoggedInState prevState = state as UserLoggedInState;
+      Map<String, dynamic>? mapUser = await getUserFromToken(prevState.token);
+      List<Address> addresses = UserLoggedInState.buildAddressesFromUserMap(prevState.token, mapUser!['shipping_addresses']);
+      List<Order> orderHistory = await UserLoggedInState.buildOrderHistoryFromUserMap(prevState.token, mapUser['order_history'] ?? []);
+      UserLoggedInState newState = (state as UserLoggedInState).copyWith(
+        addresses: addresses,
+        orderHistory: orderHistory,
+      );
+      emit(newState);
+    });
+
+    on<UpdateBusinessDataEvent>((event, emit) async {
+      if (state is! BusinessUserLoggedInState) return;
+
+      BusinessUserLoggedInState prevState = state as BusinessUserLoggedInState;
+      Response businessData = await sendGetRequest(subRoute: businessRoute, token: prevState.token);
+      Business business = Business.fromMap(prevState.token, businessData.data);
+      BusinessUserLoggedInState newState = prevState.copyWith(business: business);
       emit(newState);
     });
   }

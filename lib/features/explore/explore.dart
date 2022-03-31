@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,12 +14,14 @@ import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/search_filter/filter_bar.dart';
 import 'package:vivity/features/search_filter/filter_side_bar.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
+import '../../helpers/helper.dart';
 import '../cart/shopping_cart.dart';
 import '../item/preview_item.dart';
 import '../map/map_gui.dart';
 import '../map/map_widget.dart';
 import 'bloc/explore_bloc.dart';
 import 'slideable_item_tab.dart';
+import 'package:latlong2/latlong.dart';
 
 class Explore extends StatefulWidget {
   @override
@@ -28,6 +32,9 @@ class _ExploreState extends State<Explore> {
   final mapGuiController = MapGuiController();
   final _widgetSwapController = WidgetSwapperController();
   late final ExploreController _controller;
+  late final Set<LatLng> mapItemLocations = {};
+  final Random random = Random();
+
 
   @override
   void initState() {
@@ -48,16 +55,24 @@ class _ExploreState extends State<Explore> {
           if (state is! ExploreLoaded) return;
           if (listEquals(_controller.exploreItems, state.itemModels)) return;
 
-          mapGuiController.removeWidgetsFromMap(_controller.exploreItems.map((e) => e.location).toSet());
+          mapGuiController.removeWidgetsFromMap(mapItemLocations);
+          mapItemLocations.clear();
           mapGuiController.addWidgetsToMap(state.itemModels.map((e) {
             Size textSize = MapPreviewIcon.getTextSize(e.price, context);
-            return buildMapWidget(
-              location: e.location,
-              size: Size(textSize.width + 15, textSize.height + 10),
-              child: MapPreviewIcon(
-                item: e,
-                exploreController: _controller,
-              ));
+            double added1 = doubleInRange(random, 0.0001, 0.00015);
+            double added2 = doubleInRange(random, 0.0001, 0.00015);
+            LatLng loc = mapItemLocations.contains(e.location)
+                ? LatLng(e.location.latitude + added1, e.location.longitude + added2)
+                : e.location;
+            MapWidget widget = buildMapWidget(
+                location: loc,
+                size: Size(textSize.width + 15, textSize.height + 10),
+                child: MapPreviewIcon(
+                  item: e,
+                  exploreController: _controller,
+                ));
+            mapItemLocations.add(loc);
+            return widget;
           }));
           _controller.updateExploreItems(List.of(state.itemModels));
         },

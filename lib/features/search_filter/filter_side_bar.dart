@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:vivity/features/item/like_button.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 
 class FilterSideBar extends StatelessWidget {
   final WidgetSwapperController controller;
+  final List<Widget>? customBody;
 
-  const FilterSideBar({Key? key, required this.controller}) : super(key: key);
+  const FilterSideBar({
+    Key? key,
+    required this.controller,
+    this.customBody,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +26,7 @@ class FilterSideBar extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
+              children: customBody ?? [
                 Expanded(
                   child: Material(
                     color: Theme.of(context).colorScheme.primary,

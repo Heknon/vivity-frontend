@@ -71,7 +71,6 @@ class UserLoggedInState extends UserState {
     Map<String, dynamic>? mapUser = await getUserFromToken(token);
     if (mapUser == null) return 'Token expired';
 
-    print(mapUser['order_history']);
     id = ObjectId.fromHexString(mapUser['_id']);
     businessId = mapUser.containsKey('business_id') ? ObjectId.fromHexString(mapUser['business_id']) : null;
     isSystemAdmin = mapUser['is_system_admin'] ?? false;
@@ -79,10 +78,10 @@ class UserLoggedInState extends UserState {
     name = mapUser['name'];
     phone = mapUser['phone'];
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
-    addresses = buildAddressesFromUserMap(mapUser['shipping_addresses']);
-    likedItems = await buildLikedItemsFromUserMap(mapUser['liked_items']);
-    orderHistory = await buildOrderHistoryFromUserMap(mapUser['order_history'] ?? []);
-    cart = await buildCartFromUserMap(mapUser['cart'] ?? []);
+    addresses = buildAddressesFromUserMap(token, mapUser['shipping_addresses']);
+    likedItems = await buildLikedItemsFromUserMap(token, mapUser['liked_items']);
+    orderHistory = await buildOrderHistoryFromUserMap(token, mapUser['order_history'] ?? []);
+    cart = await buildCartFromUserMap(token, mapUser['cart'] ?? []);
     profilePicture = await getProfilePicture(token);
 
     return null;
@@ -99,11 +98,11 @@ class UserLoggedInState extends UserState {
     );
   }
 
-  List<Address> buildAddressesFromUserMap(List<dynamic> addresses) {
+  static List<Address> buildAddressesFromUserMap(String token, List<dynamic> addresses) {
     return addresses.map((e) => Address.fromMap(e)).toList();
   }
 
-  Future<List<ItemModel>> buildLikedItemsFromUserMap(List<dynamic> likedItems) async {
+  static Future<List<ItemModel>> buildLikedItemsFromUserMap(String token, List<dynamic> likedItems) async {
     if (likedItems.isEmpty) return List.empty(growable: true);
 
     List<ObjectId> itemIds = likedItems.map((e) => ObjectId.fromHexString(e as String)).toList();
@@ -111,11 +110,11 @@ class UserLoggedInState extends UserState {
     return await getItemsFromIds(token, itemIds);
   }
 
-  Future<List<Order>> buildOrderHistoryFromUserMap(List<dynamic> ordersMap) async {
+  static Future<List<Order>> buildOrderHistoryFromUserMap(String token, List<dynamic> ordersMap) async {
     return (await getOrdersFromIds(token, ordersMap.map((e) => e as String).toList())) ?? [];
   }
 
-  Future<List<CartItemModel>> buildCartFromUserMap(List<dynamic> cartMap) async {
+  static Future<List<CartItemModel>> buildCartFromUserMap(String token, List<dynamic> cartMap) async {
     if (cartMap.isEmpty) {
       return List<CartItemModel>.empty(growable: true);
     }

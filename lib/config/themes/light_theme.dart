@@ -12,7 +12,7 @@ ThemeData lightTheme = ThemeData.light().copyWith(
     ),
     dialogBackgroundColor: const Color(0xfff5f5f5),
     textTheme: Typography.blackCupertino.copyWith(
-      subtitle1: TextStyle(fontFamily: "Hezaedrus", fontSize: 10, color: Colors.grey[400]),
+      subtitle1: TextStyle(fontFamily: "Hezaedrus", fontSize: 10, color: Color(0xff737373)),
       subtitle2: TextStyle(fontFamily: "Hezaedrus", fontSize: 10, color: Colors.grey[700]),
       headline4: TextStyle(
         fontFamily: "Hezaedrus",

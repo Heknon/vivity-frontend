@@ -70,8 +70,8 @@ class CartItemModel {
       previewImage: map['previewImage'] as String,
       title: map['title'] as String,
       modifiersChosen: (map['modifiersChosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
-      price: map['price'] as double,
-      quantity: map['quantity'] as int,
+      price: (map['price'] as num).toDouble(),
+      quantity: (map['quantity'] as num).toInt(),
       item: itemModel,
     );
   }
@@ -196,18 +196,18 @@ class ItemModel {
   factory ItemModel.fromMap(Map<String, dynamic> map) {
     return ItemModel(
       businessId: ObjectId.fromHexString(map['business_id']),
-      location: LatLng(map['location'][0], map['location'][1]),
+      location: LatLng((map['location'][0] as num).toDouble(), (map['location'][1] as num).toDouble()),
       id: ObjectId.fromHexString(map['_id']),
       businessName: map['business_name'] as String,
-      price: map['price'] as double,
+      price: (map['price'] as num).toDouble(),
       images: (map['images'] as List<dynamic>).map((e) => e as String).toList(),
-      previewImageIndex: map['preview_image'] as int,
+      previewImageIndex: (map['preview_image'] as num).toInt(),
       reviews: (map['reviews'] as List<dynamic>).map((e) => Review.fromDBMap(e)).toList(),
       itemStoreFormat: ItemStoreFormat.fromDBMap(map['item_store_format']),
       brand: map['brand'] as String,
       category: map['category'] as String,
       tags: (map['tags'] as List<dynamic>).map((e) => e as String).toList(),
-      stock: map['stock'] as int,
+      stock: (map['stock'] as num).toInt(),
       metrics: ItemMetrics.fromMap(map["metrics"]),
     );
   }
@@ -521,9 +521,9 @@ class ItemMetrics {
 
   factory ItemMetrics.fromMap(Map<String, dynamic> map) {
     return ItemMetrics(
-      views: map['views'] as int,
-      orders: map['orders'] as int,
-      likes: map['likes'] as int,
+      views: (map['views'] as num).toInt(),
+      orders: (map['orders'] as num).toInt(),
+      likes: (map['likes'] as num).toInt(),
     );
   }
 

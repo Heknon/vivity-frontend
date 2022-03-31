@@ -23,7 +23,7 @@ class Rating extends StatelessWidget {
       sum += element.rating;
     }
 
-    return Rating(rating: sum / length, color: color, fontSize: fontSize,);
+    return Rating(rating: sum / length != 0 ? length : 1, color: color, fontSize: fontSize,);
   }
 
   @override

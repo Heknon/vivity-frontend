@@ -10,13 +10,30 @@ import '../order/order.dart' as order_widget;
 
 import 'bloc/user_bloc.dart';
 
-class ProfilePage extends StatelessWidget {
-  Future<List<ItemModel>>? ordersItemsCache;
-
+class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  Future<List<ItemModel>>? ordersItemsCache;
+  late bool initialized;
+
+  @override
+  void initState() {
+    super.initState();
+    initialized = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!initialized) {
+      context.read<UserBloc>().add(UpdateProfileData());
+      initialized = true;
+    }
+
     return BasePage(
       body: BlocBuilder<UserBloc, UserState>(builder: (context, state) {
         if (state is! UserLoggedInState) return const Text("Can't see this page without being logged in.\nHow are you even here?");
@@ -87,6 +104,7 @@ class ProfilePage extends StatelessWidget {
                           );
                   },
                 ),
+                SizedBox(height: 20),
               ],
             ),
           ),

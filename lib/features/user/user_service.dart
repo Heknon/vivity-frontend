@@ -19,14 +19,14 @@ Future<Map<String, dynamic>?> getUserFromToken(String token) async {
 
 Future<Response?> updateProfilePicture(String token, File? file) async {
   Response response = await sendPostRequestUploadFile(subRoute: profilePictureRoute, file: file, token: token);
-  if (response.statusCode != 200) return null;
+  if (response.statusCode! > 300) return null;
 
   return response;
 }
 
 Future<File?> getProfilePicture(String token) async {
   Response response = await sendGetRequest(subRoute: profilePictureRoute, token: token, contentType: "image/png", responseType: ResponseType.bytes);
-  if (response.statusCode != 200) return null;
+  if (response.statusCode! > 300) return null;
 
   String path = (await getTemporaryDirectory()).path;
   return response.data.length < 10 ? null : File('$path/pfp_vivity_user.png').writeAsBytes(response.data);
@@ -35,7 +35,7 @@ Future<File?> getProfilePicture(String token) async {
 Future<List<Order>?> getOrdersFromIds(String token, List<String> orderIds) async {
   if (orderIds.isEmpty) return null;
   Response response = await sendGetRequest(subRoute: ordersRoute + '?order_ids=${orderIds.join(',')}', token: token);
-  if (response.statusCode != 200) return null;
+  if (response.statusCode! > 300) return null;
 
   return (response.data as List<dynamic>).map((e) => Order.fromMap(e)).toList();
 }

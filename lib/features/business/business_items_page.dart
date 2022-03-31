@@ -8,6 +8,7 @@ import 'package:objectid/objectid/objectid.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/item_service.dart';
 
 import '../../config/themes/themes_config.dart';
@@ -28,41 +29,43 @@ class BusinessItemsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     itemsCache ??= business.getIdItemMap(updateCache: true);
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Center(
-            child: Text(
-              business.name,
-              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+    return defaultGradientBackground(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Center(
+              child: Text(
+                business.name,
+                style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+              ),
             ),
           ),
-        ),
-        FutureBuilder(
-            future: itemsCache,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return CircularProgressIndicator();
-              }
+          FutureBuilder(
+              future: itemsCache,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
 
-              Map<ObjectId, ItemModel> idItemMap = snapshot.data as Map<ObjectId, ItemModel>;
-              Size gridSize = Size(100.w, 60.h);
-              return SizedBox.fromSize(
-                size: gridSize,
-                child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
-                    itemHeightMultiplier: 0.6,
-                    hasEditButton: true,
-                    onEditTapped: (item) => print("edit tapped"),
-                    onTap: (item) async {
-                      int stock = await enterStockDialog(business.ownerToken, item, context);
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock updated to $stock')));
-                    },
-                    onLongTap: (item) => showDialog(context: context, builder: (ctx) => buildItemStatisticsDialog(ctx, item))),
-              );
-            })
-      ],
+                Map<ObjectId, ItemModel> idItemMap = snapshot.data as Map<ObjectId, ItemModel>;
+                Size gridSize = Size(100.w, 60.h);
+                return SizedBox.fromSize(
+                  size: gridSize,
+                  child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
+                      itemHeightMultiplier: 0.6,
+                      hasEditButton: true,
+                      onEditTapped: (item) => print("edit tapped"),
+                      onTap: (item) async {
+                        int stock = await enterStockDialog(business.ownerToken!, item, context);
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock updated to $stock')));
+                      },
+                      onLongTap: (item) => showDialog(context: context, builder: (ctx) => buildItemStatisticsDialog(ctx, item))),
+                );
+              })
+        ],
+      ),
     );
   }
 

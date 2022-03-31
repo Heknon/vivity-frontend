@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/models/business.dart';
 import 'package:vivity/services/item_service.dart';
@@ -9,7 +10,7 @@ import 'api_service.dart';
 
 Future<int> addBusinessView(String token, String businessId) async {
   Response response = await sendPostRequest(subRoute: businessViewMetricRoute.replaceFirst("{business_id}", businessId), token: token);
-  if (response.statusCode != 200) {
+  if (response.statusCode! > 300) {
     throw Exception('Failed to update view count. $response');
   }
 
@@ -18,7 +19,7 @@ Future<int> addBusinessView(String token, String businessId) async {
 
 Future<List<Order>> getBusinessOrders(String token) async {
   Response response = await sendGetRequest(subRoute: businessOrdersRoute, token: token);
-  if (response.statusCode != 200) {
+  if (response.statusCode! > 300) {
     throw Exception('Failed to get business orders. $response');
   }
 
@@ -37,4 +38,16 @@ Future<List<ItemModel>> getItemsFromOrders(String token, List<Order> orders) asy
 
   List<ItemModel> items = await getItemsFromStringIds(token, ids.toList());
   return items;
+}
+
+Future<Order> updateOrderStatus(String token, OrderStatus status, String orderId) async {
+  Response response = await sendPostRequest(subRoute: businessOrderStatusRoute, token: token, data: {
+    "status": status.index,
+    "order_id": orderId,
+  });
+  if (response.statusCode! > 300) {
+    throw Exception('Failed to update order status. $response');
+  }
+
+  return Order.fromMap(response.data);
 }

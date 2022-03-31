@@ -7,7 +7,7 @@ import 'api_service.dart';
 
 Future<File?> getImage(String token, String imageId, String folderName) async {
   Response response = await sendGetRequest(subRoute: imageRoute, token: token, contentType: "image/png");
-  if (response.statusCode != 200) return null;
+  if (response.statusCode! > 300) return null;
 
   return response.data.length < 10 ? null : File.fromRawPath(response.data);
 }

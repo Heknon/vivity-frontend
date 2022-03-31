@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/business/create_business.dart';
+import 'package:vivity/features/business/unapproved_business_page.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:vivity/features/user/profile_page.dart';
 import 'package:vivity/main.dart';
 
 import '../../config/themes/themes_config.dart';
+import '../admin/admin_page.dart';
 import '../business/business_page.dart';
 
 class VivityDrawer extends StatelessWidget {
@@ -97,7 +99,10 @@ class VivityDrawer extends StatelessWidget {
                   ],
                 ),
                 const Divider(thickness: 0),
-                buildMenuButton(text: 'Profile', onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProfilePage())), context: context),
+                buildMenuButton(
+                    text: 'Profile',
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProfilePage())),
+                    context: context),
                 const Divider(thickness: 0),
                 buildMenuButton(text: 'Settings', onPressed: () => print("Pressed Settings"), context: context),
                 SizedBox(height: 7.h),
@@ -116,7 +121,13 @@ class VivityDrawer extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (ctx) => state.businessId != null ? BusinessPage() : CreateBusiness(),
+                        builder: (ctx) {
+                          if (state.businessId != null && state is BusinessUserLoggedInState) {
+                            return state.business.approved ? BusinessPage() : UnapprovedBusinessPage();
+                          }
+
+                          return CreateBusiness();
+                        },
                       ),
                     );
                   },
@@ -124,7 +135,11 @@ class VivityDrawer extends StatelessWidget {
                 ),
                 if (state.isSystemAdmin) ...[
                   const Divider(thickness: 0),
-                  buildMenuButton(text: 'Admin controls', onPressed: () => print("Pressed admin"), context: context),
+                  buildMenuButton(
+                    text: 'Admin controls',
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AdminPage())),
+                    context: context,
+                  ),
                 ],
                 Spacer(),
                 buildMenuButton(

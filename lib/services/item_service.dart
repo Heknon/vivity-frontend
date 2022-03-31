@@ -20,16 +20,40 @@ Future<List<ItemModel>> getItemsFromIds(String token, List<ObjectId> ids) {
 
 Future<List<ItemModel>> getItemsFromStringIds(String token, List<String> ids) async {
   Response response = await sendGetRequest(subRoute: globalBusinessItemRoute + "?item_ids=${ids.join(',')}", token: token);
-  if (response.statusCode != 200) {
+  if (response.statusCode! > 300) {
     throw Exception('Failed to get items. $response');
   }
 
   return (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList();
 }
 
+Future<ItemModel> createItem(
+  String token, {
+  required String title,
+  required String subtitle,
+  required String brand,
+  required String category,
+  required List<String> tags,
+  required double price,
+}) async {
+  Response response = await sendPostRequest(subRoute: itemRoute, token: token, data: {
+    'title': title,
+    'subtitle': subtitle,
+    'brand': brand,
+    'category': category,
+    'tags': tags,
+    'price': price,
+  });
+  if (response.statusCode! > 300) {
+    throw Exception('Failed to get items. $response');
+  }
+
+  return ItemModel.fromMap(response.data);
+}
+
 Future<ItemModel> updateItemStock(String token, String id, int stock) async {
   Response response = await sendPostRequest(subRoute: businessViewMetricRoute.replaceFirst("{item_id}", id) + "?stock=$stock", token: token);
-  if (response.statusCode != 200) {
+  if (response.statusCode! > 300) {
     throw Exception('Failed to update item stock. $response');
   }
 
@@ -38,7 +62,7 @@ Future<ItemModel> updateItemStock(String token, String id, int stock) async {
 
 Future<int> addItemView(String token, String itemId) async {
   Response response = await sendPostRequest(subRoute: itemViewMetricRoute.replaceFirst("{item_id}", itemId), token: token);
-  if (response.statusCode != 200) {
+  if (response.statusCode! > 300) {
     throw Exception('Failed to update view count. $response');
   }
 
@@ -54,7 +78,7 @@ Future<List<ItemModel>> searchByCoordinates(String token, LatLng position, doubl
     token: token,
   );
 
-  if (response.statusCode != 200) {
+  if (response.statusCode! > 300) {
     throw Exception('Failed to search. $response');
   }
 
@@ -123,7 +147,6 @@ Future<Map<String, File>?> getItemImagesBase(String token, Map<String, Set<Strin
     }
   }
 
-  print("?folder_name=items/&image_ids=$joinedString");
   Response res = await sendGetRequest(subRoute: multiImageRoute + "?folder_name=items/&image_ids=$joinedString", token: token);
   if (res.statusCode != 200) return null;
 

@@ -17,7 +17,7 @@ class UserOptions {
 
   factory UserOptions.fromMap(Map<String, dynamic> map) {
     return UserOptions(
-      businessSearchRadius: map['businessSearchRadius'] as double?,
+      businessSearchRadius: (map['businessSearchRadius'] as num?)?.toDouble(),
       distanceUnit: map['distanceUnit'] as String?,
       currencyType: map['currencyType'] as String?,
       shirtSize: map['shirtSize'] as String?,

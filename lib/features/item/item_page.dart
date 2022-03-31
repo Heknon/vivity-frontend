@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:advanced_panel/panel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/config/themes/themes_config.dart';
+import 'package:vivity/features/explore/slideable_item_tab.dart';
+import 'package:vivity/features/item/item_edit_panel.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/item_service.dart';
@@ -24,6 +29,7 @@ import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/rating.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
+import 'like_button.dart';
 import 'modifier/item_modifier.dart';
 
 class ItemPage extends StatefulWidget {
@@ -41,13 +47,17 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> {
   late List<ItemModifierSelectorController> _selectorControllers;
   late QuantityController _quantityController;
+  late LikeButtonController _likeController;
   late WidgetSwapperController _widgetSwapController;
+  late PanelController _panelController;
   late final Future<Map<String, File>?>? itemImages;
 
   @override
   void initState() {
     super.initState();
 
+    _likeController = LikeButtonController();
+    _panelController = PanelController();
     itemImages = getCachedItemImages((context.read<UserBloc>().state as UserLoggedInState).token, List.of([widget.item]));
 
     _selectorControllers = List.generate(
@@ -77,6 +87,17 @@ class _ItemPageState extends State<ItemPage> {
 
   @override
   Widget build(BuildContext context) {
+    UserState state = context.read<UserBloc>().state;
+    if (state is! UserLoggedInState) return Text("How are you here 🕵️‍♂️‍");
+
+    bool initialLiked = false;
+
+    for (var element in state.likedItems) {
+      if (element.id == widget.item.id) initialLiked = true;
+    }
+
+    _likeController.setLiked(initialLiked);
+
     return BasePage(
       appBar: VivityAppBar(
         bottom: buildTitle(context),
@@ -124,10 +145,20 @@ class _ItemPageState extends State<ItemPage> {
                       ),
                     ),
                     Spacer(),
-                    buildDetailsTab(constraints, context)
+                    buildDetailsTab(constraints, context),
                   ],
                 ),
               ),
+              // Positioned(
+              //   bottom: 0,
+              //   child: ConstrainedBox(
+              //     child: ,
+              //     constraints: BoxConstraints(
+              //       minHeight: 10,
+              //       maxHeight: 70
+              //     ),
+              //   ),
+              // ),
               Positioned(
                 child: ConstrainedBox(
                   child: ShoppingCart(),
@@ -141,20 +172,47 @@ class _ItemPageState extends State<ItemPage> {
                   constraints: BoxConstraints(
                     minWidth: 50,
                     maxWidth: MediaQuery.of(context).size.width,
-                    minHeight: 50,
-                    maxHeight: 120,
+                    minHeight: 90,
+                    maxHeight: 90,
                   ),
-                  child: WidgetSwapper(
-                    filterViewController: _widgetSwapController,
-                    bar: FilterBar(
-                      controller: _widgetSwapController,
-                    ),
-                    sideBar: FilterSideBar(
-                      controller: _widgetSwapController,
-                    ),
+                  child: FilterSideBar(
+                    controller: _widgetSwapController,
+                    customBody: [
+                      buildDatabaseLikeButton(
+                        widget.item,
+                        _likeController,
+                        context,
+                        initialLiked,
+                        color: primaryComplementaryColor,
+                        backgroundColor: Theme.of(context).primaryColor,
+                        splashColor: Colors.white.withOpacity(0.6),
+                        borderRadius: const BorderRadius.all(Radius.circular(15)),
+                        padding: const EdgeInsets.all(4),
+                      ),
+                      if (state.businessId == widget.item.businessId)
+                        Material(
+                          color: Theme.of(context).primaryColor,
+                          child: IconButton(
+                            splashColor: Colors.white.withOpacity(0.6),
+                            splashRadius: 20,
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () {
+                              print("pressed edit");
+                            },
+                            icon: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                    ],
                   ),
                 ),
-              )
+              ),
+              ItemEditPanel(
+                item: widget.item,
+                panelController: _panelController,
+              ),
             ],
           ),
         ),
@@ -167,8 +225,7 @@ class _ItemPageState extends State<ItemPage> {
       width: size.width,
       height: size.height,
       decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30))),
+          color: Colors.white, borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30))),
       child: SizedBox(
         width: size.width * 0.8,
         height: size.height * 0.8,
@@ -390,6 +447,6 @@ class _ItemPageState extends State<ItemPage> {
       sumRatings += element.rating;
     });
 
-    return sumRatings / widget.item.reviews.length;
+    return sumRatings / (widget.item.reviews.isEmpty ? 1 : widget.item.reviews.length);
   }
 }

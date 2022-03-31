@@ -13,6 +13,7 @@ import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/services/item_service.dart';
 import 'package:vivity/widgets/simple_card.dart';
+import '../../config/themes/themes_config.dart';
 import 'item_page.dart';
 import 'background_image.dart';
 import 'package:vivity/widgets/rating.dart';
@@ -26,7 +27,6 @@ class ClassicItem extends StatefulWidget {
   final VoidCallback? onEditTap;
   final VoidCallback? onTap;
   final VoidCallback? onLongTap;
-
 
   const ClassicItem({
     Key? key,
@@ -128,7 +128,17 @@ class _ClassicItemState extends State<ClassicItem> {
                     ),
                     Spacer(),
                     !widget.editButton
-                        ? buildDatabaseLikeButton(widget.item, _likeButtonController, context, initialLiked)
+                        ? buildDatabaseLikeButton(
+                            widget.item,
+                            _likeButtonController,
+                            context,
+                            initialLiked,
+                            color: primaryComplementaryColor,
+                            backgroundColor: Colors.transparent,
+                            splashColor: Colors.grey[600]!.withOpacity(0.6),
+                            borderRadius: const BorderRadius.all(Radius.circular(15)),
+                            padding: const EdgeInsets.all(4),
+                          )
                         : IconButton(
                             padding: EdgeInsets.zero,
                             constraints: BoxConstraints(),

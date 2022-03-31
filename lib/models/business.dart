@@ -12,19 +12,23 @@ class Business {
   Future<List<ItemModel>>? _cachedOrderItems;
   Map<ObjectId, ItemModel>? _cachedItemIdMap;
 
-  final String ownerToken;
+  final String? ownerToken;
   final String name;
+  final ObjectId businessId;
   final LatLng location;
   final List<ObjectId> items;
   final Map<String, List<ObjectId>> categories;
   final ContactInformation contact;
   final int nationalBusinessId;
   final BusinessMetrics metrics;
-  final List<Order> orders;
+  final List<ObjectId> orders;
   final String? ownerId; // TODO: If null ask to resubmit id.
+  final bool approved;
+  final String adminNote;
 
   Business(
     this.ownerToken, {
+    required this.businessId,
     required this.name,
     required this.location,
     required this.items,
@@ -34,29 +38,38 @@ class Business {
     required this.ownerId,
     required this.metrics,
     required this.orders,
+    required this.approved,
+    required this.adminNote,
   }) {
-    _cachedItems = getItemsFromIds(ownerToken, items);
-    _cachedOrders = getBusinessOrders(ownerToken);
+    if (ownerToken != null) {
+      _cachedItems = getItemsFromIds(ownerToken!, items);
+      _cachedOrders = getBusinessOrders(ownerToken!);
+    }
   }
 
   Future<List<Order>> getOrders({bool updateCache = false}) async {
+    if (ownerToken == null) throw Exception("You do not have access to business data. No owner token.");
+
     if (updateCache) {
-      _cachedOrders = getBusinessOrders(ownerToken);
-      _cachedOrderItems = getItemsFromOrders(ownerToken, await _cachedOrders);
+      _cachedOrders = getBusinessOrders(ownerToken!);
+      _cachedOrderItems = getItemsFromOrders(ownerToken!, await _cachedOrders);
     }
 
     return await _cachedOrders;
   }
 
   Future<List<ItemModel>> getCachedOrderItems() async {
-    _cachedOrderItems ??= getItemsFromOrders(ownerToken, await _cachedOrders);
+    if (ownerToken == null) throw Exception("You do not have access to business data. No owner token.");
+
+    _cachedOrderItems ??= getItemsFromOrders(ownerToken!, await _cachedOrders);
 
     return await _cachedOrderItems!;
   }
 
   Future<Map<ObjectId, ItemModel>> getIdItemMap({bool updateCache = false}) async {
+    if (ownerToken == null) throw Exception("You do not have access to business data. No owner token.");
     if (updateCache) {
-      _cachedItems = getItemsFromIds(ownerToken, items);
+      _cachedItems = getItemsFromIds(ownerToken!, items);
       _cachedItemIdMap == null;
     }
 
@@ -84,7 +97,15 @@ class Business {
     items.add(item.id);
   }
 
+  void updateOrderStatus(Order order) async {
+    List<Order> cached = await _cachedOrders;
+    cached.removeWhere((element) => element.orderId == order.orderId);
+    cached.add(order);
+  }
+
   Business copyWith({
+    String? ownerToken,
+    ObjectId? businessId,
     String? name,
     LatLng? location,
     List<ObjectId>? items,
@@ -93,7 +114,9 @@ class Business {
     int? nationalBusinessId,
     String? ownerId,
     BusinessMetrics? metrics,
-    List<Order>? orders,
+    List<ObjectId>? orders,
+    bool? approved,
+    String? adminNote,
   }) {
     if ((name == null || identical(name, this.name)) &&
         (location == null || identical(location, this.location)) &&
@@ -107,7 +130,8 @@ class Business {
     }
 
     return Business(
-      ownerToken,
+      ownerToken ?? this.ownerToken,
+      businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       location: location ?? this.location,
       items: items ?? this.items,
@@ -117,23 +141,28 @@ class Business {
       ownerId: ownerId ?? this.ownerId,
       metrics: metrics ?? this.metrics,
       orders: orders ?? this.orders,
+      approved: approved ?? this.approved,
+      adminNote: adminNote ?? this.adminNote,
     );
   }
 
-  factory Business.fromMap(String token, Map<String, dynamic> map) {
+  factory Business.fromMap(String? token, Map<String, dynamic> map) {
     return Business(
       token,
+      businessId: ObjectId.fromHexString(map['_id']),
       name: map['name'] as String,
-      location: LatLng(map['location'][0], map['location'][1]),
+      location: LatLng((map['location'][0] as num).toDouble(), (map['location'][1] as num).toDouble()),
       items: (map['items'] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),
       categories: (map['categories'] as List<dynamic>)
           .asMap()
           .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
       contact: ContactInformation.fromMap(map['contact']),
-      nationalBusinessId: map['national_business_id'] as int,
+      nationalBusinessId: (map['national_business_id'] as num).toInt(),
       ownerId: map['owner_id_card'] as String?,
       metrics: BusinessMetrics.fromMap(map["metrics"]),
-      orders: (map["orders"] as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
+      orders: (map["orders"] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),
+      approved: map['approved'],
+      adminNote: map['admin_note'],
     );
   }
 
@@ -156,7 +185,10 @@ class Business {
       'national_business_id': nationalBusinessId,
       'owner_id_card': ownerId,
       'metrics': metrics.toMap(),
-      'orders': orders.map((e) => e.toMap()).toList(),
+      'orders': orders.map((e) => e.hexString).toList(),
+      'approved': approved,
+      'admin_note': adminNote,
+      '_id': businessId.hexString,
     } as Map<String, dynamic>;
   }
 
@@ -165,6 +197,7 @@ class Business {
       identical(this, other) ||
       other is Business &&
           runtimeType == other.runtimeType &&
+          businessId == other.businessId &&
           name == other.name &&
           location == other.location &&
           listEquals(items, other.items) &&
@@ -174,7 +207,9 @@ class Business {
           ownerId == other.ownerId &&
           metrics == other.metrics &&
           mapEquals(_cachedItemIdMap, other._cachedItemIdMap) &&
-          listEquals(orders, other.orders);
+          listEquals(orders, other.orders) &&
+          approved == other.approved &&
+          adminNote == other.adminNote;
 
   @override
   int get hashCode =>
@@ -188,7 +223,10 @@ class Business {
       metrics.hashCode ^
       _cachedItems.hashCode ^
       _cachedItemIdMap.hashCode ^
-      orders.hashCode;
+      orders.hashCode ^
+      approved.hashCode ^
+      adminNote.hashCode ^
+      businessId.hashCode;
 
   @override
   String toString() {
@@ -285,7 +323,7 @@ class BusinessMetrics {
 
   factory BusinessMetrics.fromMap(Map<String, dynamic> map) {
     return BusinessMetrics(
-      views: map['views'] as int,
+      views: (map['views'] as num).toInt(),
     );
   }
 

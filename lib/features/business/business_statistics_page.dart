@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
 
 import '../../models/business.dart';
 import '../../models/order.dart';
@@ -21,67 +22,69 @@ class BusinessStatisticsPage extends StatelessWidget {
     itemsCache ??= business.getIdItemMap(updateCache: true);
     ordersCache ??= business.getOrders(updateCache: true);
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Center(
-            child: Text(
-              business.name,
-              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+    return defaultGradientBackground(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Center(
+              child: Text(
+                business.name,
+                style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+              ),
             ),
           ),
-        ),
-        FutureBuilder(
-            future: Future.wait(<Future<dynamic>>[itemsCache as dynamic, ordersCache as dynamic]),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return CircularProgressIndicator();
-              }
+          FutureBuilder(
+              future: Future.wait(<Future<dynamic>>[itemsCache as dynamic, ordersCache as dynamic]),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
 
-              List<dynamic> snapshotData = snapshot.data as List<dynamic>;
-              Map<ObjectId, ItemModel> idItemMap = snapshotData[0] as Map<ObjectId, ItemModel>;
-              List<Order> orders = snapshotData[1] as List<Order>;
-              List<ItemModel> items = idItemMap.values.toList();
-              int totalViews = 0;
-              int totalLikes = 0;
-              int totalSales = 0;
-              double orderTotal = 0;
-              double shippingTotal = 0;
-              double cuponTotal = 0;
+                List<dynamic> snapshotData = snapshot.data as List<dynamic>;
+                Map<ObjectId, ItemModel> idItemMap = snapshotData[0] as Map<ObjectId, ItemModel>;
+                List<Order> orders = snapshotData[1] as List<Order>;
+                List<ItemModel> items = idItemMap.values.toList();
+                int totalViews = 0;
+                int totalLikes = 0;
+                int totalSales = 0;
+                double orderTotal = 0;
+                double shippingTotal = 0;
+                double cuponTotal = 0;
 
-              for (ItemModel item in items) {
-                totalViews += item.metrics.views;
-                totalLikes += item.metrics.likes;
-                totalSales += item.metrics.orders;
-              }
+                for (ItemModel item in items) {
+                  totalViews += item.metrics.views;
+                  totalLikes += item.metrics.likes;
+                  totalSales += item.metrics.orders;
+                }
 
-              for (Order order in orders) {
-                shippingTotal += order.shippingCost;
-                cuponTotal += order.cuponDiscount;
-                orderTotal += order.total;
-              }
+                for (Order order in orders) {
+                  shippingTotal += order.shippingCost;
+                  cuponTotal += order.cuponDiscount;
+                  orderTotal += order.total;
+                }
 
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    buildBasicStatisticRow("Views", totalViews, items.length, context),
-                    SizedBox(height: 10),
-                    buildBasicStatisticRow("Likes", totalLikes, items.length, context),
-                    SizedBox(height: 10),
-                    buildBasicStatisticRow("Orders", totalSales, items.length, context),
-                    SizedBox(height: 10),
-                    buildBasicStatisticRow("Shipping", shippingTotal, orders.length, context),
-                    SizedBox(height: 10),
-                    buildBasicStatisticRow("Cupons", cuponTotal, orders.length, context),
-                    SizedBox(height: 10),
-                    buildBasicStatisticRow("Total in sales", orderTotal, orders.length, context),
-                  ],
-                ),
-              );
-            }),
-      ],
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      buildBasicStatisticRow("Views", totalViews, items.length, context),
+                      SizedBox(height: 10),
+                      buildBasicStatisticRow("Likes", totalLikes, items.length, context),
+                      SizedBox(height: 10),
+                      buildBasicStatisticRow("Orders", totalSales, items.length, context),
+                      SizedBox(height: 10),
+                      buildBasicStatisticRow("Shipping", shippingTotal, orders.length, context),
+                      SizedBox(height: 10),
+                      buildBasicStatisticRow("Cupons", cuponTotal, orders.length, context),
+                      SizedBox(height: 10),
+                      buildBasicStatisticRow("Total in sales", orderTotal, orders.length, context),
+                    ],
+                  ),
+                );
+              }),
+        ],
+      ),
     );
   }
 

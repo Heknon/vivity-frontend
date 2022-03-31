@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:objectid/objectid/objectid.dart';
+import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/like_button.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
@@ -36,15 +37,13 @@ Widget buildPreviewImage(
       Map<String, File>? data = snapshot.data as Map<String, File>?;
       if (data == null) return const Text('Error getting image');
 
-      File? file = data[item.images[item.previewImageIndex]];
+      File? file = item.previewImageIndex < item.images.length && item.previewImageIndex >= 0 ? data[item.images[item.previewImageIndex]] : null;
       if (file == null) {
-        return size != null
-            ? SizedBox(
-                height: size.height * 0.5,
-                width: size.width * 0.7,
-                child: const CircularProgressIndicator(),
-              )
-            : const CircularProgressIndicator();
+        return SizedBox(
+          height: (size?.height ?? 50) * 0.5,
+          width: (size?.width ?? 50) * 0.4,
+          child: const CircularProgressIndicator(),
+        );
       }
 
       return ClipRRect(
@@ -143,7 +142,18 @@ Widget buildItemContentGrid(
   );
 }
 
-Widget buildDatabaseLikeButton(ItemModel item, LikeButtonController controller, BuildContext context, bool initialLiked) {
+Widget buildDatabaseLikeButton(
+  ItemModel item,
+  LikeButtonController controller,
+  BuildContext context,
+  bool initialLiked, {
+  Color? color,
+  Color? backgroundColor,
+  Color? splashColor,
+  double? radius,
+  BorderRadius? borderRadius,
+      EdgeInsets? padding,
+}) {
   return BlocListener<UserBloc, UserState>(
     listener: (ctx, state) {
       if (state is! UserLoggedInState) return;
@@ -154,9 +164,15 @@ Widget buildDatabaseLikeButton(ItemModel item, LikeButtonController controller, 
       controller.setLiked(false);
     },
     child: LikeButton(
-      color: Theme.of(context).primaryColor,
-      controller: controller, // TODO: Connect to user liked items using onClick
+      color: color ?? Theme.of(context).primaryColor,
+      controller: controller,
+      // TODO: Connect to user liked items using onClick
       initialLiked: initialLiked,
+      backgroundColor: backgroundColor,
+      splashColor: splashColor,
+      radius: radius,
+      borderRadius: borderRadius,
+      padding: padding,
       onClick: (liked) {
         if (liked) {
           context.read<UserBloc>().add(UserAddFavoriteEvent(item));
@@ -216,5 +232,48 @@ Widget buildCartItemList(
             itemBuilder: (ctx, i) => cartItems[i],
           )
         : emptyCart,
+  );
+}
+
+Widget buildTab(Text title, Size tabSize, BoxConstraints constraints) {
+  return Positioned(
+    bottom: 0,
+    width: tabSize.width,
+    height: tabSize.height,
+    child: Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 8.0,
+            color: Color.fromRGBO(0, 0, 0, 0.25),
+          )
+        ],
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Material(
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
+            color: const Color(0xffD2D2D2),
+            clipBehavior: Clip.antiAlias,
+            elevation: 3,
+            child: Container(
+              width: tabSize.width * 0.13,
+              height: tabSize.height * 0.15,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 11.0),
+            child: title,
+          )
+        ],
+      ),
+    ),
   );
 }

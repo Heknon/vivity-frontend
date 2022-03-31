@@ -30,9 +30,10 @@ Future<int> enterStockDialog(String userToken, ItemModel itemModel, BuildContext
             validator: ValidationBuilder()
                 .add((value) => int.tryParse(value ?? "f") != null ? null : "Must be an integer.")
                 .add((value) => int.parse(value ?? '0') >= 10000 ? "Must be below 10000" : null)
+                .add((value) => int.parse(value ?? '0') < 0 ? "Must be above 0" : null)
                 .build(),
             style: TextStyle(fontSize: 12.sp, color: Colors.black),
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: false),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
               labelText: 'Stock',
