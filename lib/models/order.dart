@@ -126,6 +126,34 @@ class Order {
 
 enum OrderStatus { processing, processed, shipping, shipped, readyForPickup, complete }
 
+extension EnumHelper on Enum {
+  String toTitle() {
+    String name = this.name;
+    String result = "";
+
+    for (int i = 0; i < name.length; i++) {
+      String c = name[i];
+      if (i == 0) {
+        result += c.toUpperCase();
+        continue;
+      }
+
+      String? nextC = i + 1 < name.length ? name[i + 1] : null;
+      if (nextC != null && nextC.toUpperCase() == nextC) {
+        result += '$c ';
+      }
+
+      if (c.toUpperCase() == c) {
+        result += c.toLowerCase();
+      } else {
+        result += c;
+      }
+    }
+
+    return result;
+  }
+}
+
 extension OrderStatusHelper on OrderStatus {
   String getName() {
     switch (this) {

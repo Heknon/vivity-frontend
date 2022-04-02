@@ -9,6 +9,7 @@ class SimpleCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongTap;
   final Color? overlayColor;
+  final Color? backgroundColor;
   final InteractiveInkFeatureFactory? splashFactory;
 
   const SimpleCard({
@@ -20,12 +21,14 @@ class SimpleCard extends StatelessWidget {
     this.overlayColor,
     this.splashFactory,
     this.onLongTap,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Material(
       elevation: elevation,
+      color: backgroundColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius ?? const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),

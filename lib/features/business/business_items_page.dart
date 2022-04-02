@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/item/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
@@ -55,7 +56,9 @@ class BusinessItemsPage extends StatelessWidget {
                   child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
                       itemHeightMultiplier: 0.6,
                       hasEditButton: true,
-                      onEditTapped: (item) => print("edit tapped"),
+                      onEditTapped: (item) {
+                        Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, editorOpened: true,)));
+                      },
                       onTap: (item) async {
                         int stock = await enterStockDialog(business.ownerToken!, item, context);
                         ScaffoldMessenger.of(context).clearSnackBars();

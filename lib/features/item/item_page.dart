@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:advanced_panel/panel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -34,10 +36,12 @@ import 'modifier/item_modifier.dart';
 
 class ItemPage extends StatefulWidget {
   final ItemModel item;
+  final bool editorOpened;
 
   const ItemPage({
     Key? key,
     required this.item,
+    this.editorOpened = false,
   }) : super(key: key);
 
   @override
@@ -50,6 +54,7 @@ class _ItemPageState extends State<ItemPage> {
   late LikeButtonController _likeController;
   late WidgetSwapperController _widgetSwapController;
   late PanelController _panelController;
+  bool openedEditorPreviously = false;
   late final Future<Map<String, File>?>? itemImages;
 
   @override
@@ -98,6 +103,15 @@ class _ItemPageState extends State<ItemPage> {
 
     _likeController.setLiked(initialLiked);
 
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      if (!openedEditorPreviously) {
+        _panelController.open();
+        setState(() {
+          openedEditorPreviously = true;
+        });
+      }
+    });
+
     return BasePage(
       appBar: VivityAppBar(
         bottom: buildTitle(context),
@@ -135,6 +149,82 @@ class _ItemPageState extends State<ItemPage> {
                                   bottomLeftRadius: 30,
                                   initialPage: widget.item.previewImageIndex,
                                   imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
+                                  onImageTap: state.businessId == widget.item.businessId
+                                      ? (index) async {
+                                          bool isLast = index == images.length;
+                                          if (isLast) {
+                                            File? file = await filePickRoutine();
+                                            if (file == null) return;
+
+                                            ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, widget.item.images.length);
+                                            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+                                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+                                            return;
+                                          }
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              title: Text(
+                                                'Modify image',
+                                                style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    ItemModel item = await removeImageFromItem(state.token, widget.item.id.hexString, index);
+                                                    Navigator.pop(context);
+                                                    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+                                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+                                                  },
+                                                  style: ButtonStyle(
+                                                      splashFactory: InkRipple.splashFactory,
+                                                      textStyle: MaterialStateProperty.all(
+                                                          Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+                                                  child: Text(
+                                                    'DELETE',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headline3
+                                                        ?.copyWith(color: primaryComplementaryColor, fontSize: 14.sp),
+                                                  ),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    File? file = await filePickRoutine();
+                                                    if (file == null) return;
+                                                    Navigator.of(context).pop();
+                                                    ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, index);
+                                                    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+                                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+                                                  },
+                                                  style: ButtonStyle(
+                                                      splashFactory: InkRipple.splashFactory,
+                                                      textStyle: MaterialStateProperty.all(
+                                                          Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+                                                  child: Text(
+                                                    'CHANGE',
+                                                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp),
+                                                  ),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context),
+                                                  style: ButtonStyle(
+                                                      splashFactory: InkRipple.splashFactory,
+                                                      textStyle: MaterialStateProperty.all(
+                                                          Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+                                                  child: Text(
+                                                    'CANCEL',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headline3
+                                                        ?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                      : null,
                                 );
                               }),
                           Positioned(
@@ -198,6 +288,7 @@ class _ItemPageState extends State<ItemPage> {
                             visualDensity: VisualDensity.compact,
                             onPressed: () {
                               print("pressed edit");
+                              _panelController.open();
                             },
                             icon: const Icon(
                               Icons.edit,
@@ -225,7 +316,12 @@ class _ItemPageState extends State<ItemPage> {
       width: size.width,
       height: size.height,
       decoration: const BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30))),
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
       child: SizedBox(
         width: size.width * 0.8,
         height: size.height * 0.8,
@@ -448,5 +544,15 @@ class _ItemPageState extends State<ItemPage> {
     });
 
     return sumRatings / (widget.item.reviews.isEmpty ? 1 : widget.item.reviews.length);
+  }
+
+  Future<File?> filePickRoutine() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      return File(result.files.single.path!);
+    } else {
+      // User canceled the picker
+    }
   }
 }

@@ -203,7 +203,7 @@ class ItemModel {
       images: (map['images'] as List<dynamic>).map((e) => e as String).toList(),
       previewImageIndex: (map['preview_image'] as num).toInt(),
       reviews: (map['reviews'] as List<dynamic>).map((e) => Review.fromDBMap(e)).toList(),
-      itemStoreFormat: ItemStoreFormat.fromDBMap(map['item_store_format']),
+      itemStoreFormat: ItemStoreFormat.fromMap(map['item_store_format']),
       brand: map['brand'] as String,
       category: map['category'] as String,
       tags: (map['tags'] as List<dynamic>).map((e) => e as String).toList(),
@@ -301,7 +301,9 @@ class ItemStoreFormat {
   final String? description;
   final List<ModificationButton> modificationButtons;
 
-  const ItemStoreFormat({required this.title, this.subtitle, this.description, this.modificationButtons = const []});
+  ItemStoreFormat({required this.title, this.subtitle, this.description, this.modificationButtons = const []}) {
+    modificationButtons.sort((a, b) => a.side.index.compareTo(b.side.index));
+  }
 
   @override
   String toString() {
@@ -314,6 +316,9 @@ class ItemStoreFormat {
     String? description,
     List<ModificationButton>? modificationButtons,
   }) {
+    List<ModificationButton> modButtons = modificationButtons ?? this.modificationButtons.map((e) => e.copyWith()).toList();
+    modButtons.sort((a, b) => a.side.index.compareTo(b.side.index));
+
     return ItemStoreFormat(
       title: title ?? this.title,
       subtitle: subtitle ?? this.subtitle,
@@ -322,12 +327,15 @@ class ItemStoreFormat {
     );
   }
 
-  factory ItemStoreFormat.fromDBMap(Map<String, dynamic> map) {
+  factory ItemStoreFormat.fromMap(Map<String, dynamic> map) {
+    List<ModificationButton> modButtons = (map['modification_buttons'] as List<dynamic>).map((e) => ModificationButton.fromMap(e)).toList();
+    modButtons.sort((a, b) => a.side.index.compareTo(b.side.index));
+
     return ItemStoreFormat(
       title: map['title'] as String,
       subtitle: map['subtitle'] as String?,
       description: map['description'] as String?,
-      modificationButtons: (map['modification_buttons'] as List<dynamic>).map((e) => ModificationButton.fromDBMap(e)).toList(),
+      modificationButtons: modButtons,
     );
   }
 
@@ -336,7 +344,7 @@ class ItemStoreFormat {
       'title': title,
       'subtitle': subtitle,
       'description': description,
-      'modification_buttons': modificationButtons.map((e) => e.toDBMap()).toList(),
+      'modification_buttons': modificationButtons.map((e) => e.toMap()).toList(),
     };
   }
 }
@@ -455,7 +463,7 @@ class ModificationButton {
     );
   }
 
-  factory ModificationButton.fromDBMap(Map<String, dynamic> map) {
+  factory ModificationButton.fromMap(Map<String, dynamic> map) {
     return ModificationButton(
       name: map['name'] as String,
       side: ModificationButtonSide.values[map['side']],
@@ -465,7 +473,7 @@ class ModificationButton {
     );
   }
 
-  Map<String, dynamic> toDBMap() {
+  Map<String, dynamic> toMap() {
     return {
       'name': name,
       'side': side.index,

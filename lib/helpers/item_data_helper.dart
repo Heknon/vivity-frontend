@@ -24,22 +24,30 @@ Iterable<Widget> buildColoredDataType(BuildContext context, ModificationButtonDa
   );
 }
 
-Widget buildColoredCircle(BuildContext ctx, String? title, Color color, {double size = 10.5, bool includeInkWell = true}) {
+Widget buildColoredCircle(
+  BuildContext ctx,
+  String? title,
+  Color color, {
+  double size = 10.5,
+  bool includeInkWell = true,
+  VoidCallback? onTap,
+}) {
   return includeInkWell
       ? InkWell(
-          onTap: () => title != null
-              ? showDialog(
-                  context: ctx,
-                  builder: (ctx) => PreviewDialog(
-                    title: title,
-                    content: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.all(Radius.circular(8))),
-                    ),
-                  ),
-                )
-              : null,
+          onTap: onTap ??
+              () => title != null
+                  ? showDialog(
+                      context: ctx,
+                      builder: (ctx) => PreviewDialog(
+                        title: title,
+                        content: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.all(Radius.circular(8))),
+                        ),
+                      ),
+                    )
+                  : null,
           child: Container(
             width: size.sp,
             height: size.sp,
@@ -53,12 +61,18 @@ Widget buildColoredCircle(BuildContext ctx, String? title, Color color, {double 
         );
 }
 
-Widget buildImageCircle(String? title, String url, {double radius = 5.25, bool includeInkWell = true}) {
+Widget buildImageCircle(
+  String? title,
+  String url, {
+  double radius = 5.25,
+  bool includeInkWell = true,
+  VoidCallback? onTap,
+}) {
   return CachedNetworkImage(
     imageUrl: url,
     imageBuilder: (ctx, prov) => includeInkWell
         ? InkWell(
-            onTap: title != null
+            onTap: onTap != null ? onTap : title != null
                 ? () => showDialog(
                       context: ctx,
                       builder: (ctx) => PreviewDialog(

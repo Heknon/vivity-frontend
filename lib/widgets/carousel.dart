@@ -21,6 +21,8 @@ class Carousel extends StatefulWidget {
   final double bottomRightRadius;
   final double bottomLeftRadius;
 
+  final void Function(int)? onImageTap;
+
   Carousel({
     Key? key,
     this.topRightRadius = 0,
@@ -32,6 +34,7 @@ class Carousel extends StatefulWidget {
     this.activeColor = const Color(0xff18112d),
     this.inactiveColor = Colors.grey,
     required this.images,
+    this.onImageTap,
   }) : super(key: key);
 
   @override
@@ -50,6 +53,44 @@ class _CarouselState extends State<Carousel> {
 
   @override
   Widget build(BuildContext context) {
+    List<Image> images = widget.images.map((e) => Image.file(
+      e,
+      alignment: Alignment.topCenter,
+      fit: BoxFit.fitHeight,
+      width: widget.imageSize.width,
+      height: widget.imageSize.height,
+    )).toList();
+
+    List<Widget> items = List.empty(growable: true);
+    images.add(Image.asset(
+      "assets/images/addImage.png",
+      alignment: Alignment.topCenter,
+      fit: BoxFit.scaleDown,
+      width: widget.imageSize.width,
+      height: widget.imageSize.height,
+    ));
+
+    int index = 0;
+    for (var image in images) {
+      final currentIndex = index;
+      items.add(InkWell(
+        onTap: () => widget.onImageTap != null ? widget.onImageTap!(currentIndex) : null,
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            bottomRight: Radius.circular(widget.bottomRightRadius),
+            bottomLeft: Radius.circular(widget.bottomLeftRadius),
+            topLeft: Radius.circular(widget.topLeftRadius),
+            topRight: Radius.circular(widget.topRightRadius),
+          ),
+          child: Container(
+            color: Colors.white,
+            child: image,
+          ),
+        ),
+      ));
+      index++;
+    }
+
     return Column(
       children: [
         SizedBox(
@@ -64,37 +105,16 @@ class _CarouselState extends State<Carousel> {
                 viewportFraction: 2,
                 reverse: false,
                 onPageChanged: (pageIndex, _) => setState(() => _currentPage = pageIndex)),
-            items: widget.images
-                .map(
-                  (e) => ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(widget.bottomRightRadius),
-                      bottomLeft: Radius.circular(widget.bottomLeftRadius),
-                      topLeft: Radius.circular(widget.topLeftRadius),
-                      topRight: Radius.circular(widget.topRightRadius),
-                    ),
-                    child: Container(
-                      color: Colors.white,
-                      child: Image.file(
-                        e,
-                        alignment: Alignment.topCenter,
-                        fit: BoxFit.fitHeight,
-                        width: widget.imageSize.width,
-                        height: widget.imageSize.height,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(growable: false),
+            items: items,
           ),
         ),
         Container(
-          width: (8.sp + 5) * widget.images.length,
+          width: (8.sp + 5) * items.length,
           padding: EdgeInsets.only(top: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
-              widget.images.length,
+              items.length,
               (index) => Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,

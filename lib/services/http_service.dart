@@ -8,7 +8,8 @@ void initDioHttpServices() {
   dioClient = Dio();
   // dioClient.options.responseDecoder = responseDecoder;
   dioClient.options.sendTimeout = 10;
-  dioClient.options.receiveTimeout = 2000;
+  dioClient.options.receiveTimeout = 6000;
+  dioClient.options.headers["Keep-Alive"] = 'timeout=5, max=1';
   dioClient.interceptors.add(RetryOnConnectionChangeInterceptor(dio: dioClient));
 }
 

@@ -130,6 +130,8 @@ class SlidingUpPanel extends StatefulWidget {
 
   final bool gestureDetectOnlyPanel;
 
+  final Offset? defaultOffset;
+
   SlidingUpPanel({
     Key? key,
     required this.panel,
@@ -165,6 +167,7 @@ class SlidingUpPanel extends StatefulWidget {
     this.departDuration = const Duration(milliseconds: 300),
     this.returnDuration,
     this.gestureDetectOnlyPanel = false,
+    this.defaultOffset,
   })  : assert(panel != null || contentBuilder != null),
         assert(0 <= backdropOpacity && backdropOpacity <= 1.0),
         assert(snapPoint == null || 0 < snapPoint && snapPoint < 1.0),
@@ -275,6 +278,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
+    Offset offset = widget.defaultOffset ?? Offset(0, 0);
 
     return Stack(
       alignment: getAlignmentBasedSlideDirection(widget.slideDirection),
@@ -348,7 +352,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                     builder: (context, child) {
                       if (_isPanelClosed) {
                         return Transform.translate(
-                          offset: getAnimatedOffsetBasedSlideDirection(-widget.contentSize),
+                          offset: getAnimatedOffsetBasedSlideDirection(-widget.contentSize - offset.dy),
                           child: Stack(
                             clipBehavior: Clip.none,
                             children: [
@@ -378,7 +382,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                             rewrapPositioned(
                               child: child,
                               builder: (ch) => Transform.translate(
-                                offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
+                                offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize - widget.panelSize),
                                 child: _gestureHandler(child: ch),
                               ),
                             ),
@@ -392,50 +396,28 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                         );
                       } else {
                         return Transform.translate(
-                          offset: getAnimatedOffsetBasedSlideDirection(_ac.value * widget.contentSize - widget.contentSize),
+                          offset: getAnimatedOffsetBasedSlideDirection(
+                              _ac.value * (widget.contentSize - widget.panelSize - offset.dy) - widget.contentSize + widget.panelSize + offset.dy),
                           child: Stack(
                             clipBehavior: Clip.none,
                             children: [
+                              rewrapPositioned(
+                                child: child,
+                                builder: (ch) => Transform.translate(
+                                  offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize - widget.panelSize),
+                                  child: _gestureHandler(child: ch),
+                                ),
+                              ),
                               rewrapPositioned(
                                 child: widget.contentBuilder(_sc),
                                 includeHeight: !isVerticalSlide,
                                 includeWidth: !isHorizontalSlide,
                                 builder: (ch) => ch,
                               ),
-                              rewrapPositioned(
-                                child: child,
-                                builder: (ch) => Transform.translate(
-                                  offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
-                                  child: _gestureHandler(child: ch),
-                                ),
-                              ),
                             ],
                           ),
                         );
                       }
-
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          rewrapPositioned(
-                            child: child,
-                            builder: (ch) => Transform.translate(
-                              offset: getAnimatedOffsetBasedSlideDirection(_ac.value * (widget.contentSize - widget.panelSize)),
-                              child: _gestureHandler(child: ch),
-                            ),
-                          ),
-                          rewrapPositioned(
-                            child: widget.contentBuilder(_sc),
-                            includeHeight: !isVerticalSlide,
-                            includeWidth: !isHorizontalSlide,
-                            builder: (ch) => Container(
-                              height: isVerticalSlide ? _ac.value * (widget.contentSize - widget.panelSize) : null,
-                              width: isHorizontalSlide ? _ac.value * (widget.contentSize - widget.panelSize) : null,
-                              child: ch,
-                            ),
-                          ),
-                        ],
-                      );
                     },
                     child: widget.panel,
                   ),

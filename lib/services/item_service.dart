@@ -51,6 +51,60 @@ Future<ItemModel> createItem(
   return ItemModel.fromMap(response.data);
 }
 
+Future<ItemModel> updateItem(String token, String itemId, {
+  String? title,
+  String? subtitle,
+  String? description,
+  double? price,
+  String? brand,
+  String? category,
+  List<String>? addTags,
+  List<String>? removeTags,
+  List<String>? tags,
+  int? stock,
+  List<ModificationButton>? modificationButtons,
+}) async {
+  Map<String, dynamic> updateBody = {
+    "title": title,
+    "subtitle": subtitle,
+    "description": description,
+    "price": price,
+    "brand": brand,
+    "category": category,
+    "add_tags": addTags,
+    "remove_tags": removeTags,
+    "stock": stock,
+    "tags": tags,
+    "modification_buttons": modificationButtons?.map((e) => e.toMap()).toList(),
+  };
+  Response response = await sendPatchRequest(subRoute: itemUpdateRoute.replaceFirst("{item_id}", itemId), token: token, data: updateBody);
+  if (response.statusCode! > 300) {
+    throw Exception('Failed to update item. $response');
+  }
+
+  return ItemModel.fromMap(response.data);
+}
+
+Future<ItemModel> swapImageOfItem(String token, String itemId, File image, int index) async {
+  Response response = await sendPostRequestUploadFile(subRoute: itemImageRoute.replaceFirst("{item_id}", itemId) + "?index=$index", token: token, file: image);
+
+  if (response.statusCode! > 300) {
+    throw Exception('Failed to swap item image. $response');
+  }
+
+  return ItemModel.fromMap(response.data);
+}
+
+Future<ItemModel> removeImageFromItem(String token, String itemId, int index) async {
+  Response response = await sendDeleteRequest(subRoute: itemImageRoute.replaceFirst("{item_id}", itemId) + "?index=$index", token: token);
+
+  if (response.statusCode! > 300) {
+    throw Exception('Failed to delete image. $response');
+  }
+
+  return ItemModel.fromMap(response.data);
+}
+
 Future<ItemModel> updateItemStock(String token, String id, int stock) async {
   Response response = await sendPostRequest(subRoute: businessViewMetricRoute.replaceFirst("{item_id}", id) + "?stock=$stock", token: token);
   if (response.statusCode! > 300) {

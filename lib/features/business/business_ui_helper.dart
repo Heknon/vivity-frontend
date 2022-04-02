@@ -11,7 +11,7 @@ import '../user/bloc/user_bloc.dart';
 
 Future<int> enterStockDialog(String userToken, ItemModel itemModel, BuildContext context) async {
   Completer<int> stock = Completer();
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController controller = TextEditingController(text: itemModel.stock.toString());
   final GlobalKey<FormState> formKey = GlobalKey();
 
   showDialog(

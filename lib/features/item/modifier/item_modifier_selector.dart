@@ -10,6 +10,9 @@ import 'package:vivity/features/item/modifier/bloc/item_modifier_bloc.dart';
 
 import 'item_modifier_service.dart';
 
+const double modifierSelectorSizeScale = 9;
+const double modifierSelectorHeightScale = 30;
+
 class ItemModifierSelector extends StatefulWidget {
   final List<Object> selectableData;
   final ModificationButtonDataType dataType;
@@ -36,9 +39,9 @@ class ItemModifierSelector extends StatefulWidget {
     this.textSize = 14,
     this.colorSize = 18,
     this.imageRadius = 9,
-    this.sizeScale = 9,
+    this.sizeScale = modifierSelectorSizeScale,
     this.controller,
-    this.heightScale = 30,
+    this.heightScale = modifierSelectorHeightScale,
   }) : super(key: key);
 
   @override
