@@ -352,6 +352,11 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
   void handleValueFilled<T>(String title, T value) {
     if (value == null) return;
     switch (title) {
+      case "Title":
+        setState(() {
+          clonedItem = clonedItem.copyWith(itemStoreFormat: clonedItem.itemStoreFormat.copyWith(title: value as String));
+        });
+        break;
       case "Price":
         setState(() {
           clonedItem = clonedItem.copyWith(price: (value as num).toDouble());
