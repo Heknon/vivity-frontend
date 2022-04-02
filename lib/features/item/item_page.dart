@@ -103,7 +103,8 @@ class _ItemPageState extends State<ItemPage> {
 
     _likeController.setLiked(initialLiked);
 
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+    if (widget.editorOpened) {
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       if (!openedEditorPreviously) {
         _panelController.open();
         setState(() {
@@ -111,6 +112,7 @@ class _ItemPageState extends State<ItemPage> {
         });
       }
     });
+    }
 
     return BasePage(
       appBar: VivityAppBar(
@@ -300,10 +302,22 @@ class _ItemPageState extends State<ItemPage> {
                   ),
                 ),
               ),
-              ItemEditPanel(
-                item: widget.item,
-                panelController: _panelController,
-              ),
+              // ItemEditPanel(
+              //   item: widget.item,
+              //   panelController: _panelController,
+              // ),
+              Positioned(
+                bottom: -100.w * 0.2,
+                child: ConstrainedBox(
+                  child: ItemEditPanel(item: widget.item, panelController: _panelController),
+                  constraints: BoxConstraints(
+                    minWidth: 100.w,
+                    maxHeight: 100.h,
+                    maxWidth: 100.w,
+                    minHeight: 100.h
+                  ),
+                ),
+              )
             ],
           ),
         ),

@@ -115,6 +115,7 @@ class _CartViewState extends State<CartView> {
             onQuantityDelete: onDelete,
             quantityController: state.getItemQuantityController(state.items[i].insertionId),
             id: state.items[i].insertionId,
+            onlyQuantity: false,
           ),
         ),
       ),

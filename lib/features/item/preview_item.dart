@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +69,12 @@ class _PreviewItemState extends State<PreviewItem> {
               Container(
                 height: usedHeight,
                 padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
-                child: buildPreviewImage(widget.itemImages, widget.item, borderRadius: const BorderRadius.all(Radius.circular(15))),
+                child: FutureBuilder<Map<String, Uint8List>?>(
+                  future: readImagesBytes(widget.itemImages),
+                  builder: (context, snapshot) {
+                    return buildPreviewImage(snapshot.data, widget.item, borderRadius: const BorderRadius.all(Radius.circular(15)));
+                  }
+                ),
               ),
               SizedBox(width: 10),
               Expanded(

@@ -51,7 +51,6 @@ class _ExploreState extends State<Explore> {
     return LayoutBuilder(
       builder: (ctx, constraints) => BlocListener<ExploreBloc, ExploreState>(
         listener: (ctx, state) {
-          // print(state);
           if (state is! ExploreLoaded) return;
           if (listEquals(_controller.exploreItems, state.itemModels)) return;
 
@@ -120,7 +119,7 @@ class _ExploreState extends State<Explore> {
                           item: _controller.previewItem!,
                         ),
                       ),
-                      constraints: BoxConstraints(maxWidth: 80.w, maxHeight: 80),
+                      constraints: BoxConstraints(maxWidth: 80.w, minHeight: 80, maxHeight: 100),
                     ),
                   )
                 : Container(),

@@ -278,7 +278,6 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    Offset offset = widget.defaultOffset ?? Offset(0, 0);
 
     return Stack(
       alignment: getAlignmentBasedSlideDirection(widget.slideDirection),
@@ -298,7 +297,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                   animation: _ac,
                   builder: (context, _) {
                     return Container(
-                      height: screenSize.height,
+                      height: screenSize.height + 100,
                       width: screenSize.width,
 
                       //set color to null so that touch events pass through
@@ -352,7 +351,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                     builder: (context, child) {
                       if (_isPanelClosed) {
                         return Transform.translate(
-                          offset: getAnimatedOffsetBasedSlideDirection(-widget.contentSize - offset.dy),
+                          offset: getAnimatedOffsetBasedSlideDirection(-widget.contentSize),
                           child: Stack(
                             clipBehavior: Clip.none,
                             children: [
@@ -382,7 +381,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                             rewrapPositioned(
                               child: child,
                               builder: (ch) => Transform.translate(
-                                offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize - widget.panelSize),
+                                offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
                                 child: _gestureHandler(child: ch),
                               ),
                             ),
@@ -397,14 +396,14 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                       } else {
                         return Transform.translate(
                           offset: getAnimatedOffsetBasedSlideDirection(
-                              _ac.value * (widget.contentSize - widget.panelSize - offset.dy) - widget.contentSize + widget.panelSize + offset.dy),
+                              _ac.value * (widget.contentSize) - widget.contentSize),
                           child: Stack(
                             clipBehavior: Clip.none,
                             children: [
                               rewrapPositioned(
                                 child: child,
                                 builder: (ch) => Transform.translate(
-                                  offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize - widget.panelSize),
+                                  offset: getAnimatedOffsetBasedSlideDirection(widget.contentSize),
                                   child: _gestureHandler(child: ch),
                                 ),
                               ),

@@ -81,6 +81,7 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       return;
     }
 
+    print("interesting");
     add(ExploreMapRegisteredMovementEvent());
     _timer.reset();
   }

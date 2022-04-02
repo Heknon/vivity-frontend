@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -84,11 +85,16 @@ class _ClassicItemState extends State<ClassicItem> {
               SizedBox(
                   height: size.height * 0.65,
                   width: size.width,
-                  child: buildPreviewImage(
-                    itemImages,
-                    widget.item,
-                    size: size,
-                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(7), topRight: Radius.circular(7)),
+                  child: FutureBuilder<Map<String, Uint8List>?>(
+                    future: readImagesBytes(itemImages),
+                    builder: (context, snapshot) {
+                      return buildPreviewImage(
+                        snapshot.data,
+                        widget.item,
+                        size: size,
+                        borderRadius: const BorderRadius.only(topLeft: Radius.circular(7), topRight: Radius.circular(7)),
+                      );
+                    }
                   )),
               Padding(
                 padding: EdgeInsets.all(5),

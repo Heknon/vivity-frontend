@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -15,49 +16,50 @@ import 'cart_item.dart';
 import 'classic_item.dart';
 
 Widget buildPreviewImage(
-  Future<Map<String, File>?>? itemImages,
+  Map<String, Uint8List>? itemImages,
   ItemModel item, {
   Size? size,
   Color imageBackgroundColor = Colors.white,
   BorderRadius borderRadius = const BorderRadius.all(Radius.circular(7)),
 }) {
-  return FutureBuilder(
-    future: itemImages,
-    builder: (ctx, snapshot) {
-      if (!snapshot.hasData) {
-        return size != null
-            ? SizedBox(
-                height: size.height * 0.5,
-                width: size.width * 0.7,
-                child: const CircularProgressIndicator(),
-              )
-            : const CircularProgressIndicator();
-      }
+  if (itemImages == null) {
+    return SizedBox(
+      height: (size?.height ?? 50) * 0.5,
+      width: (size?.width ?? 50) * 0.4,
+      child: const CircularProgressIndicator(),
+    );
+  }
+  Uint8List? file =
+      item.previewImageIndex < item.images.length && item.previewImageIndex >= 0 ? itemImages[item.images[item.previewImageIndex]] : null;
+  if (file == null) {
+    return SizedBox(
+      height: (size?.height ?? 50) * 0.5,
+      width: (size?.width ?? 50) * 0.4,
+      child: const CircularProgressIndicator(),
+    );
+  }
 
-      Map<String, File>? data = snapshot.data as Map<String, File>?;
-      if (data == null) return const Text('Error getting image');
-
-      File? file = item.previewImageIndex < item.images.length && item.previewImageIndex >= 0 ? data[item.images[item.previewImageIndex]] : null;
-      if (file == null) {
-        return SizedBox(
-          height: (size?.height ?? 50) * 0.5,
-          width: (size?.width ?? 50) * 0.4,
-          child: const CircularProgressIndicator(),
-        );
-      }
-
-      return ClipRRect(
-        borderRadius: borderRadius,
-        child: Container(
-          color: imageBackgroundColor,
-          child: Image.file(
-            file,
-            height: size != null ? size.height * 0.65 : null,
-          ),
-        ),
-      );
-    },
+  return ClipRRect(
+    borderRadius: borderRadius,
+    child: Container(
+      color: imageBackgroundColor,
+      child: Image.memory(
+        file,
+        height: size != null ? size.height * 0.65 : null,
+      ),
+    ),
   );
+}
+
+Future<Map<String, Uint8List>?> readImagesBytes(Future<Map<String, File>?>? files) async {
+  if (files == null) return null;
+  Map<String, Uint8List> readResult = {};
+  Map<String, File>? filesReady = await files;
+  for (var entry in filesReady?.entries ?? {}.entries) {
+    readResult[entry.key] = await entry.value.readAsBytes();
+  }
+
+  return readResult;
 }
 
 Widget buildItemCoupling(
@@ -152,7 +154,7 @@ Widget buildDatabaseLikeButton(
   Color? splashColor,
   double? radius,
   BorderRadius? borderRadius,
-      EdgeInsets? padding,
+  EdgeInsets? padding,
 }) {
   return BlocListener<UserBloc, UserState>(
     listener: (ctx, state) {

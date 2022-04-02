@@ -37,14 +37,12 @@ class ItemEditPanel extends StatefulWidget {
 
 class _ItemEditPanelState extends State<ItemEditPanel> {
   late ItemModel clonedItem;
-  late final GlobalKey<FormState> _formKey;
   late final TextEditingController _descriptionController;
 
   @override
   void initState() {
     super.initState();
 
-    _formKey = GlobalKey();
     _descriptionController = TextEditingController(text: widget.item.itemStoreFormat.description);
     clonedItem = widget.item.copyWith();
   }
@@ -54,15 +52,14 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
     return LayoutBuilder(
       builder: (ctx, constraints) {
         Size tabSize = Size(constraints.maxWidth, constraints.maxWidth * 0.2);
-        Size itemViewSize = Size(tabSize.width, constraints.maxHeight * 0.83 - tabSize.height);
+        Size itemViewSize = Size(tabSize.width, constraints.maxHeight * 0.63);
 
         return ConstrainedBox(
           child: SlidingUpPanel(
-            defaultOffset: Offset(0, tabSize.height),
             gestureDetectOnlyPanel: true,
             controller: widget.panelController,
             panelSize: tabSize.height,
-            contentSize: itemViewSize.height + tabSize.height,
+            contentSize: itemViewSize.height,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(18.0),
               topRight: Radius.circular(18.0),
@@ -143,7 +140,9 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
     return Positioned(
       bottom: 1,
       width: itemViewSize.width,
+      height: itemViewSize.height,
       child: SizedBox(
+        width: itemViewSize.width,
         height: itemViewSize.height,
         child: Scaffold(
           backgroundColor: Colors.white,
@@ -159,7 +158,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: titleWidgets,
                       ),
-                      SizedBox(width: 20.w),
+                      SizedBox(width: 19.w),
                       SizedBox(
                         width: 50.w,
                         child: Column(
@@ -213,7 +212,6 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
                   Divider(thickness: 1, color: fillerColor),
                   SizedBox(height: 5),
                   Form(
-                    key: _formKey,
                     child: TextFormField(
                       controller: _descriptionController,
                       validator: ValidationBuilder().build(),
@@ -244,7 +242,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 100.w * 0.2),
                 ],
               ),
             ),

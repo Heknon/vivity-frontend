@@ -1,4 +1,4 @@
-const String host = "http://10.0.2.2";
+const String host = "http://192.168.221.31";
 const userRoute = "/user";
 const cartRoute = "/user/cart";
 const addressRoute = "/user/address";

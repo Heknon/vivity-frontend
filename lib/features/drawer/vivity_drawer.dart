@@ -92,7 +92,7 @@ class VivityDrawer extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        'Welcome back,\n${state.name}',
+                        'Hello,\n${state.name}',
                         style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.white, fontSize: 16.sp),
                       ),
                     )

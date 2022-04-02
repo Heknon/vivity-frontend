@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,7 +44,7 @@ class CartItem extends StatelessWidget {
     this.borderRadius,
     this.elevation = 7,
     this.includeQuantityControls = true,
-    this.onlyQuantity = true,
+    this.onlyQuantity = false,
   }) : super(key: key);
 
   @override
@@ -70,7 +71,16 @@ class CartItem extends StatelessWidget {
                 Container(
                   height: usedHeight,
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
-                  child: buildPreviewImage(itemImages, item.item, borderRadius: const BorderRadius.all(Radius.circular(50))),
+                  child: FutureBuilder<Map<String, Uint8List>?>(
+                    future: readImagesBytes(itemImages),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return CircularProgressIndicator();
+                      }
+
+                      return buildPreviewImage(snapshot.data, item.item, borderRadius: const BorderRadius.all(Radius.circular(50)));
+                    }
+                  ),
                 ),
                 Expanded(
                   flex: 2,
