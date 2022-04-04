@@ -144,15 +144,6 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   @override
   bool get wantKeepAlive => true;
-
-  bool isControllerAlive(MapControllerImpl controller) {
-    try {
-      controller.move(controller.center, controller.zoom);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
 }
 
 class MapGuiController extends ChangeNotifier {
