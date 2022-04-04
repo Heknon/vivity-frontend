@@ -159,7 +159,7 @@ class _ItemPageState extends State<ItemPage> {
                                   imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
                                   onImageTap: ownsBusiness
                                       ? (index) async {
-                                          await handleImageTap(index, images.length);
+                                          await handleImageTap(index, images.length, state);
                                         }
                                       : null,
                                 );
@@ -375,7 +375,7 @@ class _ItemPageState extends State<ItemPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Rating(rating: calculateRating()),
+        Rating(rating: calculateRating(), color: Colors.white,),
         Text(
           '(${widget.item.reviews.length} reviews)',
           style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
@@ -487,8 +487,7 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  Future<void> handleImageTap(int index, int imagesLength) async {
-    UserState state = context.read<UserState>();
+  Future<void> handleImageTap(int index, int imagesLength, UserState state) async {
     if (state is! UserLoggedInState) return;
 
     bool isLast = index == imagesLength;
@@ -511,8 +510,8 @@ class _ItemPageState extends State<ItemPage> {
         actions: [
           TextButton(
             onPressed: () async {
-              ItemModel item = await removeImageFromItem(state.token, widget.item.id.hexString, index);
               Navigator.pop(context);
+              ItemModel item = await removeImageFromItem(state.token, widget.item.id.hexString, index);
               context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
             },

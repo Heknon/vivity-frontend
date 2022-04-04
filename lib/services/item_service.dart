@@ -106,7 +106,7 @@ Future<ItemModel> removeImageFromItem(String token, String itemId, int index) as
 }
 
 Future<ItemModel> updateItemStock(String token, String id, int stock) async {
-  Response response = await sendPostRequest(subRoute: businessViewMetricRoute.replaceFirst("{item_id}", id) + "?stock=$stock", token: token);
+  Response response = await sendPostRequest(subRoute: itemQuantityRoute.replaceFirst("{item_id}", id) + "?stock=$stock", token: token);
   if (response.statusCode! > 300) {
     throw Exception('Failed to update item stock. $response');
   }

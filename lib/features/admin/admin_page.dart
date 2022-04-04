@@ -101,6 +101,7 @@ class _AdminPageState extends State<AdminPage> {
                                     setState(() {
                                       if (updated.approved) {
                                         buildableBusinesses.removeWhere((element) => element.businessId == updated.businessId);
+                                        unapprovedBusinesses = getUnapprovedBusinesses(state.token);
                                       }
                                     });
                                   },
