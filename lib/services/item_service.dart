@@ -5,10 +5,10 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/services/api_service.dart';
-import 'package:latlong2/latlong.dart';
 
 Future<ItemModel?> getItemFromId(String token, ObjectId itemId) async {
   return getItemsFromStringIds(token, [itemId.hexString]).then((value) => value[0]);
@@ -114,13 +114,12 @@ Future<ItemModel> updateItemStock(String token, String id, int stock) async {
   return ItemModel.fromMap(response.data);
 }
 
-Future<int> addItemView(String token, String itemId) async {
+Future<void> addItemView(String token, String itemId) async {
   Response response = await sendPostRequest(subRoute: itemViewMetricRoute.replaceFirst("{item_id}", itemId), token: token);
   if (response.statusCode! > 300) {
     throw Exception('Failed to update view count. $response');
   }
 
-  return response.data;
 }
 
 Future<List<ItemModel>> searchByCoordinates(String token, LatLng position, double radius, {String query = "*", String category = "*"}) async {

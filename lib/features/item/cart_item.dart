@@ -29,7 +29,8 @@ class CartItem extends StatelessWidget {
   final bool includeQuantityControls;
   final bool onlyQuantity;
   final BorderRadius? borderRadius;
-  Future<Map<String, File>?>? itemImages;
+  Future<Map<String, Uint8List>?>? itemImages;
+  Map<String, Uint8List>? itemImagesLoaded;
 
   CartItem({
     Key? key,
@@ -52,7 +53,7 @@ class CartItem extends StatelessWidget {
     UserState state = context.read<UserBloc>().state;
     if (state is! UserLoggedInState) return Text('You need to be logged in to see items.');
 
-    itemImages ??= getCachedItemImages(state.token, List.of([item.item]));
+    itemImages ??= readImagesBytes(getCachedItemImages(state.token, List.of([item.item])));
 
     return LayoutBuilder(
       builder: (ctx, constraints) {
@@ -72,11 +73,14 @@ class CartItem extends StatelessWidget {
                   height: usedHeight,
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
                   child: FutureBuilder<Map<String, Uint8List>?>(
-                    future: readImagesBytes(itemImages),
+                    future: itemImages,
+                    initialData: itemImagesLoaded,
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return CircularProgressIndicator();
                       }
+
+                      itemImagesLoaded = snapshot.data;
 
                       return buildPreviewImage(snapshot.data, item.item, borderRadius: const BorderRadius.all(Radius.circular(50)));
                     }

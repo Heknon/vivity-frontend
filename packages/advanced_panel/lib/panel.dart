@@ -278,6 +278,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
+    Widget content = widget.contentBuilder(_sc);
 
     return Stack(
       alignment: getAlignmentBasedSlideDirection(widget.slideDirection),
@@ -331,7 +332,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                               ),
                             ),
                             rewrapPositioned(
-                              child: widget.contentBuilder(_sc),
+                              child: content,
                               includeHeight: !isVerticalSlide,
                               includeWidth: !isHorizontalSlide,
                               builder: (ch) => Container(
@@ -363,7 +364,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                                 ),
                               ),
                               rewrapPositioned(
-                                child: widget.contentBuilder(_sc),
+                                child: content,
                                 includeHeight: !isVerticalSlide,
                                 includeWidth: !isHorizontalSlide,
                                 builder: (ch) => Opacity(
@@ -386,7 +387,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                               ),
                             ),
                             rewrapPositioned(
-                              child: widget.contentBuilder(_sc),
+                              child: content,
                               includeHeight: !isVerticalSlide,
                               includeWidth: !isHorizontalSlide,
                               builder: (ch) => ch,
@@ -408,7 +409,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
                                 ),
                               ),
                               rewrapPositioned(
-                                child: widget.contentBuilder(_sc),
+                                child: content,
                                 includeHeight: !isVerticalSlide,
                                 includeWidth: !isHorizontalSlide,
                                 builder: (ch) => ch,

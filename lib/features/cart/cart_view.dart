@@ -19,7 +19,7 @@ import 'cart_service.dart';
 class CartView extends StatefulWidget {
   final ScrollController? scrollController;
 
-  const CartView({Key? key, this.scrollController}) : super(key: key);
+  CartView({Key? key, this.scrollController}) : super(key: key) {}
 
   @override
   State<CartView> createState() => _CartViewState();
@@ -29,11 +29,6 @@ FadeInController controller = FadeInController();
 
 class _CartViewState extends State<CartView> {
   double price = -1;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,51 +49,57 @@ class _CartViewState extends State<CartView> {
             ),
           ),
           clipBehavior: Clip.antiAlias,
-          child: BlocConsumer<CartBloc, CartState>(listener: (ctx, CartState state) {
-            if (price != state.priceTotal) {
-              updateCost(state.priceTotal);
-            }
-            price = state.priceTotal;
-          }, builder: (context, CartState state) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.only(top: listPadding),
-                  height: listSize.height,
-                  width: listSize.width,
-                  child: state.cartIsEmpty
-                      ? Align(
-                          alignment: Alignment.center.add(Alignment(constraints.maxWidth / 4, 0)),
-                          child: Text(
-                            "Start adding items to your cart!",
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
-                          ),
-                        )
-                      : buildItemsList(itemsPadding, itemSize, state),
-                ),
-                Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      buildCheckoutButton(context),
-                      buildCheckoutCostInfo(state.priceTotal),
-                    ],
+          child: BlocConsumer<CartBloc, CartState>(
+            buildWhen: (prev, curr) {
+              return curr != prev;
+            },
+            listener: (ctx, CartState state) {
+              if (price != state.priceTotal) {
+                updateCost(state.priceTotal);
+              }
+              price = state.priceTotal;
+            },
+            builder: (context, CartState state) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(top: listPadding),
+                    height: listSize.height,
+                    width: listSize.width,
+                    child: state.cartIsEmpty
+                        ? Align(
+                            alignment: Alignment.center.add(Alignment(constraints.maxWidth / 4, 0)),
+                            child: Text(
+                              "Start adding items to your cart!",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
+                            ),
+                          )
+                        : buildItemsList(itemsPadding, itemSize, state),
                   ),
-                )
-              ],
-            );
-          }),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        buildCheckoutButton(context),
+                        buildCheckoutCostInfo(state.priceTotal),
+                      ],
+                    ),
+                  )
+                ],
+              );
+            },
+          ),
         );
       },
     );
   }
 
-  ListView buildItemsList(double itemsPadding, Size itemSize, CartState state) {
+  Widget buildItemsList(double itemsPadding, Size itemSize, CartState state) {
     return ListView.builder(
       itemCount: state.items.length,
       controller: widget.scrollController,

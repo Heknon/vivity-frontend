@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_map/plugin_api.dart';
 import 'package:meta/meta.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:vivity/features/map/map_gui.dart';
 import 'package:vivity/features/map/map_widget.dart';
 import 'package:vivity/services/item_service.dart';
 
@@ -19,54 +21,38 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
   late RestartableTimer _timer;
 
   ExploreBloc() : super(ExploreUnloaded()) {
-    _timer = RestartableTimer(const Duration(seconds: 5), timerDone);
+    _timer = RestartableTimer(const Duration(milliseconds: 3500), timerDone);
 
-    on<ExploreMapMovementEvent>((event, emit) async {
-      ExploreState state = this.state;
-      ExploreLoaded? resState;
+    on<ExploreControllerUpdateEvent>((event, emit) async {
+      ExploreState initialState = state;
 
-      if (state is ExploreUnloaded) {
-        if (event.token == null) throw Exception('Missing token!');
-        resState = ExploreLoaded(
-          position: event.center,
-          registeredPosition: event.center,
-          bounds: event.bounds,
-          registeredBounds: event.bounds,
-          itemModels: List.empty(growable: true),
-          token: event.token!,
-        );
+      ExploreLoaded resState = initialState is ExploreLoaded
+          ? initialState.copyWith(controller: event.controller, token: event.token)
+          : ExploreLoaded(
+              token: event.token,
+              controller: event.controller,
+              itemModels: [],
+              lastUpdateLocation: event.controller.center,
+              mapGuiController: MapGuiController(),
+            );
 
-        await resState.fetchItemModels();
-      } else if (state is ExploreLoaded) {
-        double distanceBetweenRegisteredLocation = Geolocator.distanceBetween(
-            state.registeredPosition.latitude, state.registeredPosition.longitude, event.center.latitude, event.center.longitude);
-        if (distanceBetweenRegisteredLocation < 50) {
-          _timer.reset();
-        }
-
-        resState = state.copyWith(
-          position: event.center,
-          bounds: event.bounds,
-        );
-      }
-
-      emit(resState ?? ExploreUnloaded());
+      _timer.reset();
+      emit(resState);
     });
 
-    on<ExploreMapRegisteredMovementEvent>((event, emit) async {
+    on<ExploreUpdateEvent>((event, emit) async {
       ExploreState state = this.state;
       if (state is ExploreLoaded) {
-        ExploreLoaded resultState = state.copyWith(
-          registeredPosition: event.center ?? state.position,
-          registeredBounds: event.bounds ?? state.bounds,
-        );
-
-        await resultState.fetchItemModels();
-        emit(resultState);
+        ExploreState result = await state.fetchItemModels();
+        emit(result);
         return;
       }
 
       emit(state);
+    });
+
+    on<ExploreUnload>((event, emit) {
+      emit(ExploreUnloaded());
     });
   }
 
@@ -74,15 +60,14 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
     ExploreState state = this.state;
     if (state is! ExploreLoaded) return;
 
-    double distanceBetweenRegisteredLocation = Geolocator.distanceBetween(
-        state.registeredPosition.latitude, state.registeredPosition.longitude, state.position.latitude, state.position.longitude);
-    if (distanceBetweenRegisteredLocation < 20) {
+    double distanceFromLastFetch = Geolocator.distanceBetween(
+        state.controller.center.latitude, state.controller.center.longitude, state.lastUpdateLocation.latitude, state.lastUpdateLocation.longitude);
+    if (distanceFromLastFetch < 10) {
       _timer.reset();
       return;
     }
 
-    print("interesting");
-    add(ExploreMapRegisteredMovementEvent());
+    add(ExploreUpdateEvent());
     _timer.reset();
   }
 }

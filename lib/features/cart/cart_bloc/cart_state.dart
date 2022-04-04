@@ -128,13 +128,14 @@ class CartState {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
+  bool operator ==(Object other) {
+    return identical(this, other) ||
       other is CartState &&
           runtimeType == other.runtimeType &&
-          listEquals(_items, other._items) &&
           priceTotal == other.priceTotal &&
-          shippingMethod == other.shippingMethod;
+          shippingMethod == other.shippingMethod &&
+          listEquals(_items, other._items);
+  }
 
   @override
   int get hashCode => _items.hashCode ^ priceTotal.hashCode ^ shippingMethod.index.hashCode;

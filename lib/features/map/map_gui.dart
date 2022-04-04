@@ -16,7 +16,6 @@ class MapGui extends StatefulWidget {
   final BoxConstraints? constraints;
   final String mapBoxToken;
   final int flags;
-  final MapGuiController? controller;
 
   MapGui({
     Key? key,
@@ -25,49 +24,32 @@ class MapGui extends StatefulWidget {
     required this.mapBoxToken,
     this.flags =
         InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
-    this.controller,
   }) : super(key: key);
 
   @override
   _MapGuiState createState() => _MapGuiState();
 }
 
+int initNum = 0;
+
 class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
-  late LatLng fallbackLocation;
+  bool registeredLocation = false;
+  LatLng fallbackLocation = LatLng(32.0668, 34.7649);
+  late MapControllerImpl _mapController;
 
-  final Completer<LatLng> positionFutureImpl = Completer();
-  late Completer<MapControllerImpl> controllerFutureImpl = Completer();
-  bool initializedLocation = false;
-
-  late MapGuiController _mapGuiController;
   late String token;
 
   @override
   void initState() {
     super.initState();
-    fallbackLocation = LatLng(32.0668, 34.7649);
-    token = (context.read<UserBloc>().state as UserLoggedInState).token;
-    LocationService().getPosition(getCountryIfFail: true, defaultLocation: fallbackLocation).then((loc) {
-      if (initializedLocation) return;
+    ExploreBloc exploreBloc = context.read<ExploreBloc>();
+    ExploreState state = exploreBloc.state;
+    if (state is ExploreLoaded) {
+      _mapController = state.controller;
+      return;
+    }
 
-      positionFutureImpl.complete(loc);
-
-      controllerFutureImpl.future.then((controller) {
-        controller.mapEventStream.listen((event) {
-          if (event is! MapEventWithMove) return;
-
-          registerMovementWithExploreBloc(controller.center, controller.bounds!);
-        });
-        controller.move(loc, 13);
-      });
-
-      initializedLocation = true;
-    });
-
-    _mapGuiController = widget.controller ?? MapGuiController();
-    _mapGuiController.addListener(() {
-      setState(() {});
-    });
+    _mapController = MapControllerImpl();
   }
 
   @override
@@ -77,59 +59,105 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   void _onMapCreated(MapController _controller) async {
     MapControllerImpl controller = _controller as MapControllerImpl;
-    controllerFutureImpl.complete(controller);
+    if (mounted && initNum.isOdd) {
+      context.read<ExploreBloc>().add(ExploreControllerUpdateEvent(controller, (context.read<UserBloc>().state as UserLoggedInState).token));
+      _mapController = _controller;
+    }
+    initNum++;
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return buildMapContents();
   }
 
   Widget buildMapContents() {
-    return FlutterMap(
-      options: MapOptions(
-        center: fallbackLocation,
-        zoom: 8,
-        onMapCreated: _onMapCreated,
-        controller: MapControllerImpl(),
-        maxZoom: 20,
-        minZoom: 4,
-        rotationThreshold: 0,
-        interactiveFlags: widget.flags,
-      ),
-      layers: [
-        TileLayerOptions(
-          urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
-          additionalOptions: {'accessToken': widget.mapBoxToken},
-          maxNativeZoom: 18,
+    return BlocConsumer<ExploreBloc, ExploreState>(
+      listenWhen: (prev, curr) => prev is ExploreUnloaded && curr is ExploreLoaded,
+      listener: (ctx, state) {
+        if (state is! ExploreLoaded) return;
+        LocationService().getPosition(getCountryIfFail: true, defaultLocation: fallbackLocation).then((loc) async {
+          if (!mounted) return;
+
+          state.controller.move(loc, state.controller.zoom);
+          context.read<ExploreBloc>().add(ExploreUpdateEvent());
+        }).catchError((err) async {
+          if (!mounted) return;
+
+          state.controller.move(state.controller.center, state.controller.zoom);
+          context.read<ExploreBloc>().add(ExploreUpdateEvent());
+        });
+      },
+      builder: (context, state) {
+        MapOptions mapOptions = MapOptions(
+          center: fallbackLocation,
+          zoom: 13,
+          onMapCreated: _onMapCreated,
+          controller: _mapController,
           maxZoom: 20,
           minZoom: 4,
-          minNativeZoom: 4,
-        ),
-        MarkerLayerOptions(
-          markers: _mapGuiController.mapWidgets.map((e) {
-            return Marker(
-              width: e.size.width,
-              height: e.size.height,
-              point: e.location,
-              builder: (ctx) => e.child,
-            );
-          }).toList(),
-        )
-      ],
+          rotationThreshold: 0,
+          interactiveFlags: widget.flags,
+        );
+
+        if (state is ExploreLoaded) {
+          mapOptions = MapOptions(
+            center: state.controller.center,
+            zoom: state.controller.zoom,
+            onMapCreated: _onMapCreated,
+            controller: state.controller,
+            maxZoom: 20,
+            minZoom: 4,
+            rotationThreshold: 0,
+            interactiveFlags: widget.flags,
+          );
+        }
+        return FlutterMap(
+          options: mapOptions,
+          layers: [
+            TileLayerOptions(
+              urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
+              additionalOptions: {'accessToken': widget.mapBoxToken},
+              maxNativeZoom: 18,
+              maxZoom: 20,
+              minZoom: 4,
+              minNativeZoom: 4,
+            ),
+            MarkerLayerOptions(
+              markers: state is ExploreLoaded
+                  ? state.mapGuiController.mapWidgets.map((e) {
+                      return Marker(
+                        width: e.size.width,
+                        height: e.size.height,
+                        point: e.location,
+                        builder: (ctx) => e.child,
+                      );
+                    }).toList()
+                  : [],
+            )
+          ],
+        );
+      },
     );
   }
 
   @override
   bool get wantKeepAlive => true;
 
-  void registerMovementWithExploreBloc(LatLng center, LatLngBounds bounds) {
-    context.read<ExploreBloc>().add(ExploreMapMovementEvent(center, bounds, token));
+  bool isControllerAlive(MapControllerImpl controller) {
+    try {
+      controller.move(controller.center, controller.zoom);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }
 
 class MapGuiController extends ChangeNotifier {
   late Set<MapWidget> _mapWidgets;
+
   Iterable<MapWidget> get mapWidgets => _mapWidgets;
 
   MapGuiController({Set<MapWidget>? mapWidgets}) {
@@ -153,6 +181,11 @@ class MapGuiController extends ChangeNotifier {
 
   void removeWidgetsFromMap(Set<LatLng> positions) {
     _mapWidgets.removeWhere((e) => positions.contains(e.location));
+    notifyListeners();
+  }
+
+  void clearWidgets() {
+    _mapWidgets.clear();
     notifyListeners();
   }
 }

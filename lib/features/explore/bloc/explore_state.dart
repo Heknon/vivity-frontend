@@ -8,32 +8,35 @@ class ExploreUnloaded extends ExploreState {}
 class ExploreLoaded extends ExploreState {
   String token;
 
-  final LatLng position;
-  final LatLng registeredPosition;
-  final LatLngBounds bounds;
-  final LatLngBounds registeredBounds;
+  final MapControllerImpl controller;
+  final LatLng lastUpdateLocation;
   final List<ItemModel> itemModels;
+  final MapGuiController mapGuiController;
 
   ExploreLoaded({
     required this.token,
-    required this.position,
-    required this.registeredPosition,
-    required this.bounds,
-    required this.registeredBounds,
+    required this.controller,
     required this.itemModels,
+    required this.lastUpdateLocation,
+    required this.mapGuiController,
   });
 
-  Future<void> fetchItemModels() async {
+  Future<ExploreState> fetchItemModels() async {
     int radius = Geolocator.distanceBetween(
-      registeredPosition.latitude,
-      registeredPosition.longitude,
-      registeredBounds.southEast.latitude,
-      registeredBounds.southEast.longitude,
+      controller.center.latitude,
+      controller.center.longitude,
+      controller.bounds!.southEast.latitude,
+      controller.bounds!.southEast.longitude,
     ).round();
 
+
+    List<ItemModel> models = await searchByCoordinates(token, controller.center, radius.toDouble());
     itemModels.clear();
-    List<ItemModel> models = await searchByCoordinates(token, position, radius.toDouble());
-    itemModels.addAll(models);
+
+    return copyWith(
+      itemModels: models,
+      lastUpdateLocation: controller.center,
+    );
   }
 
   @override
@@ -41,36 +44,34 @@ class ExploreLoaded extends ExploreState {
       identical(this, other) ||
       other is ExploreLoaded &&
           runtimeType == other.runtimeType &&
-          registeredPosition == other.registeredPosition &&
-          registeredBounds == other.registeredBounds &&
-          position == other.position &&
-          bounds == other.bounds;
+          controller.center == other.controller.center &&
+          controller.bounds == other.controller.bounds &&
+          controller.zoom == other.controller.zoom &&
+          lastUpdateLocation == other.lastUpdateLocation &&
+          mapGuiController == other.mapGuiController &&
+          listEquals(itemModels, other.itemModels);
 
   @override
-  int get hashCode => registeredPosition.hashCode ^ registeredBounds.hashCode ^ position.hashCode ^ bounds.hashCode ^ itemModels.hashCode;
+  int get hashCode => controller.hashCode ^ itemModels.hashCode ^ lastUpdateLocation.hashCode ^ mapGuiController.hashCode;
 
   ExploreLoaded copyWith({
-    LatLng? position,
-    LatLng? registeredPosition,
-    LatLngBounds? bounds,
-    LatLngBounds? registeredBounds,
+    MapControllerImpl? controller,
     List<ItemModel>? itemModels,
+    LatLng? lastUpdateLocation,
     String? token,
+    MapGuiController? mapGuiController,
   }) {
-    if ((position == null || identical(position, this.position)) &&
-        (registeredPosition == null || identical(registeredPosition, this.registeredPosition)) &&
-        (bounds == null || identical(bounds, this.bounds)) &&
-        (registeredBounds == null || identical(registeredBounds, this.registeredBounds)) &&
-        (token == null || identical(token, this.token))) {
-      return this;
-    }
-
     return ExploreLoaded(
-        token: token ?? this.token,
-        position: position ?? this.position,
-        registeredPosition: registeredPosition ?? this.registeredPosition,
-        bounds: bounds ?? this.bounds,
-        registeredBounds: registeredBounds ?? this.registeredBounds,
-        itemModels: itemModels ?? this.itemModels);
+      token: token ?? this.token,
+      controller: controller ?? this.controller,
+      itemModels: itemModels ?? this.itemModels,
+      lastUpdateLocation: lastUpdateLocation ?? this.lastUpdateLocation,
+      mapGuiController: mapGuiController ?? this.mapGuiController,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'ExploreLoaded{controller: ${controller.hashCode}, lastUpdateLocation: $lastUpdateLocation, itemModels: $itemModels, mapGuiController: ${mapGuiController.hashCode}';
   }
 }

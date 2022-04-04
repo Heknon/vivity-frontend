@@ -3,17 +3,19 @@ part of 'explore_bloc.dart';
 @immutable
 abstract class ExploreEvent {}
 
-class ExploreMapMovementEvent extends ExploreEvent {
-  final LatLng center;
-  final LatLngBounds bounds;
-  final String? token;
+class ExploreControllerUpdateEvent extends ExploreEvent {
+  final MapControllerImpl controller;
+  final String token;
 
-  ExploreMapMovementEvent(this.center, this.bounds, this.token);
+  ExploreControllerUpdateEvent(this.controller, this.token);
 }
 
-class ExploreMapRegisteredMovementEvent extends ExploreEvent {
-  final LatLng? center;
-  final LatLngBounds? bounds;
+class ExploreUpdateEvent extends ExploreEvent {
 
-  ExploreMapRegisteredMovementEvent({this.center, this.bounds});
 }
+
+class ExploreMovementEvent extends ExploreEvent {
+
+}
+
+class ExploreUnload extends ExploreEvent {}

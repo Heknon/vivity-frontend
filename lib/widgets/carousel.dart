@@ -21,6 +21,8 @@ class Carousel extends StatefulWidget {
   final double bottomRightRadius;
   final double bottomLeftRadius;
 
+  final bool showAddImage;
+
   final void Function(int)? onImageTap;
 
   Carousel({
@@ -35,6 +37,7 @@ class Carousel extends StatefulWidget {
     this.inactiveColor = Colors.grey,
     required this.images,
     this.onImageTap,
+    this.showAddImage = false,
   }) : super(key: key);
 
   @override

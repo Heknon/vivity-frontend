@@ -94,7 +94,7 @@ class _QuantityState extends State<Quantity> {
           children: [
             !widget.onlyQuantity ? buildIcon(Icons.remove, false) : Container(),
             text,
-            !widget.onlyQuantity ? buildIcon(Icons.add, false) : Container(),
+            !widget.onlyQuantity ? buildIcon(Icons.add, true) : Container(),
           ],
         ),
       );

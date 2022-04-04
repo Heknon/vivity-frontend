@@ -34,27 +34,21 @@ class BasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => HomePage()));
-        return true;
+    return BlocListener<UserBloc, UserState>(
+      listener: (ctx, state) {
+        if (userStateListener != null) userStateListener!(ctx, state);
+        if (state is UserLoggedOutState) {
+          logoutRoutine(context);
+        }
       },
-      child: BlocListener<UserBloc, UserState>(
-        listener: (ctx, state) {
-          if (userStateListener != null) userStateListener!(ctx, state);
-          if (state is UserLoggedOutState) {
-            logoutRoutine(context);
-          }
-        },
-        child: Scaffold(
-          floatingActionButton: floatingActionButton,
-          floatingActionButtonAnimator: floatingActionButtonAnimator,
-          floatingActionButtonLocation: floatingActionButtonLocation,
-          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-          appBar: appBar ?? VivityAppBar(),
-          drawer: drawer ?? const VivityDrawer(),
-          body: body,
-        ),
+      child: Scaffold(
+        floatingActionButton: floatingActionButton,
+        floatingActionButtonAnimator: floatingActionButtonAnimator,
+        floatingActionButtonLocation: floatingActionButtonLocation,
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        appBar: appBar ?? VivityAppBar(),
+        drawer: drawer ?? const VivityDrawer(),
+        body: body,
       ),
     );
   }

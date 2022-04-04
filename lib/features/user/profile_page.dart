@@ -64,7 +64,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
                 ),
                 SizedBox(
-                  height: 30.h,
+                  height: state.addresses.length > 1 ? 30.h : (state.addresses.length * 15).h,
                   child: buildShippingAddressList(state.addresses, context, canHighlight: false, token: state.token),
                 ),
                 SizedBox(height: 10),
@@ -85,15 +85,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     List<ItemModel> orderItems = snapshot.data as List<ItemModel>;
                     return state.orderHistory.isNotEmpty
-                        ? SizedBox(
-                            height: 30.h,
-                            child: ListView.builder(
-                              itemCount: state.orderHistory.length,
-                              itemBuilder: (ctx, i) {
-                                order_widget.Order order = order_widget.Order(order: state.orderHistory[i], orderItems: orderItems);
-                                return order;
-                              },
-                            ),
+                        ? Column(
+                            children: List.generate(state.orderHistory.length, (index) {
+                              order_widget.Order order = order_widget.Order(order: state.orderHistory[index], orderItems: orderItems);
+                              return order;
+                            }),
                           )
                         : Center(
                             child: Text(

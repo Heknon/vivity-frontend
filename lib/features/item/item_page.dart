@@ -61,9 +61,12 @@ class _ItemPageState extends State<ItemPage> {
   void initState() {
     super.initState();
 
+    UserState state = context.read<UserBloc>().state;
+    if (state is! UserLoggedInState) return;
+
     _likeController = LikeButtonController();
     _panelController = PanelController();
-    itemImages = getCachedItemImages((context.read<UserBloc>().state as UserLoggedInState).token, List.of([widget.item]));
+    itemImages = getCachedItemImages(state.token, List.of([widget.item]));
 
     _selectorControllers = List.generate(
       widget.item.itemStoreFormat.modificationButtons.length,
@@ -86,6 +89,7 @@ class _ItemPageState extends State<ItemPage> {
       });
     }
 
+    addItemView(state.token, widget.item.id.hexString);
     _quantityController = QuantityController();
     _widgetSwapController = WidgetSwapperController();
   }
@@ -96,6 +100,7 @@ class _ItemPageState extends State<ItemPage> {
     if (state is! UserLoggedInState) return Text("How are you here 🕵️‍♂️‍");
 
     bool initialLiked = false;
+    bool ownsBusiness = state.businessId != null && state.businessId == widget.item.businessId;
 
     for (var element in state.likedItems) {
       if (element.id == widget.item.id) initialLiked = true;
@@ -105,13 +110,13 @@ class _ItemPageState extends State<ItemPage> {
 
     if (widget.editorOpened) {
       WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      if (!openedEditorPreviously) {
-        _panelController.open();
-        setState(() {
-          openedEditorPreviously = true;
-        });
-      }
-    });
+        if (!openedEditorPreviously) {
+          _panelController.open();
+          setState(() {
+            openedEditorPreviously = true;
+          });
+        }
+      });
     }
 
     return BasePage(
@@ -149,82 +154,12 @@ class _ItemPageState extends State<ItemPage> {
                                   images: images,
                                   bottomRightRadius: 30,
                                   bottomLeftRadius: 30,
+                                  showAddImage: ownsBusiness,
                                   initialPage: widget.item.previewImageIndex,
                                   imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
-                                  onImageTap: state.businessId == widget.item.businessId
+                                  onImageTap: ownsBusiness
                                       ? (index) async {
-                                          bool isLast = index == images.length;
-                                          if (isLast) {
-                                            File? file = await filePickRoutine();
-                                            if (file == null) return;
-
-                                            ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, widget.item.images.length);
-                                            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
-                                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
-                                            return;
-                                          }
-                                          showDialog(
-                                            context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              title: Text(
-                                                'Modify image',
-                                                style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp),
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () async {
-                                                    ItemModel item = await removeImageFromItem(state.token, widget.item.id.hexString, index);
-                                                    Navigator.pop(context);
-                                                    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
-                                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
-                                                  },
-                                                  style: ButtonStyle(
-                                                      splashFactory: InkRipple.splashFactory,
-                                                      textStyle: MaterialStateProperty.all(
-                                                          Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
-                                                  child: Text(
-                                                    'DELETE',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .headline3
-                                                        ?.copyWith(color: primaryComplementaryColor, fontSize: 14.sp),
-                                                  ),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () async {
-                                                    File? file = await filePickRoutine();
-                                                    if (file == null) return;
-                                                    Navigator.of(context).pop();
-                                                    ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, index);
-                                                    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
-                                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
-                                                  },
-                                                  style: ButtonStyle(
-                                                      splashFactory: InkRipple.splashFactory,
-                                                      textStyle: MaterialStateProperty.all(
-                                                          Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
-                                                  child: Text(
-                                                    'CHANGE',
-                                                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp),
-                                                  ),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(context),
-                                                  style: ButtonStyle(
-                                                      splashFactory: InkRipple.splashFactory,
-                                                      textStyle: MaterialStateProperty.all(
-                                                          Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
-                                                  child: Text(
-                                                    'CANCEL',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .headline3
-                                                        ?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
+                                          await handleImageTap(index, images.length);
                                         }
                                       : null,
                                 );
@@ -241,16 +176,6 @@ class _ItemPageState extends State<ItemPage> {
                   ],
                 ),
               ),
-              // Positioned(
-              //   bottom: 0,
-              //   child: ConstrainedBox(
-              //     child: ,
-              //     constraints: BoxConstraints(
-              //       minHeight: 10,
-              //       maxHeight: 70
-              //     ),
-              //   ),
-              // ),
               Positioned(
                 child: ConstrainedBox(
                   child: ShoppingCart(),
@@ -264,8 +189,8 @@ class _ItemPageState extends State<ItemPage> {
                   constraints: BoxConstraints(
                     minWidth: 50,
                     maxWidth: MediaQuery.of(context).size.width,
-                    minHeight: 90,
-                    maxHeight: 90,
+                    minHeight: ownsBusiness ? 90 : 55,
+                    maxHeight: ownsBusiness ? 90 : 55,
                   ),
                   child: FilterSideBar(
                     controller: _widgetSwapController,
@@ -281,7 +206,7 @@ class _ItemPageState extends State<ItemPage> {
                         borderRadius: const BorderRadius.all(Radius.circular(15)),
                         padding: const EdgeInsets.all(4),
                       ),
-                      if (state.businessId == widget.item.businessId)
+                      if (ownsBusiness)
                         Material(
                           color: Theme.of(context).primaryColor,
                           child: IconButton(
@@ -289,7 +214,6 @@ class _ItemPageState extends State<ItemPage> {
                             splashRadius: 20,
                             visualDensity: VisualDensity.compact,
                             onPressed: () {
-                              print("pressed edit");
                               _panelController.open();
                             },
                             icon: const Icon(
@@ -302,22 +226,14 @@ class _ItemPageState extends State<ItemPage> {
                   ),
                 ),
               ),
-              // ItemEditPanel(
-              //   item: widget.item,
-              //   panelController: _panelController,
-              // ),
-              Positioned(
-                bottom: -100.w * 0.2,
-                child: ConstrainedBox(
-                  child: ItemEditPanel(item: widget.item, panelController: _panelController),
-                  constraints: BoxConstraints(
-                    minWidth: 100.w,
-                    maxHeight: 100.h,
-                    maxWidth: 100.w,
-                    minHeight: 100.h
+              if (ownsBusiness)
+                Positioned(
+                  bottom: -100.w * 0.2,
+                  child: ConstrainedBox(
+                    child: ItemEditPanel(item: widget.item, panelController: _panelController),
+                    constraints: BoxConstraints(minWidth: 100.w, maxHeight: 100.h, maxWidth: 100.w, minHeight: 100.h),
                   ),
                 ),
-              )
             ],
           ),
         ),
@@ -385,6 +301,7 @@ class _ItemPageState extends State<ItemPage> {
                         initialCount: 1,
                         color: Colors.white,
                         controller: _quantityController,
+                        max: widget.item.stock,
                       ),
                     ),
                   ),
@@ -568,5 +485,74 @@ class _ItemPageState extends State<ItemPage> {
     } else {
       // User canceled the picker
     }
+  }
+
+  Future<void> handleImageTap(int index, int imagesLength) async {
+    UserState state = context.read<UserState>();
+    if (state is! UserLoggedInState) return;
+
+    bool isLast = index == imagesLength;
+    if (isLast) {
+      File? file = await filePickRoutine();
+      if (file == null) return;
+
+      ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, widget.item.images.length);
+      context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Modify image',
+          style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              ItemModel item = await removeImageFromItem(state.token, widget.item.id.hexString, index);
+              Navigator.pop(context);
+              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+            },
+            style: ButtonStyle(
+                splashFactory: InkRipple.splashFactory,
+                textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+            child: Text(
+              'DELETE',
+              style: Theme.of(context).textTheme.headline3?.copyWith(color: primaryComplementaryColor, fontSize: 14.sp),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              File? file = await filePickRoutine();
+              if (file == null) return;
+              Navigator.of(context).pop();
+              ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, index);
+              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+            },
+            style: ButtonStyle(
+                splashFactory: InkRipple.splashFactory,
+                textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+            child: Text(
+              'CHANGE',
+              style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: ButtonStyle(
+                splashFactory: InkRipple.splashFactory,
+                textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+            child: Text(
+              'CANCEL',
+              style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -132,6 +132,6 @@ class _LoginModuleState extends State<LoginModule> {
 
   void handleLogin(String email, String password) {
     print("Handling login - Email: $email, Password: $password");
-    context.read<AuthBloc>().add(AuthLoginEvent(email, password, stayLoggedIn));
+    context.read<AuthBloc>().add(AuthLoginEvent(email.trim(), password, stayLoggedIn));
   }
 }

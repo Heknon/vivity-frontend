@@ -33,10 +33,9 @@ Future<RegisterResult> register(String email, String password, String name, Stri
     },
   );
 
-  dynamic decoded = res.data;
   return RegisterResult(
-    decoded.containsKey("token") ? decoded['token'] : null,
-    decoded.containsKey("auth_result") ? AuthenticationResult.values[decoded['auth_result'] as int] : null,
+    res.data.containsKey("token") ? res.data['token'] : null,
+    res.data.containsKey("auth_result") ? AuthenticationResult.values[res.data['auth_result'] as int] : null,
   );
 }
 

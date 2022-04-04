@@ -108,7 +108,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
           tabs: [
             Tab(
               child: SizedBox.fromSize(
-                size: Size(100, 12.sp),
+                size: Size(100, 15.sp),
                 child: Text(
                   'LOGIN',
                   textAlign: TextAlign.center,
@@ -118,7 +118,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             ),
             Tab(
               child: SizedBox.fromSize(
-                size: Size(100, 12.sp),
+                size: Size(100, 15.sp),
                 child: Text(
                   'REGISTER',
                   textAlign: TextAlign.center,

@@ -29,11 +29,10 @@ class Explore extends StatefulWidget {
 }
 
 class _ExploreState extends State<Explore> {
-  final mapGuiController = MapGuiController();
   final _widgetSwapController = WidgetSwapperController();
   late final ExploreController _controller;
-  late final Set<LatLng> mapItemLocations = {};
   final Random random = Random();
+  bool firstBuild = true;
 
 
   @override
@@ -48,38 +47,19 @@ class _ExploreState extends State<Explore> {
 
   @override
   Widget build(BuildContext context) {
+    if (firstBuild) {
+      handleStateChange(context.read<ExploreBloc>().state);
+      firstBuild = false;
+    }
     return LayoutBuilder(
       builder: (ctx, constraints) => BlocListener<ExploreBloc, ExploreState>(
         listener: (ctx, state) {
-          if (state is! ExploreLoaded) return;
-          if (listEquals(_controller.exploreItems, state.itemModels)) return;
-
-          mapGuiController.removeWidgetsFromMap(mapItemLocations);
-          mapItemLocations.clear();
-          mapGuiController.addWidgetsToMap(state.itemModels.map((e) {
-            Size textSize = MapPreviewIcon.getTextSize(e.price, context);
-            double added1 = doubleInRange(random, 0.0001, 0.00015);
-            double added2 = doubleInRange(random, 0.0001, 0.00015);
-            LatLng loc = mapItemLocations.contains(e.location)
-                ? LatLng(e.location.latitude + added1, e.location.longitude + added2)
-                : e.location;
-            MapWidget widget = buildMapWidget(
-                location: loc,
-                size: Size(textSize.width + 15, textSize.height + 10),
-                child: MapPreviewIcon(
-                  item: e,
-                  exploreController: _controller,
-                ));
-            mapItemLocations.add(loc);
-            return widget;
-          }));
-          _controller.updateExploreItems(List.of(state.itemModels));
+          handleStateChange(state);
         },
         child: Stack(
           children: [
             MapGui(
               mapBoxToken: mapBoxToken,
-              controller: mapGuiController,
             ),
             Positioned(
               top: 0,
@@ -145,6 +125,32 @@ class _ExploreState extends State<Explore> {
       size: size,
       child: child,
     );
+  }
+
+  void handleStateChange(ExploreState state) {
+    if (state is! ExploreLoaded) return;
+    if (listEquals(_controller.exploreItems, state.itemModels)) return;
+
+    state.mapGuiController.clearWidgets();
+    Set<LatLng> usedLocations = {};
+    state.mapGuiController.addWidgetsToMap(state.itemModels.map((e) {
+      Size textSize = MapPreviewIcon.getTextSize(e.price, context);
+      double added1 = doubleInRange(random, 0.0001, 0.00015);
+      double added2 = doubleInRange(random, 0.0001, 0.00015);
+      LatLng loc = usedLocations.contains(e.location)
+          ? LatLng(e.location.latitude + added1, e.location.longitude + added2)
+          : e.location;
+      MapWidget widget = buildMapWidget(
+          location: loc,
+          size: Size(textSize.width + 15, textSize.height + 10),
+          child: MapPreviewIcon(
+            item: e,
+            exploreController: _controller,
+          ));
+      usedLocations.add(loc);
+      return widget;
+    }));
+    _controller.updateExploreItems(List.of(state.itemModels));
   }
 }
 

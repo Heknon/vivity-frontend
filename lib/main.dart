@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
 import 'package:http/io_client.dart';
@@ -54,6 +55,11 @@ void main() async {
   //   iosApiKey: "AIzaSyCXcalnoEaLEAqGHYGsj7ebH-ufqAQid-c",
   // );
 
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   HydratedBlocOverrides.runZoned(
     () => runApp(const Vivity()),
     storage: storage,
@@ -66,8 +72,6 @@ class Vivity extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    navigateToCorrectCheckoutPage(CheckoutStatePaymentStage(
-        paymentMethod: null, shippingAddress: null, items: List.empty(), cuponCode: "", shippingMethod: ShippingMethod.delivery));
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(

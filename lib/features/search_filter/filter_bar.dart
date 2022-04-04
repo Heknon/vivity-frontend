@@ -38,12 +38,9 @@ class FilterBar extends StatelessWidget {
                 flex: 5,
                 child: Container(
                   child: TextField(
+                    autofocus: true,
                     decoration: InputDecoration(
                       hintStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                      // constraints: constraints,
-                      // label: Text(
-                      //   "Search...",
-                      // ),
                       hintText: "Search...",
                     ),
                     style: TextStyle(fontSize: 12.sp, color: Colors.white),

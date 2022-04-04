@@ -123,6 +123,6 @@ class _RegisterModuleState extends State<RegisterModule> {
 
   void handleRegister(String email, String password, String phone, String name, BuildContext context) {
     print("Handling register - Email: $email, Password: $password, Name: $name, Phone: $phone");
-    context.read<AuthBloc>().add(AuthRegisterEvent(email, password, name, phone));
+    context.read<AuthBloc>().add(AuthRegisterEvent(email.trim(), password, name, phone));
   }
 }
