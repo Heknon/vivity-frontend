@@ -68,7 +68,7 @@ class _ShippingPageState extends State<ShippingPage> {
                     }
 
                     return SizedBox(
-                      height: 30.h,
+                      height: state.addresses.length > 1 ? 30.h : (state.addresses.length * 15).h,
                       child: buildShippingAddressList(
                         state.addresses,
                         context,

@@ -106,6 +106,12 @@ class ConfirmPage extends StatelessWidget {
               style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
             ),
             onPressed: () {
+              if (context.read<CartBloc>().state.items.isEmpty) {
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You must have items in your cart to proceed.')));
+                return;
+              }
+
               context.read<CheckoutBloc>().add(
                     CheckoutInitializeEvent(
                       items: context.read<CartBloc>().state.items,

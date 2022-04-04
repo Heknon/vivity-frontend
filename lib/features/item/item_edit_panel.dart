@@ -263,12 +263,12 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
     ItemModel updatedItem = await updateItem(
       state.token,
       widget.item.id.hexString,
-      tags: clonedItem.tags,
-      title: clonedItem.itemStoreFormat.title,
-      subtitle: clonedItem.itemStoreFormat.subtitle,
-      category: clonedItem.category,
+      tags: clonedItem.tags.map((e) => e.trim()).toList(),
+      title: clonedItem.itemStoreFormat.title.trim(),
+      subtitle: clonedItem.itemStoreFormat.subtitle?.trim(),
+      category: clonedItem.category.trim(),
       price: clonedItem.price,
-      description: _descriptionController.text,
+      description: _descriptionController.text.trim(),
       brand: clonedItem.brand,
       stock: clonedItem.stock,
       modificationButtons: clonedItem.itemStoreFormat.modificationButtons,
@@ -354,7 +354,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
     switch (title) {
       case "Title":
         setState(() {
-          clonedItem = clonedItem.copyWith(itemStoreFormat: clonedItem.itemStoreFormat.copyWith(title: value as String));
+          clonedItem = clonedItem.copyWith(itemStoreFormat: clonedItem.itemStoreFormat.copyWith(title: (value as String).trim()));
         });
         break;
       case "Price":
@@ -364,7 +364,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
         break;
       case "Subtitle":
         setState(() {
-          clonedItem = clonedItem.copyWith(itemStoreFormat: clonedItem.itemStoreFormat.copyWith(subtitle: value as String));
+          clonedItem = clonedItem.copyWith(itemStoreFormat: clonedItem.itemStoreFormat.copyWith(subtitle: (value as String).trim()));
         });
         break;
       case "Tags":
@@ -374,12 +374,12 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
         break;
       case "Brand":
         setState(() {
-          clonedItem = clonedItem.copyWith(brand: value as String);
+          clonedItem = clonedItem.copyWith(brand: (value as String).trim());
         });
         break;
       case "Category":
         setState(() {
-          clonedItem = clonedItem.copyWith(category: value as String);
+          clonedItem = clonedItem.copyWith(category: (value as String).trim());
         });
         break;
     }
@@ -590,7 +590,7 @@ class _ItemModifierEditorDialogState extends State<ItemModifierEditorDialog> {
               String? newName = await completer.future;
               if (newName == null) return;
               setState(() {
-                _modifiedButton = _modifiedButton.copyWith(name: newName);
+                _modifiedButton = _modifiedButton.copyWith(name: newName.trim());
               });
             },
           ),

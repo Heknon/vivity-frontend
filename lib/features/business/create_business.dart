@@ -15,6 +15,7 @@ import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/business/business_page.dart';
+import 'package:vivity/features/business/unapproved_business_page.dart';
 import 'package:vivity/features/explore/bloc/explore_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:latlong2/latlong.dart' as latlng;
@@ -67,7 +68,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
     return BasePage(
       userStateListener: (ctx, state) {
         if (state is BusinessUserLoggedInState) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => UnapprovedBusinessPage()));
           ScaffoldMessenger.of(context).clearSnackBars();
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered your business!')));
         }
@@ -233,10 +234,10 @@ class _CreateBusinessState extends State<CreateBusiness> {
     latlng.LatLng location,
   ) {
     context.read<UserBloc>().add(UserRegisterBusinessEvent(
-          businessName: businessName,
-          businessEmail: businessEmail,
-          businessPhone: businessPhone,
-          businessNationalId: nationalBusinessNumber,
+          businessName: businessName.trim(),
+          businessEmail: businessEmail.trim(),
+          businessPhone: businessPhone.trim(),
+          businessNationalId: nationalBusinessNumber.trim(),
           ownerId: ownerId,
           location: location,
           context: context,

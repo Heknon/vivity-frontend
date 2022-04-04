@@ -272,21 +272,20 @@ class _AddAddressState extends State<AddAddress> {
     String zipCode,
     String token,
   ) async {
-    // TODO: Actually handle... To handle need User BLOC with bloc database connection
     print(
         "Handling: (country: $country, name: $fullName, phone: $phoneNumber, street: $street, streetExtra: $extraAddressInfo, province: $province, city: $city, zipCode: $zipCode)");
 
     List<Address> addresses = await addAddress(
         token,
         Address(
-          name: fullName,
-          country: selectedCountryCode!.code!,
-          city: city,
-          street: street,
-          extraInfo: extraAddressInfo,
-          province: province,
-          zipCode: zipCode,
-          phone: phoneNumber,
+          name: fullName.trim(),
+          country: selectedCountryCode!.code!.trim(),
+          city: city.trim(),
+          street: street.trim(),
+          extraInfo: extraAddressInfo.trim(),
+          province: province.trim(),
+          zipCode: zipCode.trim(),
+          phone: phoneNumber.trim(),
         ),
       context: context
     );
