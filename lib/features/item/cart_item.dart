@@ -53,7 +53,7 @@ class CartItem extends StatelessWidget {
     UserState state = context.read<UserBloc>().state;
     if (state is! UserLoggedInState) return Text('You need to be logged in to see items.');
 
-    itemImages ??= readImagesBytes(getCachedItemImages(state.token, List.of([item.item])));
+    if (item.item != null) itemImages ??= readImagesBytes(getCachedItemImages(state.token, List.of([item.item!])));
 
     return LayoutBuilder(
       builder: (ctx, constraints) {
@@ -73,18 +73,17 @@ class CartItem extends StatelessWidget {
                   height: usedHeight,
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
                   child: FutureBuilder<Map<String, Uint8List>?>(
-                    future: itemImages,
-                    initialData: itemImagesLoaded,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return CircularProgressIndicator();
-                      }
+                      future: itemImages,
+                      initialData: itemImagesLoaded,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return CircularProgressIndicator();
+                        }
 
-                      itemImagesLoaded = snapshot.data;
+                        itemImagesLoaded = snapshot.data;
 
-                      return buildPreviewImage(snapshot.data, item.item, borderRadius: const BorderRadius.all(Radius.circular(50)));
-                    }
-                  ),
+                        return buildPreviewImage(snapshot.data, item.item!, borderRadius: const BorderRadius.all(Radius.circular(50)));
+                      }),
                 ),
                 Expanded(
                   flex: 2,
@@ -104,20 +103,21 @@ class CartItem extends StatelessWidget {
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                       ),
                       const Spacer(),
-                      if (includeQuantityControls || onlyQuantity) ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
-                        child: Quantity(
-                          initialCount: item.quantity,
-                          color: Theme.of(context).primaryColor,
-                          onDecrement: onQuantityDecrement,
-                          onIncrement: onQuantityIncrement,
-                          deletable: true,
-                          onDelete: onQuantityDelete,
-                          controller: quantityController,
-                          onlyQuantity: onlyQuantity,
-                          id: id,
-                        ),
-                      )
+                      if (includeQuantityControls || onlyQuantity)
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
+                          child: Quantity(
+                            initialCount: item.quantity,
+                            color: Theme.of(context).primaryColor,
+                            onDecrement: onQuantityDecrement,
+                            onIncrement: onQuantityIncrement,
+                            deletable: true,
+                            onDelete: onQuantityDelete,
+                            controller: quantityController,
+                            onlyQuantity: onlyQuantity,
+                            id: id,
+                          ),
+                        )
                     ],
                   ),
                 )

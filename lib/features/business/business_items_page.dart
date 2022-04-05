@@ -17,9 +17,8 @@ import '../../models/business.dart';
 import '../item/models/item_model.dart';
 import 'business_ui_helper.dart';
 
-class BusinessItemsPage extends StatelessWidget {
+class BusinessItemsPage extends StatefulWidget {
   final Business business;
-  Future<Map<ObjectId, ItemModel>>? itemsCache;
 
   BusinessItemsPage({
     Key? key,
@@ -27,8 +26,19 @@ class BusinessItemsPage extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<BusinessItemsPage> createState() => _BusinessItemsPageState();
+}
+
+class _BusinessItemsPageState extends State<BusinessItemsPage> {
+  Future<Map<ObjectId, ItemModel>>? itemsCache;
+
+  @override
   Widget build(BuildContext context) {
-    itemsCache ??= business.getIdItemMap(updateCache: true);
+    itemsCache ??= widget.business.getIdItemMap(updateCache: true);
+    Text businessNameText = Text(
+      widget.business.name,
+      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+    );
 
     return defaultGradientBackground(
       child: Column(
@@ -36,37 +46,44 @@ class BusinessItemsPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8),
             child: Center(
-              child: Text(
-                business.name,
-                style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
-              ),
+              child: businessNameText,
             ),
           ),
           FutureBuilder(
-              future: itemsCache,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
-                }
+            future: itemsCache,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return CircularProgressIndicator();
+              }
 
-                Map<ObjectId, ItemModel> idItemMap = snapshot.data as Map<ObjectId, ItemModel>;
-                Size gridSize = Size(100.w, 60.h);
-                return SizedBox.fromSize(
-                  size: gridSize,
-                  child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
-                      itemHeightMultiplier: 0.6,
-                      hasEditButton: true,
-                      onEditTapped: (item) {
-                        Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, editorOpened: true,)));
-                      },
-                      onTap: (item) async {
-                        int stock = await enterStockDialog(business.ownerToken!, item, context);
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock updated to $stock')));
-                      },
-                      onLongTap: (item) => showDialog(context: context, builder: (ctx) => buildItemStatisticsDialog(ctx, item))),
-                );
-              })
+              Map<ObjectId, ItemModel> idItemMap = snapshot.data as Map<ObjectId, ItemModel>;
+              Size gridSize = Size(100.w, 100.h - Scaffold.of(context).appBarMaxHeight! - getTextSize(businessNameText).height - 16);
+              return SizedBox.fromSize(
+                size: gridSize,
+                child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
+                    itemHeightMultiplier: 0.5,
+                    hasEditButton: true,
+                    onEditTapped: (item) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (ctx) => ItemPage(
+                                    item: item,
+                                    editorOpened: true,
+                                  )));
+                    },
+                    onTap: (item) async {
+                      int stock = await enterStockDialog(widget.business.ownerToken!, item, context);
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock updated to $stock')));
+                      setState(() {
+                        idItemMap[item.id] = item.copyWith(stock: stock);
+                      });
+                    },
+                    onLongTap: (item) => showDialog(context: context, builder: (ctx) => buildItemStatisticsDialog(ctx, item))),
+              );
+            },
+          ),
         ],
       ),
     );

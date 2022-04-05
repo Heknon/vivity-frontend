@@ -56,7 +56,7 @@ Future<List<CartItemModel>> getCartFromDBCart(String token, List<dynamic> dbCart
 
 Map<String, dynamic> convertToDBCartItem(CartItemModel cartItem) {
   return {
-    "item_id": cartItem.item.id.hexString,
+    "item_id": cartItem.item?.id.hexString,
     "amount": cartItem.quantity,
     "modifiers_chosen": cartItem.modifiersChosen.map((e) => e.toMap()).toList(),
   };

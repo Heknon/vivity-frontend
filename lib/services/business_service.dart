@@ -32,7 +32,8 @@ Future<List<ItemModel>> getItemsFromOrders(String token, List<Order> orders) asy
 
   for (var order in orders) {
     for (var item in order.items) {
-      ids.add(item.itemId.hexString);
+      if (item.itemId == null) continue;
+      ids.add(item.itemId!.hexString);
     }
   }
 

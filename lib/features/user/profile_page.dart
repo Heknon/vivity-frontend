@@ -40,7 +40,8 @@ class _ProfilePageState extends State<ProfilePage> {
         Set<String> orderItemIds = {};
         for (var order in state.orderHistory) {
           for (var item in order.items) {
-            orderItemIds.add(item.itemId.hexString);
+            if (item.itemId == null) continue;
+            orderItemIds.add(item.itemId!.hexString);
           }
         }
 

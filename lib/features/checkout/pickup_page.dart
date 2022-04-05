@@ -137,19 +137,21 @@ class _PickupPageState extends State<PickupPage> {
     Map<LatLng, Placemark> places = await geoPlaces;
     Map<LatLng, List<CartItemModel>> locToItem = {};
     for (var element in state.items) {
-      if (locToItem.containsKey(element.item.location)) {
-        locToItem[element.item.location]!.add(element);
+      if (element.item == null) continue;
+      if (locToItem.containsKey(element.item!.location)) {
+        locToItem[element.item!.location]!.add(element);
         continue;
       }
 
-      locToItem[element.item.location] = List.of([element]);
+      locToItem[element.item!.location] = List.of([element]);
     }
 
     Map<CartItemModel, Address> result = {};
 
     for (var locItemsEntry in locToItem.entries) {
       for (var cartItem in locItemsEntry.value) {
-        Placemark mark = places[cartItem.item.location]!;
+        if (cartItem.item == null) continue;
+        Placemark mark = places[cartItem.item!.location]!;
         result[cartItem] = Address(
           name: int.tryParse(mark.name ?? "f") != null ? null : mark.name,
           street: mark.street ?? "",
@@ -167,7 +169,8 @@ class _PickupPageState extends State<PickupPage> {
     Map<LatLng, Future<List<Placemark>>> resultFuture = {};
 
     for (var item in state.items) {
-      resultFuture[item.item.location] = placemarkFromCoordinates(item.item.location.latitude, item.item.location.longitude);
+      if (item.item == null) continue;
+      resultFuture[item.item!.location] = placemarkFromCoordinates(item.item!.location.latitude, item.item!.location.longitude);
     }
 
     List<Future<List<Placemark>>> futures = resultFuture.values.toList();

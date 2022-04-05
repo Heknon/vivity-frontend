@@ -76,10 +76,10 @@ class _OrderState extends State<Order> {
           buildCartItemList(
             widget.order.items.map(
               (e) {
-                ItemModel item = _idToItemMap[e.itemId.hexString]!;
+                ItemModel? item = e.itemId != null ? _idToItemMap[e.itemId?.hexString] : null;
                 return CartItemModel(
-                  previewImage: item.images[item.previewImageIndex],
-                  title: item.itemStoreFormat.title,
+                  previewImage: item != null ? item.images[item.previewImageIndex] : null,
+                  title: item != null ? item.itemStoreFormat.title : 'N/A',
                   modifiersChosen: e.selectedModifiers,
                   quantity: e.amount,
                   price: e.price,

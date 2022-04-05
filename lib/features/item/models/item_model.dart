@@ -8,12 +8,12 @@ import 'package:vivity/services/storage_service.dart';
 import 'package:latlong2/latlong.dart';
 
 class CartItemModel {
-  final String previewImage;
+  final String? previewImage;
   final String title;
   final Iterable<ModificationButtonDataHost> modifiersChosen;
   final double price;
   int insertionId;
-  ItemModel item;
+  ItemModel? item;
   int quantity;
 
   CartItemModel({
@@ -84,14 +84,14 @@ class CartItemModel {
       'modifiersChosen': modifiersChosen.map((e) => e.toMap()).toList(),
       'price': price,
       'quantity': quantity,
-      'id': item.id,
-      'businessId': item.businessId,
+      'id': item?.id,
+      'businessId': item?.businessId,
     } as Map<String, dynamic>;
   }
 
   @override
   String toString() {
-    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $modifiersChosen, price: $price, quantity: $quantity, insertionId: $insertionId, id: ${item.id}';
+    return 'CartItemModel{previewImage: $previewImage, title: $title, chosenData: $modifiersChosen, price: $price, quantity: $quantity, insertionId: $insertionId, id: ${item?.id}';
   }
 
   @override
@@ -103,7 +103,7 @@ class CartItemModel {
           title == other.title &&
           listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()) &&
           price == other.price &&
-          item.id == other.item.id &&
+          item?.id == other.item?.id &&
           quantity == other.quantity;
 
   bool looseEquals(Object other) {
@@ -114,11 +114,11 @@ class CartItemModel {
             title == other.title &&
             listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()) &&
             price == other.price &&
-            item.id == other.item.id;
+            item?.id == other.item?.id;
   }
 
   @override
-  int get hashCode => previewImage.hashCode ^ title.hashCode ^ modifiersChosen.hashCode ^ price.hashCode ^ item.id.hashCode ^ quantity.hashCode;
+  int get hashCode => previewImage.hashCode ^ title.hashCode ^ modifiersChosen.hashCode ^ price.hashCode ^ (item?.id.hashCode ?? 0.hashCode) ^ quantity.hashCode;
 }
 
 class ItemModel {

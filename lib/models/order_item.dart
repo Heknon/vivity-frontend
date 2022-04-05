@@ -3,10 +3,10 @@ import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
 class OrderItem {
-  final ObjectId itemId;
+  final ObjectId? itemId;
   final double price;
   final int amount;
-  final ObjectId businessId;
+  final ObjectId? businessId;
   final List<ModificationButtonDataHost> selectedModifiers;
 
   OrderItem({
@@ -41,11 +41,11 @@ class OrderItem {
 
   factory OrderItem.fromCartItem(CartItemModel cartItem) {
     return OrderItem(
-      itemId: cartItem.item.id,
+      itemId: cartItem.item?.id,
       selectedModifiers: cartItem.modifiersChosen.toList(),
       price: cartItem.price,
       amount: cartItem.quantity,
-      businessId: cartItem.item.businessId,
+      businessId: cartItem.item?.businessId,
     );
   }
 
@@ -65,7 +65,7 @@ class OrderItem {
       'selected_modifiers': selectedModifiers.map((e) => e.toMap()).toList(),
       'amount': amount,
       'price': price,
-      'business_id': businessId.hexString
+      'business_id': businessId?.hexString
     };
   }
 

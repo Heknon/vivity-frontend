@@ -65,7 +65,7 @@ class _CarouselState extends State<Carousel> {
     )).toList();
 
     List<Widget> items = List.empty(growable: true);
-    images.add(Image.asset(
+    if (widget.showAddImage) images.add(Image.asset(
       "assets/images/addImage.png",
       alignment: Alignment.topCenter,
       fit: BoxFit.scaleDown,

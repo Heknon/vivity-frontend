@@ -40,16 +40,6 @@ class ItemDataSection extends StatelessWidget {
     );
   }
 
-  ClipRRect buildPreviewImage() {
-    return ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(50)),
-      clipBehavior: Clip.antiAlias,
-      child: CachedNetworkImage(
-        imageUrl: itemModel.previewImage,
-      ),
-    );
-  }
-
   Iterable<Widget> buildItemDataTexts(BuildContext ctx, double usedWidth) {
     return itemModel.modifiersChosen.map(
       (e) {
