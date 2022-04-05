@@ -1,4 +1,4 @@
-const String host = "http://157.90.143.116:20200"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
+const String host = "http://192.168.1.15:20200"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
 const userRoute = "/user";
 const cartRoute = "/user/cart";
 const addressRoute = "/user/address";

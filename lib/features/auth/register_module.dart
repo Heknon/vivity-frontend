@@ -6,6 +6,9 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/auth/auth_service.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
+import 'package:vivity/features/auth/password_field.dart';
+
+import '../../constants/regex.dart';
 
 class RegisterModule extends StatefulWidget {
   @override
@@ -19,11 +22,8 @@ class _RegisterModuleState extends State<RegisterModule> {
   TextEditingController nameController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
 
-  bool _passwordVisible = false;
-
   @override
   Widget build(BuildContext context) {
-    // TODO: Add accurate validation checks
     return SingleChildScrollView(
       child: Form(
         key: _formKey,
@@ -33,39 +33,35 @@ class _RegisterModuleState extends State<RegisterModule> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 15),
-              buildTextFormField('Email', emailController),
+              buildTextFormField(
+                'Email',
+                emailController,
+                validationBuilder: ValidationBuilder().add((value) => validEmail.hasMatch(value ?? "2") ? null : "Invalid email address"),
+              ),
+              SizedBox(height: 15),
+              buildTextFormField(
+                'Phone',
+                phoneController,
+                validationBuilder: ValidationBuilder().add((value) {
+                  if (value?.length != 10) return 'Must be a 10 digit number';
+                  return int.tryParse(value ?? "f") != null ? null : 'Must be a 10 digit number';
+                })
+              ),
+              SizedBox(height: 15),
+              buildTextFormField(
+                'Name',
+                nameController,
+                validationBuilder: ValidationBuilder().minLength(3).maxLength(30),
+              ),
               SizedBox(height: 15),
               Center(
                 child: SizedBox(
                   width: 85.w,
-                  child: TextFormField(
+                  child: PasswordField(
                     controller: passwordController,
-                    validator: ValidationBuilder().minLength(8).maxLength(80).build(),
-                    style: TextStyle(fontSize: 12.sp, color: Colors.black),
-                    obscureText: !_passwordVisible,
-                    obscuringCharacter: '*',
-                    decoration: InputDecoration(
-                      labelText: "Password",
-                      labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                          color: fillerColor,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _passwordVisible = !_passwordVisible;
-                          });
-                        },
-                      ),
-                    ),
                   ),
                 ),
               ),
-              SizedBox(height: 15),
-              buildTextFormField('Phone', phoneController),
-              SizedBox(height: 15),
-              buildTextFormField('Name', nameController),
               SizedBox(height: 25),
               Center(
                 child: TextButton(
@@ -104,13 +100,13 @@ class _RegisterModuleState extends State<RegisterModule> {
     );
   }
 
-  Widget buildTextFormField(String labelText, TextEditingController controller) {
+  Widget buildTextFormField(String labelText, TextEditingController controller, {ValidationBuilder? validationBuilder}) {
     return Center(
       child: SizedBox(
         width: 85.w,
         child: TextFormField(
           controller: controller,
-          validator: ValidationBuilder().minLength(5).maxLength(80).build(),
+          validator: validationBuilder?.build(),
           style: TextStyle(fontSize: 12.sp, color: Colors.black),
           decoration: InputDecoration(
             labelText: labelText,
