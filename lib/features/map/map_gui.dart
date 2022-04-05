@@ -46,6 +46,7 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     ExploreState state = exploreBloc.state;
     if (state is ExploreLoaded) {
       _mapController = state.controller;
+      exploreBloc.add(ExploreUpdateEvent());
       return;
     }
 

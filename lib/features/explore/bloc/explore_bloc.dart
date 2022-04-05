@@ -21,7 +21,7 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
   late RestartableTimer _timer;
 
   ExploreBloc() : super(ExploreUnloaded()) {
-    _timer = RestartableTimer(const Duration(milliseconds: 3500), timerDone);
+    _timer = RestartableTimer(const Duration(milliseconds: 3000), timerDone);
 
     on<ExploreControllerUpdateEvent>((event, emit) async {
       ExploreState initialState = state;
@@ -42,6 +42,7 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
 
     on<ExploreUpdateEvent>((event, emit) async {
       ExploreState state = this.state;
+      print("updating");
       if (state is ExploreLoaded) {
         ExploreState result = await state.fetchItemModels();
         emit(result);
