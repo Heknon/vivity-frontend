@@ -15,13 +15,11 @@ abstract class AuthState {
   }
 
   /// Checks if current token is valid and returns it. if not valid generates a new one based on stored credentials or returns null.
-  Future<String?> verifyCredentials() async {
-    String? email = await getStoredEmail();
-    String? password = await getStoredPassword();
+  Future<AuthResult?> verifyCredentials() async {
+    String? refreshToken = await getStoredRefreshToken();
 
-    if (email != null && password != null) {
-      String? loginResult = await login(email, password);
-      return loginResult;
+    if (refreshToken != null && isRefreshTokenValid(refreshToken)) {
+      return refreshAccessToken(refreshToken);
     }
 
     return null;
@@ -29,7 +27,9 @@ abstract class AuthState {
 }
 
 class AuthLoggedOutState extends AuthState {
-  const AuthLoggedOutState();
+  final AuthenticationResult? status;
+
+  AuthLoggedOutState({this.status});
 }
 
 class AuthLoadingState extends AuthLoggedOutState {}
@@ -37,45 +37,44 @@ class AuthLoadingState extends AuthLoggedOutState {}
 class AuthRegisterFailedState extends AuthLoggedOutState {
   final AuthenticationResult reason;
 
-  const AuthRegisterFailedState(this.reason);
+  AuthRegisterFailedState(this.reason);
 }
 
 class AuthLoggedInState extends AuthState {
-  final String token;
+  final AuthResult authResult;
 
-  const AuthLoggedInState({required this.token});
+  const AuthLoggedInState({required this.authResult});
 
   @override
-  Future<String?> verifyCredentials() async {
-    print("Verifying token $token");
-    bool tokenIsGood = await verifyToken(token);
-    if (tokenIsGood) {
-      return token;
+  Future<AuthResult?> verifyCredentials() async {
+    if (isAccessTokenValid(authResult.accessToken)) {
+      return authResult;
     }
 
     return super.verifyCredentials();
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AuthLoggedInState && runtimeType == other.runtimeType && token == other.token;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AuthLoggedInState && runtimeType == other.runtimeType && authResult == other.authResult;
 
   @override
-  int get hashCode => token.hashCode;
+  int get hashCode => authResult.hashCode;
 
   factory AuthLoggedInState.fromMap(Map<String, dynamic> map) {
     return AuthLoggedInState(
-      token: map["token"] as String,
+      authResult: AuthResult.fromMap(map["authResult"]),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'token': token,
+      'authResult': authResult.toMap(),
     };
   }
 
   @override
   String toString() {
-    return 'AuthState{token: $token}';
+    return 'AuthState{authResult: $authResult}';
   }
 }

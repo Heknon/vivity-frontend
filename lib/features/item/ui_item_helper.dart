@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/item/like_button.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
@@ -35,7 +36,7 @@ Widget buildPreviewImage(
     return SizedBox(
       height: (size?.height ?? 50) * 0.5,
       width: (size?.width ?? 50) * 0.4,
-      child: const CircularProgressIndicator(),
+      child: Image.memory(noImageAvailable!)
     );
   }
 
@@ -45,7 +46,9 @@ Widget buildPreviewImage(
       color: imageBackgroundColor,
       child: Image.memory(
         file,
-        height: size != null ? size.height * 0.65 : null,
+        // height: size != null ? size.height: null,
+        width: size != null ? size.width : null,
+        fit: BoxFit.fill,
       ),
     ),
   );

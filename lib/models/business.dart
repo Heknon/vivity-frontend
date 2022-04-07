@@ -19,7 +19,7 @@ class Business {
   final List<ObjectId> items;
   final Map<String, List<ObjectId>> categories;
   final ContactInformation contact;
-  final int nationalBusinessId;
+  final String nationalBusinessId;
   final BusinessMetrics metrics;
   final List<ObjectId> orders;
   final String? ownerId; // TODO: If null ask to resubmit id.
@@ -111,7 +111,7 @@ class Business {
     List<ObjectId>? items,
     Map<String, List<ObjectId>>? categories,
     ContactInformation? contact,
-    int? nationalBusinessId,
+    String? nationalBusinessId,
     String? ownerId,
     BusinessMetrics? metrics,
     List<ObjectId>? orders,
@@ -157,7 +157,7 @@ class Business {
           .asMap()
           .map((key, value) => MapEntry(value['name'], (value['item_ids'] as List<dynamic>).map((id) => ObjectId.fromHexString(id)).toList())),
       contact: ContactInformation.fromMap(map['contact']),
-      nationalBusinessId: (map['national_business_id'] as num).toInt(),
+      nationalBusinessId: map['national_business_id'] as String,
       ownerId: map['owner_id_card'] as String?,
       metrics: BusinessMetrics.fromMap(map["metrics"]),
       orders: (map["orders"] as List<dynamic>).map((e) => ObjectId.fromHexString(e)).toList(),

@@ -5,39 +5,40 @@ import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:meta/meta.dart';
 import 'package:objectid/objectid/objectid.dart';
-import 'package:vivity/features/auth/auth_service.dart';
+import '../../../services/auth_service.dart';
 import 'package:vivity/features/cart/cart_service.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/user_options.dart';
 import 'package:vivity/features/user/user_service.dart';
 import 'package:vivity/services/api_service.dart';
+import 'package:vivity/services/business_service.dart' as business_service;
 import 'package:vivity/services/item_service.dart';
 import '../../../constants/api_path.dart';
 import '../../../models/business.dart';
 import '../../../models/address.dart';
-import 'package:vivity/models/payment_method.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../models/order.dart';
-import '../../../models/order_item.dart';
+import '../../auth/auth_result.dart';
 
 part 'user_event.dart';
 
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
-  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
-
   UserBloc() : super(UserLoggedOutState()) {
     on<UserLoginEvent>((event, emit) async {
-      UserLoggedInState state =
-          JwtDecoder.decode(event.token)['business_id'] == null ? UserLoggedInState(event.token) : BusinessUserLoggedInState(event.token);
+      String accessToken = event.accessToken;
+      JWT? jwt = parseAccessToken(accessToken);
+      if (jwt == null) return emit(UserLoggedOutState());
+
+      UserLoggedInState state = jwt.payload['business_id'] == null ? UserLoggedInState(accessToken) : BusinessUserLoggedInState(accessToken);
 
       String? result;
       try {
@@ -54,8 +55,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         return;
       }
 
-      _renewTokenTimer.reset();
-      print("STARTED TIMER: ${_renewTokenTimer.isActive}, ${_renewTokenTimer.tick}");
       emit(state);
     });
 
@@ -76,36 +75,20 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     });
 
     on<UserRenewTokenEvent>((event, emit) async {
-      if (state is! UserLoggedInState) return;
-      String? email = await getStoredEmail();
-      String? password = await getStoredPassword();
-      if (email == null || password == null) {
-        emit(UserLoggedOutState());
-        return;
+      if (state is! UserLoggedInState) {
+        return add(UserLoginEvent(event.accessToken));
       }
 
-      String? token = await login(email, password);
-      if (token == null) {
-        emit(UserLoggedOutState());
-        return;
-      }
-
-      UserLoggedInState renewedState;
-      UserLoggedInState prevState = state as UserLoggedInState;
-      if (prevState is BusinessUserLoggedInState) {
-        renewedState = prevState.copyWith(token: token, business: prevState.business.copyWith(ownerToken: token));
-      } else {
-        renewedState = prevState.copyWith(token: token);
-      }
+      UserState renewedState = (state as UserLoggedInState).copyWith(token: event.accessToken);
 
       emit(renewedState);
     });
 
     on<UserUpdateProfilePictureEvent>((event, emit) async {
-      Response? response = await updateProfilePicture((state as UserLoggedInState).token, event.picture);
+      Response? response = await updateProfilePicture((state as UserLoggedInState).accessToken, event.picture);
       if (response == null) return;
 
-      File? picture = await getProfilePicture((state as UserLoggedInState).token);
+      File? picture = await getProfilePicture((state as UserLoggedInState).accessToken);
       picture ??= File("");
 
       UserLoggedInState newState = (state as UserLoggedInState).copyWith(profilePicture: picture);
@@ -113,7 +96,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     });
 
     on<UserAddFavoriteEvent>((event, emit) async {
-      List<ObjectId>? likedIds = (await addFavoriteItem((state as UserLoggedInState).token, event.item.id))?.toList();
+      List<ObjectId>? likedIds = (await addFavoriteItem((state as UserLoggedInState).accessToken, event.item.id))?.toList();
       if (likedIds == null) return;
 
       List<ItemModel> items = List.of((state as UserLoggedInState).likedItems);
@@ -124,7 +107,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     });
 
     on<UserRemoveFavoriteEvent>((event, emit) async {
-      List<ObjectId>? likedIds = (await removeFavoriteItem((state as UserLoggedInState).token, event.itemId))?.toList();
+      List<ObjectId>? likedIds = (await removeFavoriteItem((state as UserLoggedInState).accessToken, event.itemId))?.toList();
       if (likedIds == null) return;
 
       List<ItemModel> items = List.of((state as UserLoggedInState).likedItems);
@@ -153,9 +136,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       if (state is! UserLoggedInState) return;
 
       UserLoggedInState prevState = state as UserLoggedInState;
-      Map<String, dynamic>? mapUser = await getUserFromToken(prevState.token);
-      List<Address> addresses = UserLoggedInState.buildAddressesFromUserMap(prevState.token, mapUser!['shipping_addresses']);
-      List<Order> orderHistory = await UserLoggedInState.buildOrderHistoryFromUserMap(prevState.token, mapUser['order_history'] ?? []);
+      Map<String, dynamic>? mapUser = await getUserFromToken(prevState.accessToken);
+      List<Address> addresses = UserLoggedInState.buildAddressesFromUserMap(prevState.accessToken, mapUser!['shipping_addresses']);
+      List<Order> orderHistory = await UserLoggedInState.buildOrderHistoryFromUserMap(prevState.accessToken, mapUser['order_history'] ?? []);
       UserLoggedInState newState = (state as UserLoggedInState).copyWith(
         addresses: addresses,
         orderHistory: orderHistory,
@@ -167,17 +150,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       if (state is! BusinessUserLoggedInState) return;
 
       BusinessUserLoggedInState prevState = state as BusinessUserLoggedInState;
-      Response businessData = await sendGetRequest(subRoute: businessRoute, token: prevState.token);
-      Business business = Business.fromMap(prevState.token, businessData.data);
+      Response businessData = await sendGetRequest(subRoute: businessRoute, token: prevState.accessToken);
+      Business business = Business.fromMap(prevState.accessToken, businessData.data);
       BusinessUserLoggedInState newState = prevState.copyWith(business: business);
       emit(newState);
     });
-  }
-
-  void tokenRenewalRoutine() {
-    print("Updating token");
-    add(UserRenewTokenEvent());
-    _renewTokenTimer.reset();
-    print("${_renewTokenTimer.tick}, ${_renewTokenTimer.isActive}");
   }
 }

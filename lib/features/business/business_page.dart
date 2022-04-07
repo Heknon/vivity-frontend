@@ -22,7 +22,9 @@ class BusinessPage extends StatelessWidget {
       child: BasePage(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            showDialog(context: context, builder: (ctx) => ItemCreationDialog());
+            showDialog(context: context, builder: (ctx) {
+              return ItemCreationDialog();
+            });
           },
           backgroundColor: primaryComplementaryColor,
           child: Icon(
@@ -48,9 +50,9 @@ class BusinessPage extends StatelessWidget {
 
             return TabBarView(
               children: [
-                BusinessItemsPage(business: state.business),
-                BusinessOrdersPage(business: state.business),
-                BusinessStatisticsPage(business: state.business),
+                BusinessItemsPage(),
+                BusinessOrdersPage(),
+                BusinessStatisticsPage(),
               ],
             );
           },

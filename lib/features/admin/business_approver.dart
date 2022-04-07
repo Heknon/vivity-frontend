@@ -10,13 +10,11 @@ import 'package:vivity/services/assets_service.dart';
 
 import '../../config/themes/themes_config.dart';
 
-class BusinessApprover extends StatelessWidget {
+class BusinessApprover extends StatefulWidget {
   final Business business;
   final Uint8List ownerIdImageBytes;
   final void Function(String)? approvePressed;
   final void Function(String)? declinePressed;
-  final TextEditingController _controller = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey();
 
   BusinessApprover({
     Key? key,
@@ -27,17 +25,26 @@ class BusinessApprover extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<BusinessApprover> createState() => _BusinessApproverState();
+}
+
+class _BusinessApproverState extends State<BusinessApprover> {
+  final TextEditingController _controller = TextEditingController();
+
+  final GlobalKey<FormState> _formKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
     TextStyle? buttonTextStyle = Theme.of(context).textTheme.headline4?.copyWith(fontSize: 18.sp);
     Widget image = ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(8)),
-      child: Image.memory(ownerIdImageBytes),
+      child: Image.memory(widget.ownerIdImageBytes),
     );
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ExpandablePanel(
-        header: Text('Name - ${business.name}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp)),
+        header: Text('Name - ${widget.business.name}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp)),
         collapsed: buildCollapsedBody(context),
         expanded: Form(
           key: _formKey,
@@ -87,7 +94,7 @@ class BusinessApprover extends StatelessWidget {
                         return;
                       }
 
-                      if (declinePressed != null) declinePressed!(_controller.text);
+                      if (widget.declinePressed != null) widget.declinePressed!(_controller.text);
                     },
                     child: Text(
                       'DECLINE',
@@ -106,7 +113,7 @@ class BusinessApprover extends StatelessWidget {
                         return;
                       }
 
-                      if (approvePressed != null) approvePressed!(_controller.text);
+                      if (widget.approvePressed != null) widget.approvePressed!(_controller.text);
                     },
                     child: Text(
                       'APPROVE',
@@ -126,18 +133,18 @@ class BusinessApprover extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('National business ID - ${business.nationalBusinessId}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp)),
+        Text('National business ID - ${widget.business.nationalBusinessId}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp)),
         SizedBox(height: 5),
         Text('Contact - ', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp)),
         SizedBox(height: 2),
-        Text('\t\t\tPhone - ${business.contact.phone}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
-        Text('\t\t\tEmail - ${business.contact.email}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
-        if (business.contact.facebook?.isNotEmpty ?? false)
-          Text('\t\t\tFacebook - ${business.contact.facebook}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
-        if (business.contact.facebook?.isNotEmpty ?? false)
-          Text('\t\t\tInstagram - ${business.contact.instagram}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
-        if (business.contact.facebook?.isNotEmpty ?? false)
-          Text('\t\t\tTwitter - ${business.contact.twitter}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
+        Text('\t\t\tPhone - ${widget.business.contact.phone}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
+        Text('\t\t\tEmail - ${widget.business.contact.email}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
+        if (widget.business.contact.facebook?.isNotEmpty ?? false)
+          Text('\t\t\tFacebook - ${widget.business.contact.facebook}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
+        if (widget.business.contact.facebook?.isNotEmpty ?? false)
+          Text('\t\t\tInstagram - ${widget.business.contact.instagram}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
+        if (widget.business.contact.facebook?.isNotEmpty ?? false)
+          Text('\t\t\tTwitter - ${widget.business.contact.twitter}', style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp)),
       ],
     );
   }

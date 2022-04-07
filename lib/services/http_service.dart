@@ -10,6 +10,7 @@ void initDioHttpServices() {
   dioClient.options.sendTimeout = 10;
   dioClient.options.receiveTimeout = 6000;
   dioClient.options.headers["Keep-Alive"] = 'timeout=5, max=1';
+  dioClient.options.validateStatus = (status) => true;
   dioClient.interceptors.add(RetryOnConnectionChangeInterceptor(dio: dioClient));
 }
 

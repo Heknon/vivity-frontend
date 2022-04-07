@@ -72,7 +72,7 @@ class _ShippingPageState extends State<ShippingPage> {
                       child: buildShippingAddressList(
                         state.addresses,
                         context,
-                        token: state.token,
+                        token: state.accessToken,
                         highlightIndex: selectedAddress,
                         onTap: (i) => checkoutState.shippingMethod == ShippingMethod.delivery
                             ? setState(() => selectedAddress = selectedAddress == i ? null : i)

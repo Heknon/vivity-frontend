@@ -4,9 +4,9 @@ part of 'user_bloc.dart';
 abstract class UserEvent {}
 
 class UserLoginEvent extends UserEvent {
-  final String token;
+  final String accessToken;
 
-  UserLoginEvent(this.token);
+  UserLoginEvent(this.accessToken);
 }
 
 class UserLogoutEvent extends UserEvent {}
@@ -39,7 +39,11 @@ class UserRegisterBusinessEvent extends UserEvent {
   });
 }
 
-class UserRenewTokenEvent extends UserEvent {}
+class UserRenewTokenEvent extends UserEvent {
+  final String accessToken;
+
+  UserRenewTokenEvent(this.accessToken);
+}
 
 class UserUpdateProfilePictureEvent extends UserEvent {
   final File? picture;

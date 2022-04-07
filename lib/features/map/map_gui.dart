@@ -7,7 +7,6 @@ import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
 import '../explore/bloc/explore_bloc.dart';
 import '../user/bloc/user_bloc.dart';
-import 'bloc/map_bloc.dart' as map_bloc;
 import 'location_service.dart';
 import 'map_widget.dart';
 
@@ -61,7 +60,7 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   void _onMapCreated(MapController _controller) async {
     MapControllerImpl controller = _controller as MapControllerImpl;
     if (mounted && initNum.isOdd) {
-      context.read<ExploreBloc>().add(ExploreControllerUpdateEvent(controller, (context.read<UserBloc>().state as UserLoggedInState).token));
+      context.read<ExploreBloc>().add(ExploreControllerUpdateEvent(controller, (context.read<UserBloc>().state as UserLoggedInState).accessToken));
       _mapController = _controller;
     }
     initNum++;

@@ -42,17 +42,19 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
 
     on<ExploreUpdateEvent>((event, emit) async {
       ExploreState state = this.state;
-      print("updating");
       if (state is ExploreLoaded) {
         ExploreState result = await state.fetchItemModels();
         emit(result);
+        _timer.reset();
         return;
       }
 
       emit(state);
+      _timer.reset();
     });
 
     on<ExploreUnload>((event, emit) {
+      _timer.cancel();
       emit(ExploreUnloaded());
     });
   }

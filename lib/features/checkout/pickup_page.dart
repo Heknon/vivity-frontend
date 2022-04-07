@@ -92,7 +92,7 @@ class _PickupPageState extends State<PickupPage> {
                       return buildShippingAddressList(
                         swappedData.keys.toList(),
                         context,
-                        token: state.token,
+                        token: state.accessToken,
                         onExpandTap: (i, isOpen) => checkoutState.shippingMethod == ShippingMethod.pickup
                             ? setState(() => selectedAddresses.contains(i) ? selectedAddresses.remove(i) : selectedAddresses.add(i))
                             : null,

@@ -141,7 +141,7 @@ class ItemCreationDialog extends StatelessWidget {
             }
 
             ItemModel createdItem = await createItem(
-              state.token,
+              state.accessToken,
               title: _controllerTitle.text,
               price: double.parse(_controllerPrice.text),
               subtitle: _controllerSubtitle.text,
@@ -149,7 +149,7 @@ class ItemCreationDialog extends StatelessWidget {
               category: _controllerCategory.text,
               tags: _controllerTags.text.split(",").map((e) => e.trim()).toList(),
             );
-            context.read<UserBloc>().add(UpdateBusinessDataEvent());
+            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(createdItem));
             ScaffoldMessenger.of(context).clearSnackBars();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Created item ${createdItem.itemStoreFormat.title}.')));
             Navigator.of(context).pop();

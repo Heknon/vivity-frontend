@@ -72,5 +72,5 @@ void saveCart(BuildContext context) {
   List<CartItemModel> cartItems = context.read<CartBloc>().state.items;
   if (listEquals(cartItems, userState.cart)) return;
 
-  replaceDBCart(userState.token, cartItems, context: context);
+  replaceDBCart(userState.accessToken, cartItems, context: context);
 }

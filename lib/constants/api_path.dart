@@ -1,4 +1,4 @@
-const String host = "http://192.168.1.15:20200"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
+const String host = "http://10.0.2.2:20200"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
 const userRoute = "/user";
 const cartRoute = "/user/cart";
 const addressRoute = "/user/address";
@@ -20,3 +20,7 @@ const businessOrdersRoute = '/business/orders';
 const businessOrderStatusRoute = '/business/order/status';
 const businessAdminApproval = '/business/approve';
 const businessAdminUnapproved = '/business/unapproved';
+const apiJwtPublicKey = '/jwt/public';
+const refreshAccessTokenRoute = '/jwt/refresh';
+const refreshRefreshTokenRoute = '/jwt/refresh/refresh';
+const userOtpRoute = '/user/otp';

@@ -13,6 +13,7 @@ import 'package:place_picker/place_picker.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/constants/app_constants.dart';
+import 'package:vivity/constants/regex.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/business/unapproved_business_page.dart';
@@ -89,20 +90,19 @@ class _CreateBusinessState extends State<CreateBusiness> {
                   ),
                 ),
                 // name, email, phone, national business number, business owner id, location
-                buildTextFormField('Business name', _businessNameController, ValidationBuilder().minLength(5).maxLength(80)),
+                buildTextFormField('Business name', _businessNameController, ValidationBuilder().minLength(3).maxLength(40)),
                 buildTextFormField(
                   'Business email',
                   _businessEmailController,
-                  ValidationBuilder().minLength(5).maxLength(80),
+                  ValidationBuilder().add((value) => validEmail.hasMatch(value ?? "f") ? null : "Must be a valid email"),
                 ),
                 buildTextFormField(
                   'Business phone',
                   _businessPhoneController,
-                  ValidationBuilder().minLength(10).maxLength(10).add((String? value) => value == null
-                      ? "Must be a number"
-                      : double.tryParse(value) != null
-                          ? null
-                          : "Must be a number"),
+                  ValidationBuilder().add((value) {
+                    if (value?.length != 10) return 'Must be a 10 digit number';
+                    return int.tryParse(value ?? "f") != null ? null : 'Must be a 10 digit number';
+                  }),
                 ),
                 buildTextFormField(
                   'National business number',
@@ -159,9 +159,9 @@ class _CreateBusinessState extends State<CreateBusiness> {
                     fixedSize: MaterialStateProperty.all(Size(40.w, 15.sp * 2)),
                   ),
                   onPressed: () async {
-                    LocationResult res = await showPlacePicker();
+                    LocationResult? res = await showPlacePicker();
                     setState(() {
-                      location = latlng.LatLng(res.latLng!.latitude, res.latLng!.longitude);
+                      location = res == null ? null : latlng.LatLng(res.latLng!.latitude, res.latLng!.longitude);
                       locationData = res;
                     });
                   },
@@ -274,10 +274,10 @@ class _CreateBusinessState extends State<CreateBusiness> {
     }
   }
 
-  Future<LocationResult> showPlacePicker() async {
+  Future<LocationResult?> showPlacePicker() async {
     latlng.LatLng loc = (context.read<ExploreBloc>().state as ExploreLoaded).controller.center;
 
-    LocationResult result = await Navigator.of(context).push(MaterialPageRoute(
+    LocationResult? result = await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PlacePicker(
               googleApiKey,
               displayLocation: loc_interface.LatLng(loc.latitude, loc.longitude),

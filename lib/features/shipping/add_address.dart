@@ -251,7 +251,7 @@ class _AddAddressState extends State<AddAddress> {
                   provinceController.value.text,
                   cityController.value.text,
                   zipCodeController.value.text,
-                  (context.read<UserBloc>().state as UserLoggedInState).token,
+                  (context.read<UserBloc>().state as UserLoggedInState).accessToken,
                 );
               },
             ),

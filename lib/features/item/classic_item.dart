@@ -58,7 +58,7 @@ class _ClassicItemState extends State<ClassicItem> {
     UserState state = context.read<UserBloc>().state;
     if (state is! UserLoggedInState) return Text('You need to be logged in to see items.');
 
-    itemImages ??= getCachedItemImages(state.token, List.of([widget.item]));
+    itemImages ??= getCachedItemImages(state.accessToken, List.of([widget.item]));
 
     bool initialLiked = false;
     if (!widget.editButton) {

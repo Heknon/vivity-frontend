@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
+import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
+import 'package:vivity/features/auth/auth_result.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
+import 'package:vivity/features/auth/register_result.dart';
 import 'package:vivity/main.dart' as main;
 
 import '../user/bloc/user_bloc.dart';
@@ -20,24 +24,28 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late NoInteractionDialogController _dialogController;
+  late LoadDialog _loadDialog;
 
+  late TextEditingController _loginPasswordController;
+
+  late bool sentAuthRequest;
   bool onLoginModule = false;
-  bool sentAuthRequest = false;
 
   @override
   void initState() {
     super.initState();
     BlocProvider.of<AuthBloc>(context).state.previouslyLoggedIn.then((value) => _tabController.index = value ? 0 : 1);
+    sentAuthRequest = false;
     sendAuthenticationRequestEvent();
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _dialogController = NoInteractionDialogController(isOpen: false);
+    _loadDialog = LoadDialog(controller: _dialogController);
+    _loginPasswordController = TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!sentAuthRequest) {
-      sendAuthenticationRequestEvent();
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xffdddddd),
       body: SafeArea(
@@ -74,23 +82,39 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
   Widget buildAuthenticationSplashscreen() {
     return BlocConsumer<AuthBloc, AuthState>(
-      listener: (ctx, state) {
+      listener: (ctx, state) async {
         if (state is AuthLoggedInState) {
-          loginRoutine(state.token);
+          loginRoutine(state.authResult);
         } else if (state is AuthRegisterFailedState) {
           ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.reason.name),
-            ),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(state.reason.name),
+          ));
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+            _loginPasswordController.text = "";
+          }
+        } else if (state is AuthLoggedOutState && state.status != null) {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+            _loginPasswordController.text = "";
+          }
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(state.status!.getMessage()),
+          ));
+        } else if (state is AuthLoggedOutState) {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+            _loginPasswordController.text = "";
+          }
+        }
+
+        if (state is AuthLoadingState || state is AuthLoggedInState || context.read<UserBloc>().state is UserLoadingState) {
+          showDialog(context: context, builder: (ctx) => _loadDialog);
         }
       },
       builder: (ctx, state) {
-        if (state is AuthLoadingState || state is AuthLoggedInState || context.read<UserBloc>().state is UserLoadingState) {
-          return const CircularProgressIndicator();
-        }
-
         return Expanded(
           child: buildAuthModule(),
         );
@@ -133,7 +157,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             physics: NeverScrollableScrollPhysics(),
             controller: _tabController,
             children: [
-              LoginModule(),
+              LoginModule(passwordController: _loginPasswordController),
               RegisterModule(),
             ],
           ),
@@ -142,12 +166,13 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  void loginRoutine(String token) {
-    BlocProvider.of<UserBloc>(context).add(UserLoginEvent(token));
+  void loginRoutine(AuthResult authResult) {
+    _dialogController.close();
+    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+    BlocProvider.of<UserBloc>(context).add(UserLoginEvent(authResult.accessToken));
   }
 
   void sendAuthenticationRequestEvent() async {
-    print("Sending auth request");
     context.read<AuthBloc>().add(AuthConfirmationEvent(false));
     sentAuthRequest = true;
   }

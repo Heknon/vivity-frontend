@@ -6,9 +6,17 @@ abstract class AuthEvent {}
 class AuthLoginEvent extends AuthEvent {
   final String email;
   final String password;
+  final String? otp;
   final bool stayLoggedIn;
+  final void Function(Response?)? onFail;
 
-  AuthLoginEvent(this.email, this.password, this.stayLoggedIn);
+  AuthLoginEvent(
+    this.email,
+    this.password,
+    this.otp,
+    this.stayLoggedIn, {
+    this.onFail,
+  });
 
   @override
   bool operator ==(Object other) =>
@@ -21,6 +29,12 @@ class AuthLoginEvent extends AuthEvent {
 
   @override
   int get hashCode => email.hashCode ^ password.hashCode ^ stayLoggedIn.hashCode;
+}
+
+class AuthHandlePre2FA extends AuthEvent {
+  final RegisterResult registerResult;
+
+  AuthHandlePre2FA(this.registerResult);
 }
 
 class AuthRegisterEvent extends AuthEvent {

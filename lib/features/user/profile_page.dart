@@ -45,7 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         }
 
-        ordersItemsCache ??= getItemsFromStringIds(state.token, orderItemIds.toList());
+        ordersItemsCache ??= getItemsFromStringIds(state.accessToken, orderItemIds.toList());
         return Padding(
           padding: EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
           child: SingleChildScrollView(
@@ -66,7 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 SizedBox(
                   height: state.addresses.length > 1 ? 30.h : (state.addresses.length * 15).h,
-                  child: buildShippingAddressList(state.addresses, context, canHighlight: false, token: state.token),
+                  child: buildShippingAddressList(state.addresses, context, canHighlight: false, token: state.accessToken),
                 ),
                 SizedBox(height: 10),
                 Center(child: buildAddressCreationWidget(context)),

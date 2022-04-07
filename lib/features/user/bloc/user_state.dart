@@ -34,7 +34,7 @@ class UserLoginFailedState extends UserLoggedOutState {
 }
 
 class UserLoggedInState extends UserState {
-  final String token;
+  final String accessToken;
 
   late ObjectId id;
   late ObjectId? businessId;
@@ -49,10 +49,10 @@ class UserLoggedInState extends UserState {
   late List<CartItemModel> cart;
   late List<Order> orderHistory;
 
-  UserLoggedInState(this.token);
+  UserLoggedInState(this.accessToken);
 
   UserLoggedInState.copyConstructor({
-    required this.token,
+    required this.accessToken,
     required this.id,
     required this.name,
     required this.email,
@@ -68,7 +68,7 @@ class UserLoggedInState extends UserState {
   });
 
   Future<String?> init() async {
-    Map<String, dynamic>? mapUser = await getUserFromToken(token);
+    Map<String, dynamic>? mapUser = await getUserFromToken(accessToken);
     if (mapUser == null) return 'Token expired';
 
     id = ObjectId.fromHexString(mapUser['_id']);
@@ -78,11 +78,11 @@ class UserLoggedInState extends UserState {
     name = mapUser['name'];
     phone = mapUser['phone'];
     userOptions = buildUserOptionsFromUserMap(mapUser['options']);
-    addresses = buildAddressesFromUserMap(token, mapUser['shipping_addresses']);
-    likedItems = await buildLikedItemsFromUserMap(token, mapUser['liked_items']);
-    orderHistory = await buildOrderHistoryFromUserMap(token, mapUser['order_history'] ?? []);
-    cart = await buildCartFromUserMap(token, mapUser['cart'] ?? []);
-    profilePicture = await getProfilePicture(token);
+    addresses = buildAddressesFromUserMap(accessToken, mapUser['shipping_addresses']);
+    likedItems = await buildLikedItemsFromUserMap(accessToken, mapUser['liked_items']);
+    orderHistory = await buildOrderHistoryFromUserMap(accessToken, mapUser['order_history'] ?? []);
+    cart = await buildCartFromUserMap(accessToken, mapUser['cart'] ?? []);
+    profilePicture = await getProfilePicture(accessToken);
 
     return null;
   }
@@ -122,18 +122,18 @@ class UserLoggedInState extends UserState {
   }
 
   Future<BusinessUserLoggedInState?> createBusiness(UserRegisterBusinessEvent e) async {
-    String route = businessRoute +
-        "?name=${e.businessName}" +
-        "&email=${e.businessEmail}" +
-        "&phone=${e.businessPhone}" +
-        "&latitude=${e.location.latitude}" +
-        "&longitude=${e.location.longitude}" +
-        "&business_national_number=${e.businessNationalId}";
-    Response res = await sendPostRequestUploadFile(subRoute: route, file: e.ownerId, token: token, context: e.context);
+    Business business = await business_service.createBusiness(
+      accessToken,
+      e.businessName,
+      e.businessEmail,
+      e.businessPhone,
+      e.location.latitude,
+      e.location.longitude,
+      e.businessNationalId,
+      e.ownerId,
+    );
 
-    if (res.statusCode != 200) return null;
-
-    return BusinessUserLoggedInState.fromCreationObject(res.data['token'], this, res.data['business']);
+    return BusinessUserLoggedInState.fromCreationObject(business, this);
   }
 
   UserLoggedInState copyWith({
@@ -153,7 +153,7 @@ class UserLoggedInState extends UserState {
   }) {
     bool setPfpNull = profilePicture?.path.isEmpty ?? false;
     return UserLoggedInState.copyConstructor(
-      token: token ?? this.token,
+      accessToken: token ?? this.accessToken,
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
@@ -172,25 +172,25 @@ class UserLoggedInState extends UserState {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is UserLoggedInState &&
-          runtimeType == other.runtimeType &&
-          token == other.token &&
-          id == other.id &&
-          name == other.name &&
-          email == other.email &&
-          phone == other.phone &&
-          userOptions == other.userOptions &&
-          isSystemAdmin == other.isSystemAdmin &&
-          businessId == other.businessId &&
-          profilePicture == other.profilePicture &&
-          listEquals(addresses, other.addresses) &&
-          listEquals(likedItems, other.likedItems) &&
-          listEquals(cart, other.cart) &&
-          listEquals(orderHistory, other.orderHistory);
+          other is UserLoggedInState &&
+              runtimeType == other.runtimeType &&
+              accessToken == other.accessToken &&
+              id == other.id &&
+              name == other.name &&
+              email == other.email &&
+              phone == other.phone &&
+              userOptions == other.userOptions &&
+              isSystemAdmin == other.isSystemAdmin &&
+              businessId == other.businessId &&
+              profilePicture == other.profilePicture &&
+              listEquals(addresses, other.addresses) &&
+              listEquals(likedItems, other.likedItems) &&
+              listEquals(cart, other.cart) &&
+              listEquals(orderHistory, other.orderHistory);
 
   @override
   int get hashCode =>
-      token.hashCode ^
+      accessToken.hashCode ^
       id.hashCode ^
       name.hashCode ^
       email.hashCode ^
@@ -206,7 +206,7 @@ class UserLoggedInState extends UserState {
 
   @override
   String toString() {
-    return 'UserLoggedInState{token: $token, id: $id, businessId: $businessId, isSystemAdmin: $isSystemAdmin, name: $name, email: $email, phone: $phone, profilePicture: $profilePicture, userOptions: $userOptions, addresses: $addresses, likedItems: $likedItems, cart: $cart, orderHistory: $orderHistory}';
+    return 'UserLoggedInState{token: $accessToken, id: $id, businessId: $businessId, isSystemAdmin: $isSystemAdmin, name: $name, email: $email, phone: $phone, profilePicture: $profilePicture, userOptions: $userOptions, addresses: $addresses, likedItems: $likedItems, cart: $cart, orderHistory: $orderHistory}';
   }
 }
 
@@ -218,8 +218,8 @@ class BusinessUserLoggedInState extends UserLoggedInState {
   @override
   Future<String?> init() async {
     await super.init();
-    Response businessData = await sendGetRequest(subRoute: businessRoute, token: token);
-    business = Business.fromMap(token, businessData.data);
+    Response businessData = await sendGetRequest(subRoute: businessRoute, token: accessToken);
+    business = Business.fromMap(accessToken, businessData.data);
   }
 
   BusinessUserLoggedInState.copyConstructor({
@@ -238,44 +238,42 @@ class BusinessUserLoggedInState extends UserLoggedInState {
     businessId,
     isSystemAdmin,
   }) : super.copyConstructor(
-          token: token,
-          id: id,
-          name: name,
-          email: email,
-          phone: phone,
-          userOptions: userOptions,
-          addresses: addresses,
-          likedItems: likedItems,
-          cart: cart,
-          orderHistory: orderHistory,
-          businessId: businessId,
-          profilePicture: profilePicture,
-          isSystemAdmin: isSystemAdmin,
-        );
+    accessToken: token,
+    id: id,
+    name: name,
+    email: email,
+    phone: phone,
+    userOptions: userOptions,
+    addresses: addresses,
+    likedItems: likedItems,
+    cart: cart,
+    orderHistory: orderHistory,
+    businessId: businessId,
+    profilePicture: profilePicture,
+    isSystemAdmin: isSystemAdmin,
+  );
 
-  BusinessUserLoggedInState.fromCreationObject(String token, UserLoggedInState state, dynamic businessData)
+  BusinessUserLoggedInState.fromCreationObject(this.business, UserLoggedInState state)
       : super.copyConstructor(
-          token: token,
-          addresses: state.addresses,
-          phone: state.phone,
-          name: state.name,
-          id: state.id,
-          cart: state.cart,
-          email: state.email,
-          likedItems: state.likedItems,
-          orderHistory: state.orderHistory,
-          userOptions: state.userOptions,
-          profilePicture: state.profilePicture,
-          isSystemAdmin: state.isSystemAdmin,
-          businessId: ObjectId.fromHexString(businessData['_id']),
-        ) {
-    business = Business.fromMap(token, businessData);
-  }
+    accessToken: business.ownerToken!,
+    addresses: state.addresses,
+    phone: state.phone,
+    name: state.name,
+    id: state.id,
+    cart: state.cart,
+    email: state.email,
+    likedItems: state.likedItems,
+    orderHistory: state.orderHistory,
+    userOptions: state.userOptions,
+    profilePicture: state.profilePicture,
+    isSystemAdmin: state.isSystemAdmin,
+    businessId: business.businessId,
+  );
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      super == other && other is BusinessUserLoggedInState && runtimeType == other.runtimeType && business == other.business;
+          super == other && other is BusinessUserLoggedInState && runtimeType == other.runtimeType && business == other.business;
 
   @override
   int get hashCode => super.hashCode ^ business.hashCode;
@@ -299,7 +297,7 @@ class BusinessUserLoggedInState extends UserLoggedInState {
   }) {
     bool setPfpNull = profilePicture?.path.isEmpty ?? false;
     return BusinessUserLoggedInState.copyConstructor(
-      token: token ?? this.token,
+      token: token ?? this.accessToken,
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,

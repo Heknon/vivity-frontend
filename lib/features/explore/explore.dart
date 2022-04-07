@@ -34,7 +34,6 @@ class _ExploreState extends State<Explore> {
   final Random random = Random();
   bool firstBuild = true;
 
-
   @override
   void initState() {
     super.initState();
@@ -61,6 +60,20 @@ class _ExploreState extends State<Explore> {
             MapGui(
               mapBoxToken: mapBoxToken,
             ),
+            if (_controller.previewItem != null)
+              Positioned(
+                bottom: 100,
+                left: (100 - 80).w / 2,
+                child: ConstrainedBox(
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: _controller.previewItem!))),
+                    child: PreviewItem(
+                      item: _controller.previewItem!,
+                    ),
+                  ),
+                  constraints: BoxConstraints(maxWidth: 80.w, minHeight: 80, maxHeight: 100),
+                ),
+              ),
             Positioned(
               top: 0,
               right: 0,
@@ -88,21 +101,6 @@ class _ExploreState extends State<Explore> {
                 constraints: constraints,
               ),
             ),
-            _controller.previewItem != null
-                ? Positioned(
-                    bottom: 100,
-                    left: (100 - 80).w / 2,
-                    child: ConstrainedBox(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: _controller.previewItem!))),
-                        child: PreviewItem(
-                          item: _controller.previewItem!,
-                        ),
-                      ),
-                      constraints: BoxConstraints(maxWidth: 80.w, minHeight: 80, maxHeight: 100),
-                    ),
-                  )
-                : Container(),
             Positioned(
               child: ConstrainedBox(
                 child: const SlideableItemTab(),
@@ -135,11 +133,9 @@ class _ExploreState extends State<Explore> {
     Set<LatLng> usedLocations = {};
     state.mapGuiController.addWidgetsToMap(state.itemModels.map((e) {
       Size textSize = MapPreviewIcon.getTextSize(e.price, context);
-      double added1 = doubleInRange(random, 0.0001, 0.00015);
-      double added2 = doubleInRange(random, 0.0001, 0.00015);
-      LatLng loc = usedLocations.contains(e.location)
-          ? LatLng(e.location.latitude + added1, e.location.longitude + added2)
-          : e.location;
+      double added1 = getRandomSign(random) * doubleInRange(random, 0.00001, 0.00015);
+      double added2 = getRandomSign(random) * doubleInRange(random, 0.00001, 0.00015);
+      LatLng loc = usedLocations.contains(e.location) ? LatLng(e.location.latitude + added1, e.location.longitude + added2) : e.location;
       MapWidget widget = buildMapWidget(
           location: loc,
           size: Size(textSize.width + 15, textSize.height + 10),

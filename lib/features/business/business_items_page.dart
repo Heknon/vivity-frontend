@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
@@ -18,11 +19,8 @@ import '../item/models/item_model.dart';
 import 'business_ui_helper.dart';
 
 class BusinessItemsPage extends StatefulWidget {
-  final Business business;
-
   BusinessItemsPage({
     Key? key,
-    required this.business,
   }) : super(key: key);
 
   @override
@@ -34,57 +32,77 @@ class _BusinessItemsPageState extends State<BusinessItemsPage> {
 
   @override
   Widget build(BuildContext context) {
-    itemsCache ??= widget.business.getIdItemMap(updateCache: true);
+    UserState userStateInitial = context.read<UserBloc>().state;
+    if (userStateInitial is! BusinessUserLoggedInState) return Text('Get outta here 😶😶😶');
     Text businessNameText = Text(
-      widget.business.name,
+      userStateInitial.business.name,
       style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
     );
 
-    return defaultGradientBackground(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Center(
-              child: businessNameText,
-            ),
-          ),
-          FutureBuilder(
-            future: itemsCache,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return CircularProgressIndicator();
-              }
+    itemsCache ??= userStateInitial.business.getIdItemMap(updateCache: true);
 
-              Map<ObjectId, ItemModel> idItemMap = snapshot.data as Map<ObjectId, ItemModel>;
-              Size gridSize = Size(100.w, 100.h - Scaffold.of(context).appBarMaxHeight! - getTextSize(businessNameText).height - 16);
-              return SizedBox.fromSize(
-                size: gridSize,
-                child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
-                    itemHeightMultiplier: 0.5,
-                    hasEditButton: true,
-                    onEditTapped: (item) {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (ctx) => ItemPage(
-                                    item: item,
-                                    editorOpened: true,
-                                  )));
-                    },
-                    onTap: (item) async {
-                      int stock = await enterStockDialog(widget.business.ownerToken!, item, context);
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock updated to $stock')));
-                      setState(() {
-                        idItemMap[item.id] = item.copyWith(stock: stock);
-                      });
-                    },
-                    onLongTap: (item) => showDialog(context: context, builder: (ctx) => buildItemStatisticsDialog(ctx, item))),
-              );
-            },
-          ),
-        ],
+    return defaultGradientBackground(
+      child: BlocListener<UserBloc, UserState>(
+        listenWhen: (UserState prevState, UserState state) {
+          if (state is BusinessUserLoggedInState && prevState is! BusinessUserLoggedInState) return true;
+          if (state is! BusinessUserLoggedInState || prevState is! BusinessUserLoggedInState) return false;
+
+          if (state.business != prevState.business) {
+            return true;
+          }
+
+          return false;
+        },
+        listener: (ctx, state) {
+          setState(() {
+            itemsCache = null;
+          });
+        },
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Center(
+                child: businessNameText,
+              ),
+            ),
+            FutureBuilder(
+              future: itemsCache,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+
+                Map<ObjectId, ItemModel> idItemMap = snapshot.data as Map<ObjectId, ItemModel>;
+                Size gridSize = Size(100.w, 100.h - Scaffold.of(context).appBarMaxHeight! - getTextSize(businessNameText).height - 16);
+                return SizedBox.fromSize(
+                  size: gridSize,
+                  child: buildItemContentGrid(idItemMap.values.toList(), gridSize, ScrollController(),
+                      itemHeightMultiplier: 0.5,
+                      hasEditButton: true,
+                      onEditTapped: (item) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (ctx) => ItemPage(
+                                      item: item,
+                                      editorOpened: true,
+                                    )));
+                      },
+                      onTap: (item) async {
+                        int stock = await enterStockDialog(userStateInitial.business.ownerToken!, item, context);
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Stock updated to $stock')));
+                        setState(() {
+                          idItemMap[item.id] = item.copyWith(stock: stock);
+                        });
+                      },
+                      onLongTap: (item) => showDialog(context: context, builder: (ctx) => buildItemStatisticsDialog(ctx, item))),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

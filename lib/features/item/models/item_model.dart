@@ -35,7 +35,7 @@ class CartItemModel {
     );
 
     return CartItemModel(
-      previewImage: model.images[model.previewImageIndex],
+      previewImage: model.previewImageIndex < model.images.length  && model.previewImageIndex > 0 ? model.images[model.previewImageIndex] : null,
       title: model.itemStoreFormat.title,
       modifiersChosen: chosenData,
       quantity: quantity,

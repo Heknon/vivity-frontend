@@ -261,7 +261,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
     }
 
     ItemModel updatedItem = await updateItem(
-      state.token,
+      state.accessToken,
       widget.item.id.hexString,
       tags: clonedItem.tags.map((e) => e.trim()).toList(),
       title: clonedItem.itemStoreFormat.title.trim(),

@@ -34,21 +34,28 @@ class BasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<UserBloc, UserState>(
+    return BlocListener<AuthBloc, AuthState>(
       listener: (ctx, state) {
-        if (userStateListener != null) userStateListener!(ctx, state);
-        if (state is UserLoggedOutState) {
-          logoutRoutine(context);
-        }
+        if (state is! AuthLoggedInState) return;
+
+        context.read<UserBloc>().add(UserRenewTokenEvent(state.authResult.accessToken));
       },
-      child: Scaffold(
-        floatingActionButton: floatingActionButton,
-        floatingActionButtonAnimator: floatingActionButtonAnimator,
-        floatingActionButtonLocation: floatingActionButtonLocation,
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-        appBar: appBar ?? VivityAppBar(),
-        drawer: drawer ?? const VivityDrawer(),
-        body: body,
+      child: BlocListener<UserBloc, UserState>(
+        listener: (ctx, state) {
+          if (userStateListener != null) userStateListener!(ctx, state);
+          if (state is UserLoggedOutState) {
+            logoutRoutine(context);
+          }
+        },
+        child: Scaffold(
+          floatingActionButton: floatingActionButton,
+          floatingActionButtonAnimator: floatingActionButtonAnimator,
+          floatingActionButtonLocation: floatingActionButtonLocation,
+          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+          appBar: appBar ?? VivityAppBar(),
+          drawer: drawer ?? const VivityDrawer(),
+          body: body,
+        ),
       ),
     );
   }

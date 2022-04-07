@@ -7,14 +7,21 @@ import '../../config/themes/themes_config.dart';
 
 class PasswordField extends StatefulWidget {
   final TextEditingController? controller;
+  final bool showTips;
+  final void Function(String?)? onSaved;
 
-  const PasswordField({Key? key, this.controller}) : super(key: key);
+  const PasswordField({
+    Key? key,
+    this.controller,
+    this.showTips = true,
+    this.onSaved,
+  }) : super(key: key);
 
   @override
-  _PasswordFieldState createState() => _PasswordFieldState();
+  PasswordFieldState createState() => PasswordFieldState();
 }
 
-class _PasswordFieldState extends State<PasswordField> {
+class PasswordFieldState extends State<PasswordField> {
   late final TextEditingController _controller;
   bool _visible = false;
 
@@ -39,7 +46,8 @@ class _PasswordFieldState extends State<PasswordField> {
           obscuringCharacter: '*',
           obscureText: !_visible,
           style: TextStyle(fontSize: 12.sp, color: Colors.black),
-          validator: (s) => securePasswordRegex.hasMatch(_controller.text) ? null : "Must be a secure password",
+          validator: validate,
+          onSaved: widget.onSaved,
           decoration: InputDecoration(
             labelText: "Password",
             labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
@@ -69,13 +77,15 @@ class _PasswordFieldState extends State<PasswordField> {
           thickness: 0,
           color: Colors.transparent,
         ),
-        buildConditionText('include both lower and upper case characters.', _passesUpperLower),
-        SizedBox(height: 2),
-        buildConditionText('include at least one symbol', _passesSpecialChar),
-        SizedBox(height: 2),
-        buildConditionText('include at least one number', _passesNumber),
-        SizedBox(height: 2),
-        buildConditionText('be between 8 and 100 characters long', _passesLength),
+        if (widget.showTips) ...[
+          buildConditionText('include both lower and upper case characters.', _passesUpperLower),
+          SizedBox(height: 2),
+          buildConditionText('include at least one symbol', _passesSpecialChar),
+          SizedBox(height: 2),
+          buildConditionText('include at least one number', _passesNumber),
+          SizedBox(height: 2),
+          buildConditionText('be between 8 and 100 characters long', _passesLength)
+        ],
       ],
     );
   }
@@ -102,5 +112,9 @@ class _PasswordFieldState extends State<PasswordField> {
         ],
       ),
     );
+  }
+
+  String? validate(String? text) {
+    return securePasswordRegex.hasMatch(text ?? 'f') ? null : "Must be a secure password";
   }
 }

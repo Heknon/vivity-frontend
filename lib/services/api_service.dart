@@ -9,6 +9,8 @@ import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/services/http_service.dart';
 
+import '../features/auth/bloc/auth_bloc.dart';
+
 /// Pass context to handle 401 responses
 Future<Response> sendGetRequest({
   required String subRoute,
@@ -39,10 +41,12 @@ Future<Response> sendPostRequest({
   ResponseType? responseType,
 }) async {
   String body = json.encode(data);
+  Map<String, String> headers = buildHeaders(token: token, contentType: contentType);
+
   return dioClient.post(
     host + subRoute,
     options: Options(
-      headers: buildHeaders(token: token, contentType: contentType),
+      headers: headers,
       responseType: responseType,
     ),
     data: body,
@@ -131,8 +135,8 @@ void encounter401Routine(BuildContext? context) {
   if (context == null) return;
 
   try {
-    UserBloc userBloc = BlocProvider.of<UserBloc>(context);
-    userBloc.add(UserRenewTokenEvent());
+    AuthBloc authBloc = BlocProvider.of<AuthBloc>(context);
+    authBloc.add(AuthConfirmationEvent(true));
   } on Exception catch (e) {
     rethrow;
   }
@@ -145,7 +149,7 @@ Map<String, String> buildHeaders({String? token, String? contentType = 'applicat
   };
 
   if (token != null) {
-    headers["Authorization"] = "Bearer: $token";
+    headers[HttpHeaders.authorizationHeader] = "Bearer: $token";
   }
 
   return headers;

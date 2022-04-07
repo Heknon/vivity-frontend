@@ -32,14 +32,17 @@ Future<List<Business>> getUnapprovedBusinesses(String token, {bool getImages = t
   }
 
   List<Business> businesses = (response.data as List<dynamic>).map((e) => Business.fromMap(null, e)).toList();
+  List<Future<File>> writtenFiles = List.empty(growable: true);
   if (getImages) {
     Directory path = Directory((await getTemporaryDirectory()).path + "/business_ids");
     if (!(await path.exists())) path.create();
     for (var business in businesses) {
       if (business.ownerId == null) continue;
       File file = File("${path.path}/${business.businessId.hexString}.png");
-      file.writeAsBytes(base64Decode(business.ownerId!));
+      writtenFiles.add(file.writeAsBytes(base64Decode(business.ownerId!)));
     }
+
+    Future.wait(writtenFiles);
   }
   return businesses;
 }
@@ -49,11 +52,15 @@ Future<Uint8List> getOwnerIdImageFromBusinessId(String businessId) async {
   return File('${dir.path}/$businessId.png').readAsBytes();
 }
 
-Stream<MapEntry<String, Future<Uint8List>>> getOwnerIdImagesFromBusinessIds(List<String> businessIds) async* {
+Future<Map<String, Uint8List>> getOwnerIdImagesFromBusinessIds(List<String> businessIds) async {
   Directory dir = Directory((await getTemporaryDirectory()).path + "/business_ids");
+  Map<String, Uint8List> result = {};
 
   for (var id in businessIds) {
     String path = '${dir.path}/$id.png';
-    yield MapEntry(id, File(path).readAsBytes());
+    Uint8List bytes = await File(path).readAsBytes();
+    result[id] = bytes;
   }
+
+  return result;
 }

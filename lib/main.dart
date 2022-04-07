@@ -21,7 +21,9 @@ import 'package:vivity/services/http_service.dart';
 import 'package:vivity/services/storage_service.dart';
 import 'package:vivity/features/item/item_page.dart';
 
+import 'constants/asset_path.dart';
 import 'features/auth/auth_page.dart';
+import 'services/auth_service.dart';
 import 'features/cart/cart_bloc/cart_bloc.dart';
 import 'features/checkout/checkout_service.dart';
 import 'features/explore/bloc/explore_bloc.dart';
@@ -48,18 +50,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   HydratedStorage storage = await initializeStorage();
-  // await storage.clear();
 
-  // PluginGooglePlacePicker.initialize(
-  //   androidApiKey: "AIzaSyCXcalnoEaLEAqGHYGsj7ebH-ufqAQid-c",
-  //   iosApiKey: "AIzaSyCXcalnoEaLEAqGHYGsj7ebH-ufqAQid-c",
-  // );
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
+  await loadJwtPublicKey();
+  await loadImageAssets();
   HydratedBlocOverrides.runZoned(
     () => runApp(const Vivity()),
     storage: storage,

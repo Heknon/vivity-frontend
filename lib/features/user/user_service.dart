@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dio/dio.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vivity/constants/api_path.dart';
+import '../../services/auth_service.dart';
 import 'package:vivity/services/api_service.dart';
 
 import '../../models/order.dart';
 
 Future<Map<String, dynamic>?> getUserFromToken(String token) async {
-  if (JwtDecoder.isExpired(token)) return null;
+  JWT? parsedToken = parseAccessToken(token);
+  if (parsedToken == null) return null;
 
   Response response = await sendGetRequest(subRoute: userRoute, token: token);
   return response.data;

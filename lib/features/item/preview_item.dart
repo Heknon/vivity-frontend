@@ -42,7 +42,7 @@ class _PreviewItemState extends State<PreviewItem> {
     UserState state = context.read<UserBloc>().state;
     if (state is! UserLoggedInState) return Text('You need to be logged in to see items.');
 
-    widget.itemImages ??= getCachedItemImages(state.token, List.of([widget.item]));
+    widget.itemImages ??= getCachedItemImages(state.accessToken, List.of([widget.item]));
 
     return LayoutBuilder(builder: (context, constraints) {
       double usedWidth = widget.size?.width ?? constraints.maxWidth;
@@ -68,6 +68,7 @@ class _PreviewItemState extends State<PreviewItem> {
             children: [
               Container(
                 height: usedHeight,
+                width: usedWidth * 0.4,
                 padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
                 child: FutureBuilder<Map<String, Uint8List>?>(
                   future: readImagesBytes(widget.itemImages),

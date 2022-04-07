@@ -135,6 +135,7 @@ class ValueDialog<T> extends StatefulWidget {
   final int? maxLength;
   final String? initialValue;
   final bool isNumber;
+  final bool showCancel;
   final ValidationBuilder? validator;
   final Widget Function(BuildContext, void Function(VoidCallback), _ValueDialogState<T>)? miscContent;
   final Size? size;
@@ -150,6 +151,7 @@ class ValueDialog<T> extends StatefulWidget {
     this.isNumber = false,
     this.validator,
     this.miscContent,
+    this.showCancel = true,
     this.size,
   }) : super(key: key);
 
@@ -202,19 +204,20 @@ class _ValueDialogState<T> extends State<ValueDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            widget.completer.complete(null);
-            Navigator.pop(context);
-          },
-          style: ButtonStyle(
-              splashFactory: InkRipple.splashFactory,
-              textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
-          child: Text(
-            'CANCEL',
-            style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
+        if (widget.showCancel)
+          TextButton(
+            onPressed: () {
+              widget.completer.complete(null);
+              Navigator.pop(context);
+            },
+            style: ButtonStyle(
+                splashFactory: InkRipple.splashFactory,
+                textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+            child: Text(
+              'CANCEL',
+              style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
+            ),
           ),
-        ),
         TextButton(
           onPressed: () async {
             if (!(_formKey.currentState?.validate() ?? false)) {

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   Future<List<Business>>? unapprovedBusinesses;
-  Stream<MapEntry<String, Future<Uint8List>>>? businessIdImageMapEntryStream;
+  Future<Map<String, Uint8List>>? businessIdImageMapFuture;
   late final Map<String, Future<Uint8List>> businessIdImageMap;
 
   @override
@@ -33,107 +34,91 @@ class _AdminPageState extends State<AdminPage> {
     UserState state = context.read<UserBloc>().state;
     if (state is! UserLoggedInState || !state.isSystemAdmin) return const Text('Seriously... How u here?');
 
-    unapprovedBusinesses ??= getUnapprovedBusinesses(state.token);
+    unapprovedBusinesses ??= getUnapprovedBusinesses(state.accessToken);
 
     return BasePage(
       resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        child: LayoutBuilder(builder: (context, constraints) {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Center(
-                  child: Text(
-                    'Admin Controls',
-                    style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+      body: LayoutBuilder(builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: SizedBox(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Center(
+                    child: Text(
+                      'Admin Controls',
+                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+                    ),
                   ),
                 ),
-              ),
-              FutureBuilder<List<Business>>(
-                future: unapprovedBusinesses,
-                builder: (ctx, snapshot) {
-                  if (!snapshot.hasData) {
-                    return CircularProgressIndicator();
-                  }
+                FutureBuilder<List<Business>>(
+                  future: unapprovedBusinesses,
+                  builder: (ctx, snapshot) {
+                    if (!snapshot.hasData) {
+                      return CircularProgressIndicator();
+                    }
 
-                  List<Business> businesses = snapshot.data!;
-                  businessIdImageMapEntryStream ??= getOwnerIdImagesFromBusinessIds(businesses.map((e) => e.businessId.hexString).toList());
-                  return StreamBuilder<MapEntry<String, Future<Uint8List>>>(
-                    stream: businessIdImageMapEntryStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        businessIdImageMap[snapshot.data!.key] = snapshot.data!.value;
-                      }
+                    List<Business> businesses = snapshot.data!;
 
-                      if (businessIdImageMap.isEmpty) {
-                        return Text(
-                          "There are no businesses in need\nof approval",
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp),
-                        );
-                      }
+                    businessIdImageMapFuture ??= getOwnerIdImagesFromBusinessIds(businesses.map((e) => e.businessId.hexString).toList());
+                    return FutureBuilder<Map<String, Uint8List>>(
+                      future: businessIdImageMapFuture,
+                      builder: (context, snapshot) {
+                        List<Business> buildableBusinesses =
+                            businesses.where((element) => snapshot.data?.containsKey(element.businessId.hexString) ?? false).toList();
 
-                      List<Business> buildableBusinesses =
-                          businesses.where((element) => businessIdImageMap.containsKey(element.businessId.hexString)).toList();
+                        if (!snapshot.hasData || buildableBusinesses.isEmpty) {
+                          return Text(
+                            "There are no businesses in need\nof approval",
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp),
+                          );
+                        }
 
-                      return SizedBox(
-                        height: 100.h - (Scaffold.of(context).appBarMaxHeight ?? 100),
-                        child: ListView.separated(
-                          itemCount: buildableBusinesses.length,
-                          itemBuilder: (ctx, i) {
-                            Business business = buildableBusinesses[i];
-                            return FutureBuilder<Uint8List>(
-                              future: businessIdImageMap[business.businessId.hexString],
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return CircularProgressIndicator();
-                                }
+                        return Column(
+                          children: List.generate(
+                            max(0, buildableBusinesses.length * 2 - 1),
+                            (i) {
+                              if (i.isOdd) return Divider();
+                              Business business = buildableBusinesses[i ~/ 2];
+                              return BusinessApprover(
+                                business: business,
+                                ownerIdImageBytes: snapshot.data![business.businessId.hexString]!,
+                                approvePressed: (note) async {
+                                  Business updated = await updateBusinessApproval(state.accessToken, business.businessId.hexString, true, note);
 
-                                return BusinessApprover(
-                                  business: business,
-                                  ownerIdImageBytes: snapshot.data!,
-                                  approvePressed: (note) async {
-                                    Business updated = await updateBusinessApproval(state.token, business.businessId.hexString, true, note);
-
-                                    ScaffoldMessenger.of(context).clearSnackBars();
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Approved ${updated.name}')));
-                                    setState(() {
-                                      if (updated.approved) {
-                                        buildableBusinesses.removeWhere((element) => element.businessId == updated.businessId);
-                                        unapprovedBusinesses = getUnapprovedBusinesses(state.token);
-                                      }
-                                    });
-                                  },
-                                  declinePressed: (note) async {
-                                    Business updated = await updateBusinessApproval(state.token, business.businessId.hexString, false, note);
+                                  ScaffoldMessenger.of(context).clearSnackBars();
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Approved ${updated.name}')));
+                                  setState(() {
                                     if (updated.approved) {
                                       buildableBusinesses.removeWhere((element) => element.businessId == updated.businessId);
+                                      unapprovedBusinesses = getUnapprovedBusinesses(state.accessToken);
                                     }
+                                  });
+                                },
+                                declinePressed: (note) async {
+                                  Business updated = await updateBusinessApproval(state.accessToken, business.businessId.hexString, false, note);
+                                  if (updated.approved) {
+                                    buildableBusinesses.removeWhere((element) => element.businessId == updated.businessId);
+                                  }
 
-                                    ScaffoldMessenger.of(context).clearSnackBars();
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Declined request and sent note to owner!')));
-                                  },
-                                );
-                              },
-                            );
-                          },
-                          separatorBuilder: (ctx, i) {
-                            return SizedBox(
-                              child: Divider(thickness: 1),
-                              width: 90.w,
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
-          );
-        }),
-      ),
+                                  ScaffoldMessenger.of(context).clearSnackBars();
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Declined request and sent note to owner!')));
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
     );
   }
 }

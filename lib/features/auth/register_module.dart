@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
-import 'package:vivity/features/auth/auth_service.dart';
+import '../../services/auth_service.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/password_field.dart';
 
@@ -20,7 +20,10 @@ class _RegisterModuleState extends State<RegisterModule> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController nameController = TextEditingController();
+
   final GlobalKey<FormState> _formKey = GlobalKey();
+  final GlobalKey<PasswordFieldState> _passwordKey = GlobalKey();
+  bool failedValidation = false;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +61,9 @@ class _RegisterModuleState extends State<RegisterModule> {
                 child: SizedBox(
                   width: 85.w,
                   child: PasswordField(
+                    key: _passwordKey,
                     controller: passwordController,
+                    showTips: failedValidation,
                   ),
                 ),
               ),
@@ -74,6 +79,12 @@ class _RegisterModuleState extends State<RegisterModule> {
                     style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
                   ),
                   onPressed: () {
+                    if (_passwordKey.currentState?.validate(passwordController.text) != null) {
+                      setState(() {
+                        failedValidation = true;
+                      });
+                    }
+
                     if (!(_formKey.currentState?.validate() ?? true)) {
                       ScaffoldMessenger.of(context).clearSnackBars();
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill out correctly.')));
@@ -87,6 +98,9 @@ class _RegisterModuleState extends State<RegisterModule> {
                       nameController.text,
                       context,
                     );
+                    setState(() {
+                      failedValidation = false;
+                    });
                     ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registering!')));
                   },

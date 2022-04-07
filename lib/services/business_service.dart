@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
@@ -51,4 +54,54 @@ Future<Order> updateOrderStatus(String token, OrderStatus status, String orderId
   }
 
   return Order.fromMap(response.data);
+}
+
+Future<Business> createBusiness(
+  String token,
+  String name,
+  String email,
+  String phone,
+  double latitude,
+  double longitude,
+  String nationalBusinessId,
+  File ownerId,
+) async {
+  Response res = await sendPostRequest(subRoute: businessRoute, token: token, data: {
+    "name": name,
+    "email": email,
+    "phone": phone,
+    "latitude": latitude,
+    "longitude": longitude,
+    "business_national_number": nationalBusinessId,
+    "business_owner_id": base64Encode(await ownerId.readAsBytes()),
+  });
+
+  if (res.statusCode! > 300) throw Exception('Failed to create business');
+
+  return Business.fromMap(res.data["token"], res.data["business"]);
+}
+
+Future<Business?> updateBusiness(
+  String token,
+  String name,
+  String email,
+  String phone,
+  double latitude,
+  double longitude,
+  String nationalBusinessId,
+  File ownerId,
+) async {
+  Response res = await sendPatchRequest(subRoute: businessRoute, data: {
+    "name": name,
+    "email": email,
+    "phone": phone,
+    "latitude": latitude,
+    "longitude": longitude,
+    "business_national_number": nationalBusinessId,
+    "owner_id": base64Encode(await ownerId.readAsBytes()),
+  });
+
+  if (res.statusCode! > 300) throw Exception("Business doesn't exist");
+
+  return Business.fromMap(token, res.data);
 }

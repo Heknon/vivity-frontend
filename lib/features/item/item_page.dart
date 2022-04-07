@@ -66,7 +66,7 @@ class _ItemPageState extends State<ItemPage> {
 
     _likeController = LikeButtonController();
     _panelController = PanelController();
-    itemImages = getCachedItemImages(state.token, List.of([widget.item]));
+    itemImages = getCachedItemImages(state.accessToken, List.of([widget.item]));
 
     _selectorControllers = List.generate(
       widget.item.itemStoreFormat.modificationButtons.length,
@@ -89,7 +89,7 @@ class _ItemPageState extends State<ItemPage> {
       });
     }
 
-    addItemView(state.token, widget.item.id.hexString);
+    addItemView(state.accessToken, widget.item.id.hexString);
     _quantityController = QuantityController();
     _widgetSwapController = WidgetSwapperController();
   }
@@ -495,7 +495,7 @@ class _ItemPageState extends State<ItemPage> {
       File? file = await filePickRoutine();
       if (file == null) return;
 
-      ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, widget.item.images.length);
+      ItemModel item = await swapImageOfItem(state.accessToken, widget.item.id.hexString, file, widget.item.images.length);
       context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
       return;
@@ -511,7 +511,7 @@ class _ItemPageState extends State<ItemPage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              ItemModel item = await removeImageFromItem(state.token, widget.item.id.hexString, index);
+              ItemModel item = await removeImageFromItem(state.accessToken, widget.item.id.hexString, index);
               context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
             },
@@ -528,7 +528,7 @@ class _ItemPageState extends State<ItemPage> {
               File? file = await filePickRoutine();
               if (file == null) return;
               Navigator.of(context).pop();
-              ItemModel item = await swapImageOfItem(state.token, widget.item.id.hexString, file, index);
+              ItemModel item = await swapImageOfItem(state.accessToken, widget.item.id.hexString, file, index);
               context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
               Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
             },

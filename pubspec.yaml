@@ -53,7 +53,6 @@ dependencies:
   country_icons: ^2.0.2
   country_code_picker: ^2.0.2
   form_validator: ^1.0.2
-  jwt_decoder: ^2.0.1
   dio: ^4.0.4
   charset: ^0.2.4
   async: ^2.8.2
@@ -65,6 +64,7 @@ dependencies:
   animations: ^2.0.2
   geocoding: ^2.0.4
   expandable: ^5.0.1
+  dart_jsonwebtoken: ^2.4.1
 
   advanced_panel:
     path: ./packages/advanced_panel
@@ -80,6 +80,9 @@ dependencies:
 
   objectid:
     path: ./packages/object_id
+
+  no_interaction_dialog:
+    path: ./packages/no_interaction_dialog
 
 dev_dependencies:
   flutter_test:
