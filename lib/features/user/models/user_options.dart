@@ -1,39 +1,23 @@
 class UserOptions {
-  final double? businessSearchRadius;
-  final String? distanceUnit;
+  final Unit? unit;
   final String? currencyType;
-  final String? shirtSize;
-  final String? jeansSize;
-  final String? sweatsSize;
 
   UserOptions({
-    this.businessSearchRadius,
-    this.distanceUnit,
+    this.unit,
     this.currencyType,
-    this.shirtSize,
-    this.jeansSize,
-    this.sweatsSize,
   });
 
   factory UserOptions.fromMap(Map<String, dynamic> map) {
     return UserOptions(
-      businessSearchRadius: (map['businessSearchRadius'] as num?)?.toDouble(),
-      distanceUnit: map['distanceUnit'] as String?,
-      currencyType: map['currencyType'] as String?,
-      shirtSize: map['shirtSize'] as String?,
-      jeansSize: map['jeansSize'] as String?,
-      sweatsSize: map['sweatsSize'] as String?,
+      unit: Unit.values[map['unit']],
+      currencyType: map['currency_type'] as String?,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'businessSearchRadius': businessSearchRadius,
-      'distanceUnit': distanceUnit,
-      'currencyType': currencyType,
-      'shirtSize': shirtSize,
-      'jeansSize': jeansSize,
-      'sweatsSize': sweatsSize,
+      'unit': unit,
+      'currency_type': currencyType,
     };
   }
 
@@ -42,19 +26,20 @@ class UserOptions {
       identical(this, other) ||
       other is UserOptions &&
           runtimeType == other.runtimeType &&
-          businessSearchRadius == other.businessSearchRadius &&
-          distanceUnit == other.distanceUnit &&
-          currencyType == other.currencyType &&
-          shirtSize == other.shirtSize &&
-          jeansSize == other.jeansSize &&
-          sweatsSize == other.sweatsSize;
+          unit == other.unit &&
+          currencyType == other.currencyType;
 
   @override
   int get hashCode =>
-      businessSearchRadius.hashCode ^ distanceUnit.hashCode ^ currencyType.hashCode ^ shirtSize.hashCode ^ jeansSize.hashCode ^ sweatsSize.hashCode;
+       unit.hashCode ^ currencyType.hashCode;
 
   @override
   String toString() {
-    return 'UserOptions{businessSearchRadius: $businessSearchRadius, distanceUnit: $distanceUnit, currencyType: $currencyType, shirtSize: $shirtSize, jeansSize: $jeansSize, sweatsSize: $sweatsSize}';
+    return 'UserOptions{unit: $unit, currencyType: $currencyType}';
   }
+}
+
+enum Unit {
+  metric,
+  empirical
 }

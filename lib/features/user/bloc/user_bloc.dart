@@ -155,5 +155,13 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       BusinessUserLoggedInState newState = prevState.copyWith(business: business);
       emit(newState);
     });
+
+    on<UserFrontendUpdate>((event, emit) {
+      if (state is! UserLoggedInState) return;
+
+      UserLoggedInState prevState = state as UserLoggedInState;
+      UserLoggedInState newState = prevState.copyWith(userOptions: event.options, email: event.email, phone: event.phone);
+      emit(newState);
+    });
   }
 }

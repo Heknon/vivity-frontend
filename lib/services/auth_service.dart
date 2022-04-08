@@ -52,8 +52,14 @@ Future<RegisterResult> register(String email, String password, String name, Stri
   );
 }
 
-Future<bool> hasOTP(String email) async {
-  Response res = await sendGetRequest(subRoute: "$userOtpRoute?email=$email");
+Future<bool> hasOTP({String? email, String? id}) async {
+  assert(email != null || id != null, "Must pass email or id");
+
+  String route = userOtpRoute;
+  if (id != null) route += "?id=$id";
+  else if (email != null) route += "?email=$email";
+
+  Response res = await sendGetRequest(subRoute: route);
 
   if (res.statusCode! > 300) {
     return false;

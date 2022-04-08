@@ -88,14 +88,7 @@ class UserLoggedInState extends UserState {
   }
 
   UserOptions buildUserOptionsFromUserMap(Map<String, dynamic> map) {
-    return UserOptions(
-      businessSearchRadius: (map["business_search_radius"] as num?)?.toDouble(),
-      distanceUnit: map["distance_unit"],
-      currencyType: map["currency_type"],
-      jeansSize: map["jeans_size"],
-      shirtSize: map["shirt_size"],
-      sweatsSize: map["sweats_size"],
-    );
+    return UserOptions.fromMap(map);
   }
 
   static List<Address> buildAddressesFromUserMap(String token, List<dynamic> addresses) {

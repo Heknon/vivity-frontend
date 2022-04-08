@@ -140,7 +140,7 @@ class _LoginModuleState extends State<LoginModule> {
                     NoInteractionDialogController _dialogController = NoInteractionDialogController();
                     LoadDialog loadDialog = LoadDialog(controller: _dialogController);
                     showDialog(context: context, builder: (ctx) => loadDialog);
-                    bool otpEnabled = await hasOTP(emailController.text);
+                    bool otpEnabled = await hasOTP(email: emailController.text);
                     RegisterResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(emailController.text, passwordController.text) : null;
                     Navigator.pop(context);
                     bool shouldRequestOTP = false;

@@ -63,6 +63,18 @@ class UserRemoveFavoriteEvent extends UserEvent {
   UserRemoveFavoriteEvent(this.itemId);
 }
 
+class UserFrontendUpdate extends UserEvent {
+  final String? email;
+  final String? phone;
+  final UserOptions options;
+
+  UserFrontendUpdate({
+    required this.options,
+    this.email,
+    this.phone,
+  });
+}
+
 class BusinessUserFrontendUpdateItem extends UserEvent {
   final ItemModel item;
 

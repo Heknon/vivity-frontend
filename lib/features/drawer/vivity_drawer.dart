@@ -10,6 +10,7 @@ import 'package:vivity/features/business/create_business.dart';
 import 'package:vivity/features/business/unapproved_business_page.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page.dart';
+import 'package:vivity/features/settings/settings_page.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/features/user/profile_page.dart';
 import 'package:vivity/main.dart';
@@ -104,7 +105,11 @@ class VivityDrawer extends StatelessWidget {
                     onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProfilePage())),
                     context: context),
                 const Divider(thickness: 0),
-                buildMenuButton(text: 'Settings', onPressed: () => print("Pressed Settings"), context: context),
+                buildMenuButton(
+                  text: 'Settings',
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SettingsPage())),
+                  context: context,
+                ),
                 SizedBox(height: 7.h),
                 // TODO: Check whether already on home page.
                 buildMenuButton(

@@ -135,6 +135,7 @@ class ValueDialog<T> extends StatefulWidget {
   final int? maxLength;
   final String? initialValue;
   final bool isNumber;
+  final bool parseToNumber;
   final bool showCancel;
   final ValidationBuilder? validator;
   final Widget Function(BuildContext, void Function(VoidCallback), _ValueDialogState<T>)? miscContent;
@@ -152,6 +153,7 @@ class ValueDialog<T> extends StatefulWidget {
     this.validator,
     this.miscContent,
     this.showCancel = true,
+    this.parseToNumber = true,
     this.size,
   }) : super(key: key);
 
@@ -224,7 +226,7 @@ class _ValueDialogState<T> extends State<ValueDialog> {
               return;
             }
 
-            widget.completer.complete((isNumber ? num.parse(_controller.text) : _controller.text) as T);
+            widget.completer.complete((isNumber && widget.parseToNumber ? num.parse(_controller.text) : _controller.text) as T);
             Navigator.of(context).pop();
           },
           style: ButtonStyle(

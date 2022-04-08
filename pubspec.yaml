@@ -65,6 +65,8 @@ dependencies:
   geocoding: ^2.0.4
   expandable: ^5.0.1
   dart_jsonwebtoken: ^2.4.1
+  intl: ^0.17.0
+
 
   advanced_panel:
     path: ./packages/advanced_panel
