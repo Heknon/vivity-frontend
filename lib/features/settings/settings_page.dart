@@ -116,6 +116,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Center(
                     child: Text(
                       'Preferences',
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
                     ),
                   ),
@@ -148,7 +149,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
                     child: Text(
-                      'Password and Authentication',
+                      'Password & Authentication',
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
                     ),
                   ),

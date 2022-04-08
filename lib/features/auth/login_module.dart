@@ -140,8 +140,11 @@ class _LoginModuleState extends State<LoginModule> {
                     NoInteractionDialogController _dialogController = NoInteractionDialogController();
                     LoadDialog loadDialog = LoadDialog(controller: _dialogController);
                     showDialog(context: context, builder: (ctx) => loadDialog);
-                    bool otpEnabled = await hasOTP(email: emailController.text);
-                    RegisterResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(emailController.text, passwordController.text) : null;
+
+                    String email = emailController.text.trim();
+                    bool otpEnabled = await hasOTP(email: email);
+                    print(otpEnabled);
+                    RegisterResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(email, passwordController.text) : null;
                     Navigator.pop(context);
                     bool shouldRequestOTP = false;
                     if (preLoginCheck != null) {
@@ -178,7 +181,7 @@ class _LoginModuleState extends State<LoginModule> {
                       otp = (await completer.future).toString();
                     }
 
-                    handleLogin(emailController.text, passwordController.text, otp);
+                    handleLogin(email, passwordController.text, otp);
                     ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logging in!')));
                   },

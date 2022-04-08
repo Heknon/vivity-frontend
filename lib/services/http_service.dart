@@ -7,7 +7,7 @@ late final Dio dioClient;
 void initDioHttpServices() {
   dioClient = Dio();
   // dioClient.options.responseDecoder = responseDecoder;
-  dioClient.options.sendTimeout = 10;
+  dioClient.options.sendTimeout = 1000;
   dioClient.options.receiveTimeout = 6000;
   dioClient.options.headers["Keep-Alive"] = 'timeout=5, max=1';
   dioClient.options.validateStatus = (status) => true;
