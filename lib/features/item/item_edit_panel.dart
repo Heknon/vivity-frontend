@@ -511,7 +511,7 @@ class _ItemModifierEditorDialogState extends State<ItemModifierEditorDialog> {
                 completer,
                 isNumber: _modifiedButton.dataType == ModificationButtonDataType.color,
                 size: Size(70.w, 20.h),
-                miscContent: (ctx, _setState, state) {
+                miscContentBefore: (ctx, _setState, state) {
                   return Align(
                     alignment: Alignment.topLeft,
                     child: Row(

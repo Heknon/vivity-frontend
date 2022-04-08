@@ -8,6 +8,7 @@ import '../../config/themes/themes_config.dart';
 class PasswordField extends StatefulWidget {
   final TextEditingController? controller;
   final bool showTips;
+  final String? labelText;
   final void Function(String?)? onSaved;
 
   const PasswordField({
@@ -15,6 +16,7 @@ class PasswordField extends StatefulWidget {
     this.controller,
     this.showTips = true,
     this.onSaved,
+    this.labelText = "Password",
   }) : super(key: key);
 
   @override
@@ -49,7 +51,7 @@ class PasswordFieldState extends State<PasswordField> {
           validator: validate,
           onSaved: widget.onSaved,
           decoration: InputDecoration(
-            labelText: "Password",
+            labelText: widget.labelText,
             labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
             suffixIcon: IconButton(
               icon: Icon(

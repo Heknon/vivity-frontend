@@ -66,7 +66,8 @@ dependencies:
   expandable: ^5.0.1
   dart_jsonwebtoken: ^2.4.1
   intl: ^0.17.0
-
+  qr_flutter: ^4.0.0
+  url_launcher: ^6.0.20
 
   advanced_panel:
     path: ./packages/advanced_panel
@@ -85,6 +86,9 @@ dependencies:
 
   no_interaction_dialog:
     path: ./packages/no_interaction_dialog
+
+  dotp:
+    path: ./packages/dotp
 
 dev_dependencies:
   flutter_test:

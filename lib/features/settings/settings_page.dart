@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
@@ -9,7 +10,9 @@ import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/constants/regex.dart';
+import 'package:vivity/features/auth/password_field.dart';
 import 'package:vivity/features/base_page.dart';
+import 'package:vivity/features/settings/otp_preview.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/services/auth_service.dart';
 import 'package:vivity/services/user_service.dart';
@@ -151,7 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => changePassword(ctx),
+                  onPressed: () => changePassword(state.accessToken, ctx),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(fillerColor),
                     padding: MaterialStateProperty.all(EdgeInsets.all(12)),
@@ -170,7 +173,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     bool hasOtp = snapshot.data!;
                     return hasOtp
                         ? TextButton(
-                            onPressed: () => disableTwoFactor(ctx),
+                            onPressed: () => disableTwoFactor(state.accessToken, ctx),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all(fillerColor),
                               padding: MaterialStateProperty.all(EdgeInsets.all(12)),
@@ -182,7 +185,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                           )
                         : TextButton(
-                            onPressed: () => enableTwoFactor(ctx),
+                            onPressed: () => enableTwoFactor(state.email, state.accessToken, ctx),
                             style: ButtonStyle(
                               backgroundColor: MaterialStateProperty.all(fillerColor),
                               padding: MaterialStateProperty.all(EdgeInsets.all(12)),
@@ -211,8 +214,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (result == null) {
       Navigator.pop(context);
       if (failureMessage != null) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failureMessage)));
+        showSnackBar(failureMessage, context);
       }
       return;
     }
@@ -221,16 +223,81 @@ class _SettingsPageState extends State<SettingsPage> {
     context.read<UserBloc>().add(UserRenewTokenEvent(result['access_token']));
     Navigator.pop(context);
     if (successMessage != null) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(successMessage)));
+      showSnackBar(successMessage, context);
     }
   }
 
-  void changePassword(BuildContext context) {}
+  void changePassword(String token, BuildContext context) async {
+    TextEditingController _newPasswordController = TextEditingController();
+    Completer<String?> completer = Completer();
+    ValueDialog dialog = ValueDialog(
+      "Change password",
+      "Current password",
+      completer,
+      isPassword: true,
+      size: Size(0, 40.h),
+      validator: ValidationBuilder().add((value) => securePasswordRegex.hasMatch(value ?? 'f') ? null : "Must be a secure, valid password."),
+      miscContentAfter: (ctx, _setState, state) {
+        return PasswordField(
+          controller: _newPasswordController,
+          labelText: "New password",
+          showTips: true,
+        );
+      },
+    );
+    await showDialog(
+      context: context,
+      builder: (ctx) => dialog,
+    );
+    String? currentPassword = await completer.future;
+    String? newPassword = _newPasswordController.text;
+    if (currentPassword == null || newPassword == null) return;
+    showDialog(context: context, builder: (ctx) => _loadDialog);
+    Response response = await updatePassword(token, currentPassword, newPassword);
+    if (response.statusCode! > 300) {
+      showSnackBar(response.data['error'], context);
+      Navigator.pop(context);
+      return;
+    }
 
-  void disableTwoFactor(BuildContext context) {}
+    context.read<UserBloc>().add(UserRenewTokenEvent(response.data['access_token']));
+    Navigator.pop(context);
+    showSnackBar('Successfully changed password', context);
+  }
 
-  void enableTwoFactor(BuildContext context) {}
+  void disableTwoFactor(String token, BuildContext context) async {
+    showDialog(context: context, builder: (ctx) => _loadDialog);
+    Response response = await disableOTP(token);
+    Navigator.pop(context);
+    if (response.statusCode! > 300) {
+      showSnackBar('Failed to disable 2FA', context);
+      return;
+    }
+
+    setState(() {
+      hasOTPFuture = Future.value(false);
+    });
+  }
+
+  void enableTwoFactor(String email, String token, BuildContext context) async {
+    showDialog(context: context, builder: (ctx) => _loadDialog);
+    Response response = await enableOTP(token);
+    Navigator.pop(context);
+    if (response.statusCode! > 300) {
+      showSnackBar('Failed to enable 2FA', context);
+      return;
+    }
+
+    setState(() {
+      hasOTPFuture = Future.value(true);
+    });
+    showDialog(
+      context: context,
+      builder: (ctx) => SizedBox(
+        child: OTPPreview(email: email, seed: response.data['secret']),
+      ),
+    );
+  }
 
   Widget buildPreferenceListTile(
     String title,

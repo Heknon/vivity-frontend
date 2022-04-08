@@ -15,7 +15,7 @@ import '../../../services/auth_service.dart';
 import 'package:vivity/features/cart/cart_service.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/user_options.dart';
-import 'package:vivity/features/user/user_service.dart';
+import 'package:vivity/services/user_service.dart';
 import 'package:vivity/services/api_service.dart';
 import 'package:vivity/services/business_service.dart' as business_service;
 import 'package:vivity/services/item_service.dart';

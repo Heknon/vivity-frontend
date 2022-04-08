@@ -24,3 +24,4 @@ const apiJwtPublicKey = '/jwt/public';
 const refreshAccessTokenRoute = '/jwt/refresh';
 const refreshRefreshTokenRoute = '/jwt/refresh/refresh';
 const userOtpRoute = '/user/otp';
+const userPasswordRoute = '/user/password';

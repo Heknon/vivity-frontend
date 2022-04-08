@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/auth/password_field.dart';
 
 Future<RenderBox> getRenderBox(GlobalKey key) async {
   Completer<RenderBox> completer = Completer();
@@ -137,8 +138,10 @@ class ValueDialog<T> extends StatefulWidget {
   final bool isNumber;
   final bool parseToNumber;
   final bool showCancel;
+  final bool isPassword;
   final ValidationBuilder? validator;
-  final Widget Function(BuildContext, void Function(VoidCallback), _ValueDialogState<T>)? miscContent;
+  final Widget Function(BuildContext, void Function(VoidCallback), _ValueDialogState<T>)? miscContentBefore;
+  final Widget Function(BuildContext, void Function(VoidCallback), _ValueDialogState<T>)? miscContentAfter;
   final Size? size;
 
   const ValueDialog(
@@ -151,9 +154,11 @@ class ValueDialog<T> extends StatefulWidget {
     this.initialValue,
     this.isNumber = false,
     this.validator,
-    this.miscContent,
+    this.miscContentBefore,
+    this.miscContentAfter,
     this.showCancel = true,
     this.parseToNumber = true,
+    this.isPassword = false,
     this.size,
   }) : super(key: key);
 
@@ -192,17 +197,20 @@ class _ValueDialogState<T> extends State<ValueDialog> {
         key: _formKey,
         child: SizedBox(
           width: 85.w,
-          child: widget.miscContent != null
+          child: widget.miscContentBefore != null || widget.miscContentAfter != null
               ? SizedBox.fromSize(
                   size: widget.size,
-                  child: Column(
-                    children: [
-                      widget.miscContent!(context, setState, this),
-                      buildResultField(_controller, validator, isNumber, labelText),
-                    ],
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        if (widget.miscContentBefore != null) widget.miscContentBefore!(context, setState, this),
+                        !widget.isPassword ? buildResultField(_controller, validator, isNumber, labelText) : PasswordField(showTips: false, controller: _controller, labelText: labelText,),
+                        if (widget.miscContentAfter != null) widget.miscContentAfter!(context, setState, this),
+                      ],
+                    ),
                   ),
                 )
-              : buildResultField(_controller, validator, isNumber, labelText),
+              : !widget.isPassword ? buildResultField(_controller, validator, isNumber, labelText) : PasswordField(showTips: false, controller: _controller, labelText: labelText,),
         ),
       ),
       actions: [
@@ -260,4 +268,9 @@ TextFormField buildResultField(
       labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
     ),
   );
+}
+
+void showSnackBar(String text, BuildContext context) {
+  ScaffoldMessenger.of(context).clearSnackBars();
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
