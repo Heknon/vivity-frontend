@@ -9,7 +9,7 @@ import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/services/admin_service.dart';
 
-import '../../models/business.dart';
+import '../business/models/business.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({Key? key}) : super(key: key);

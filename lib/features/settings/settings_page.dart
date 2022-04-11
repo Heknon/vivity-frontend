@@ -75,7 +75,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             "Change email",
                             "Email",
                             completer,
-                            validator: ValidationBuilder().add((value) => validEmail.hasMatch(value ?? "f") ? null : "Invalid email"),
+                            validator: ValidationBuilder().add((value) => validEmail.hasMatch(value?.trim() ?? "f") ? null : "Invalid email"),
                           );
 
                           await showDialog(context: context, builder: (ctx) => dialog);
@@ -94,8 +94,9 @@ class _SettingsPageState extends State<SettingsPage> {
                             isNumber: true,
                             parseToNumber: false,
                             validator: ValidationBuilder().add((value) {
-                              if (value == null || value.length != 10) return 'Must be a 10 digit number';
-                              return numbersRegex.hasMatch(value) ? null : 'Must be a 10 digit number';
+                              String? trimmed = value?.trim();
+                              if (trimmed == null || trimmed.length != 10) return 'Must be a 10 digit number';
+                              return numbersRegex.hasMatch(trimmed) ? null : 'Must be a 10 digit number';
                             }),
                           );
 

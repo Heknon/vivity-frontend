@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
-import 'package:vivity/services/http_service.dart';
+import 'package:vivity/services/dio_http_service.dart';
 
 import '../features/auth/bloc/auth_bloc.dart';
 

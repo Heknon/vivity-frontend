@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
+import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 
@@ -16,6 +18,7 @@ class ItemCreationDialog extends StatelessWidget {
   final TextEditingController _controllerCategory = TextEditingController();
   final TextEditingController _controllerTags = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
+  final LoadDialog _loadDialog = LoadDialog();
 
   ItemCreationDialog({Key? key}) : super(key: key);
 
@@ -140,6 +143,7 @@ class ItemCreationDialog extends StatelessWidget {
               return;
             }
 
+            showDialog(context: context, builder: (ctx) => _loadDialog);
             ItemModel createdItem = await createItem(
               state.accessToken,
               title: _controllerTitle.text,
@@ -149,7 +153,8 @@ class ItemCreationDialog extends StatelessWidget {
               category: _controllerCategory.text,
               tags: _controllerTags.text.split(",").map((e) => e.trim()).toList(),
             );
-            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(createdItem));
+            Navigator.pop(context);
+            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: createdItem));
             ScaffoldMessenger.of(context).clearSnackBars();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Created item ${createdItem.itemStoreFormat.title}.')));
             Navigator.of(context).pop();

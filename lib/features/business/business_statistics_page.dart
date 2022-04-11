@@ -4,7 +4,7 @@ import 'package:objectid/objectid/objectid.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 
-import '../../models/business.dart';
+import 'models/business.dart';
 import '../../models/order.dart';
 import '../item/models/item_model.dart';
 import '../user/bloc/user_bloc.dart';

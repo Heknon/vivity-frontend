@@ -39,21 +39,22 @@ class _RegisterModuleState extends State<RegisterModule> {
               buildTextFormField(
                 'Email',
                 emailController,
-                validationBuilder: ValidationBuilder().add((value) => validEmail.hasMatch(value ?? "2") ? null : "Invalid email address"),
+                textInputType: TextInputType.emailAddress,
+                validationBuilder: ValidationBuilder().add((value) => validEmail.hasMatch(value?.trim() ?? "2") ? null : "Invalid email address"),
               ),
               SizedBox(height: 15),
-              buildTextFormField(
-                'Phone',
-                phoneController,
-                validationBuilder: ValidationBuilder().add((value) {
-                  if (value?.length != 10) return 'Must be a 10 digit number';
-                  return int.tryParse(value ?? "f") != null ? null : 'Must be a 10 digit number';
-                })
-              ),
+              buildTextFormField('Phone', phoneController,
+                  textInputType: TextInputType.phone,
+                  validationBuilder: ValidationBuilder().add((value) {
+                    String? trimmed = value?.trim();
+                    if (trimmed?.length != 10) return 'Must be a 10 digit number';
+                    return int.tryParse(trimmed ?? "f") != null ? null : 'Must be a 10 digit number';
+                  })),
               SizedBox(height: 15),
               buildTextFormField(
                 'Name',
                 nameController,
+                textInputType: TextInputType.name,
                 validationBuilder: ValidationBuilder().minLength(3).maxLength(30),
               ),
               SizedBox(height: 15),
@@ -114,7 +115,12 @@ class _RegisterModuleState extends State<RegisterModule> {
     );
   }
 
-  Widget buildTextFormField(String labelText, TextEditingController controller, {ValidationBuilder? validationBuilder}) {
+  Widget buildTextFormField(
+    String labelText,
+    TextEditingController controller, {
+    ValidationBuilder? validationBuilder,
+    TextInputType? textInputType,
+  }) {
     return Center(
       child: SizedBox(
         width: 85.w,
@@ -122,6 +128,7 @@ class _RegisterModuleState extends State<RegisterModule> {
           controller: controller,
           validator: validationBuilder?.build(),
           style: TextStyle(fontSize: 12.sp, color: Colors.black),
+          keyboardType: textInputType,
           decoration: InputDecoration(
             labelText: labelText,
             labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),

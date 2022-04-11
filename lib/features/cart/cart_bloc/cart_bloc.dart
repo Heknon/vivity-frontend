@@ -9,48 +9,67 @@ import 'cart_state.dart';
 part 'cart_event.dart';
 
 class CartBloc extends Bloc<CartEvent, CartState> {
+  late bool registeredUserBloc = false;
+  late bool initialized = false;
+
   CartBloc() : super(CartState(List.empty(growable: true), ShippingMethod.delivery)) {
     on<CartAddItemEvent>((event, emit) {
-      emit(state.copyWith().addItem(event.item).copyWith());
+      CartState newState = state.copyWith();
+      newState.addItem(event.item);
+
+      emit(newState);
     });
 
     on<CartRemoveItemEvent>((event, emit) {
-      emit(state.copyWith().removeItem(event.index).copyWith());
+      CartState newState = state.copyWith();
+      newState.removeItem(event.index);
+
+      emit(newState);
     });
 
     on<CartIncrementItemEvent>((event, emit) {
-      emit(state.copyWith().incrementQuantity(event.index).copyWith());
+      CartState newState = state.copyWith();
+      newState.incrementQuantity(event.index);
+
+      emit(newState);
     });
 
     on<CartDecrementItemEvent>((event, emit) {
-      emit(state.copyWith().decrementQuantity(event.index).copyWith());
+      CartState newState = state.copyWith();
+      newState.decrementQuantity(event.index);
+
+      emit(newState);
     });
 
     on<CartShipmentMethodUpdateEvent>((event, emit) {
-      emit(state.copyWith().updateShipmentMethod(event.shippingMethod).copyWith());
+      CartState newState = state.copyWith();
+      newState.updateShipmentMethod(event.shippingMethod);
+
+      emit(newState);
     });
 
     on<CartDeleteItemEvent>((event, emit) {
-      emit(state.copyWith().removeItem(event.index).copyWith());
+      CartState newState = state.copyWith();
+      newState.removeItem(event.index);
+
+      emit(newState);
+    });
+
+    on<CartRegisterInitializer>((event, emit) {
+      if (registeredUserBloc) return;
+
+      event.userBloc.stream.listen((userState) {
+        if (!initialized && userState is UserLoggedInState) {
+          add(CartSyncToUserStateEvent(userState));
+          initialized = true;
+        }
+      });
+
+      registeredUserBloc = true;
     });
 
     on<CartSyncToUserStateEvent>((event, emit) {
       emit(CartState.fromState(event.state));
     });
-  }
-
-  @override
-  void onTransition(Transition<CartEvent, CartState> transition) {
-    super.onTransition(transition);
-  }
-
-  @override
-  void onEvent(CartEvent event) {
-    super.onEvent(event);
-  }
-
-  @override
-  void onChange(Change<CartState> change) {
-    super.onChange(change);
   }
 }

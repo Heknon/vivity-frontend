@@ -6,7 +6,7 @@ abstract class ExploreState {}
 class ExploreUnloaded extends ExploreState {}
 
 class ExploreLoaded extends ExploreState {
-  String token;
+  final String? token;
 
   final MapControllerImpl controller;
   final LatLng lastUpdateLocation;
@@ -22,6 +22,8 @@ class ExploreLoaded extends ExploreState {
   });
 
   Future<ExploreState> fetchItemModels() async {
+    if (token == null) return this;
+
     int radius = Geolocator.distanceBetween(
       controller.center.latitude,
       controller.center.longitude,
@@ -30,7 +32,7 @@ class ExploreLoaded extends ExploreState {
     ).round();
 
 
-    List<ItemModel> models = await searchByCoordinates(token, controller.center, radius.toDouble());
+    List<ItemModel> models = await searchByCoordinates(token!, controller.center, radius.toDouble());
     itemModels.clear();
 
     return copyWith(
@@ -44,6 +46,7 @@ class ExploreLoaded extends ExploreState {
       identical(this, other) ||
       other is ExploreLoaded &&
           runtimeType == other.runtimeType &&
+          token == other.token &&
           controller.center == other.controller.center &&
           controller.bounds == other.controller.bounds &&
           controller.zoom == other.controller.zoom &&
@@ -52,7 +55,7 @@ class ExploreLoaded extends ExploreState {
           listEquals(itemModels, other.itemModels);
 
   @override
-  int get hashCode => controller.hashCode ^ itemModels.hashCode ^ lastUpdateLocation.hashCode ^ mapGuiController.hashCode;
+  int get hashCode => controller.hashCode ^ itemModels.hashCode ^ lastUpdateLocation.hashCode ^ mapGuiController.hashCode ^ token.hashCode;
 
   ExploreLoaded copyWith({
     MapControllerImpl? controller,

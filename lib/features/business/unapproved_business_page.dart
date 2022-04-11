@@ -35,17 +35,15 @@ class _UnapprovedBusinessPageState extends State<UnapprovedBusinessPage> {
     }
 
     return BasePage(
-      userStateListener: (ctx, state) {
-        if (state is BusinessUserLoggedInState) {
-          if (state.business.approved) {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
-          }
-        }
-      },
       body: BlocBuilder<UserBloc, UserState>(
         builder: (context, state) {
           if (state is! BusinessUserLoggedInState) {
             return const Text('One of two things: You are either not logged in or don\'t own a business.\nEither way, how are you here 🤨');
+          }
+
+          if (state.business.approved) {
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
+            return CircularProgressIndicator();
           }
 
           return defaultGradientBackground(

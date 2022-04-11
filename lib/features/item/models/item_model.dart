@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:objectid/objectid/objectid.dart';
@@ -8,7 +11,7 @@ import 'package:vivity/services/storage_service.dart';
 import 'package:latlong2/latlong.dart';
 
 class CartItemModel {
-  final String? previewImage;
+  final Uint8List? previewImage;
   final String title;
   final Iterable<ModificationButtonDataHost> modifiersChosen;
   final double price;
@@ -35,7 +38,7 @@ class CartItemModel {
     );
 
     return CartItemModel(
-      previewImage: model.previewImageIndex < model.images.length  && model.previewImageIndex > 0 ? model.images[model.previewImageIndex] : null,
+      previewImage: model.previewImageIndex < (model.images?.length ?? 0) ? model.images![model.previewImageIndex] : null,
       title: model.itemStoreFormat.title,
       modifiersChosen: chosenData,
       quantity: quantity,
@@ -45,7 +48,7 @@ class CartItemModel {
   }
 
   CartItemModel copyWith({
-    String? previewImage,
+    Uint8List? previewImage,
     String? title,
     Iterable<ModificationButtonDataHost>? modifiersChosen,
     double? price,
@@ -60,14 +63,14 @@ class CartItemModel {
       modifiersChosen: modifiersChosen ?? this.modifiersChosen.map((e) => e.copyWith()).toList(growable: false),
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
-      item: model ?? item,
+      item: model ?? item?.copyWith(),
       insertionId: insertionId ?? this.insertionId,
     );
   }
 
-  factory CartItemModel.fromMap(Map<String, dynamic> map, ItemModel itemModel) {
+  factory CartItemModel.fromMap(Map<String, dynamic> map, ItemModel? itemModel) {
     return CartItemModel(
-      previewImage: map['previewImage'] as String,
+      previewImage: Uint8List.fromList(map['previewImage']),
       title: map['title'] as String,
       modifiersChosen: (map['modifiersChosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
       price: (map['price'] as num).toDouble(),
@@ -110,7 +113,6 @@ class CartItemModel {
     return identical(this, other) ||
         other is CartItemModel &&
             runtimeType == other.runtimeType &&
-            previewImage == other.previewImage &&
             title == other.title &&
             listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()) &&
             price == other.price &&
@@ -118,7 +120,8 @@ class CartItemModel {
   }
 
   @override
-  int get hashCode => previewImage.hashCode ^ title.hashCode ^ modifiersChosen.hashCode ^ price.hashCode ^ (item?.id.hashCode ?? 0.hashCode) ^ quantity.hashCode;
+  int get hashCode =>
+      previewImage.hashCode ^ title.hashCode ^ modifiersChosen.hashCode ^ price.hashCode ^ (item?.id.hashCode ?? 0.hashCode) ^ quantity.hashCode;
 }
 
 class ItemModel {
@@ -127,7 +130,7 @@ class ItemModel {
   final String businessName;
   final LatLng location;
   final double price;
-  final List<String> images;
+  final List<Uint8List?>? images;
   final int previewImageIndex;
   final List<Review> reviews;
   final ItemStoreFormat itemStoreFormat;
@@ -165,7 +168,7 @@ class ItemModel {
     LatLng? location,
     String? businessName,
     double? price,
-    List<String>? images,
+    List<Uint8List?>? images,
     int? previewImageIndex,
     List<Review>? reviews,
     ItemStoreFormat? itemStoreFormat,
@@ -176,7 +179,7 @@ class ItemModel {
     ItemMetrics? metrics,
   }) {
     return ItemModel(
-      businessId: businessId ?? this.businessId,
+      businessId: businessId ?? ObjectId.fromBytes(this.businessId.bytes),
       location: location ?? this.location,
       id: id ?? this.id,
       businessName: businessName ?? this.businessName,
@@ -193,14 +196,14 @@ class ItemModel {
     );
   }
 
-  factory ItemModel.fromMap(Map<String, dynamic> map) {
+  factory ItemModel.fromMap(Map<String, dynamic> map, {bool hasImages = false}) {
     return ItemModel(
       businessId: ObjectId.fromHexString(map['business_id']),
       location: LatLng((map['location'][0] as num).toDouble(), (map['location'][1] as num).toDouble()),
       id: ObjectId.fromHexString(map['_id']),
       businessName: map['business_name'] as String,
       price: (map['price'] as num).toDouble(),
-      images: (map['images'] as List<dynamic>).map((e) => e as String).toList(),
+      images: hasImages ? (map['images'] as List<dynamic>).map((e) => e == null ? null : base64Decode(e)).toList() : null,
       previewImageIndex: (map['preview_image'] as num).toInt(),
       reviews: (map['reviews'] as List<dynamic>).map((e) => Review.fromDBMap(e)).toList(),
       itemStoreFormat: ItemStoreFormat.fromMap(map['item_store_format']),
@@ -218,7 +221,7 @@ class ItemModel {
       '_id': id.bytes,
       'business_name': businessName,
       'price': price,
-      'images': images,
+      'images': images?.map((e) => base64Encode(e)).toList(),
       'preview_image': previewImageIndex,
       'reviews': reviews.map((e) => e.toDBMap()).toList(),
       'item_store_format': itemStoreFormat.toDBMap(),

@@ -2,44 +2,51 @@ class UserOptions {
   final Unit? unit;
   final String? currencyType;
 
-  UserOptions({
+//<editor-fold desc="Data Methods">
+
+  const UserOptions({
     this.unit,
     this.currencyType,
   });
 
-  factory UserOptions.fromMap(Map<String, dynamic> map) {
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserOptions && runtimeType == other.runtimeType && unit == other.unit && currencyType == other.currencyType);
+
+  @override
+  int get hashCode => unit.hashCode ^ currencyType.hashCode;
+
+  @override
+  String toString() {
+    return 'UserOptions{' + ' unit: $unit,' + ' currencyType: $currencyType,' + '}';
+  }
+
+  UserOptions copyWith({
+    Unit? unit,
+    String? currencyType,
+  }) {
     return UserOptions(
-      unit: Unit.values[map['unit']],
-      currencyType: map['currency_type'] as String?,
+      unit: unit ?? this.unit,
+      currencyType: currencyType ?? this.currencyType,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'unit': unit,
-      'currency_type': currencyType,
+      'unit': this.unit?.index,
+      'currency_type': this.currencyType,
     };
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UserOptions &&
-          runtimeType == other.runtimeType &&
-          unit == other.unit &&
-          currencyType == other.currencyType;
-
-  @override
-  int get hashCode =>
-       unit.hashCode ^ currencyType.hashCode;
-
-  @override
-  String toString() {
-    return 'UserOptions{unit: $unit, currencyType: $currencyType}';
+  factory UserOptions.fromMap(Map<String, dynamic> map) {
+    return UserOptions(
+      unit: Unit.values[(map['unit'] as num).toInt()],
+      currencyType: map['currencyType'] as String,
+    );
   }
+
+//</editor-fold>
 }
 
-enum Unit {
-  metric,
-  empirical
-}
+enum Unit { metric, empirical }

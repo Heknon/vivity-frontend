@@ -39,6 +39,12 @@ class CartShipmentMethodUpdateEvent extends CartEvent {
   CartShipmentMethodUpdateEvent(this.shippingMethod);
 }
 
+class CartRegisterInitializer extends CartEvent {
+  final UserBloc userBloc;
+
+  CartRegisterInitializer(this.userBloc);
+}
+
 class CartSyncToUserStateEvent extends CartEvent {
   final UserLoggedInState state;
 

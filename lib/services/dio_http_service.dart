@@ -2,17 +2,35 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
-late final Dio dioClient;
+class DioHttpService {
+  static final DioHttpService _dioHttpService = DioHttpService._();
 
-void initDioHttpServices() {
-  dioClient = Dio();
-  // dioClient.options.responseDecoder = responseDecoder;
-  dioClient.options.sendTimeout = 1000;
-  dioClient.options.receiveTimeout = 6000;
-  dioClient.options.headers["Keep-Alive"] = 'timeout=5, max=1';
-  dioClient.options.validateStatus = (status) => true;
-  dioClient.interceptors.add(RetryOnConnectionChangeInterceptor(dio: dioClient));
+  final Dio _dioClient = Dio();
+  Dio get client => _dioClient;
+
+  DioHttpService._() {
+    initializeOptions();
+    initializeInterceptors();
+  }
+
+  factory DioHttpService() {
+    return _dioHttpService;
+  }
+
+  void initializeOptions() {
+    _dioClient.options.sendTimeout = 1000;
+    _dioClient.options.receiveTimeout = 6000;
+    _dioClient.options.headers["Keep-Alive"] = 'timeout=5, max=0';
+    _dioClient.options.headers[HttpHeaders.connectionHeader] = 'keep-alive';
+    _dioClient.options.validateStatus = (status) => true;
+  }
+
+  void initializeInterceptors() {
+    _dioClient.interceptors.add(RetryOnConnectionChangeInterceptor(dio: dioClient));
+  }
 }
+
+late final Dio dioClient;
 
 /// Interceptor
 class RetryOnConnectionChangeInterceptor extends Interceptor {
@@ -35,12 +53,10 @@ class RetryOnConnectionChangeInterceptor extends Interceptor {
     } else {
       handler.next(err);
     }
-
   }
 
   bool _shouldRetryOnHttpException(DioError err) {
-    return err.type == DioErrorType.other &&
-        ((err.error is HttpException && err.message.contains('Connection closed while receiving data')));
+    return err.type == DioErrorType.other && ((err.error is HttpException && err.message.contains('Connection closed while receiving data')));
   }
 }
 
@@ -78,8 +94,4 @@ class DioHttpRequestRetrier {
       ),
     );
   }
-}
-
-String responseDecoder(List<int> responseBytes, RequestOptions options, ResponseBody responseBody) {
-  return "";
 }

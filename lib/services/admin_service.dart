@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../constants/api_path.dart';
-import '../models/business.dart';
+import '../features/business/models/business.dart';
 import 'api_service.dart';
 
 Future<Business> updateBusinessApproval(String token, String businessId, bool approved, String note) async {

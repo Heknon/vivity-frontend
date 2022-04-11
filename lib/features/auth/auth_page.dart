@@ -6,13 +6,16 @@ import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
-import 'package:vivity/features/auth/auth_result.dart';
+import 'package:vivity/features/auth/models/token_container.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
-import 'package:vivity/features/auth/register_result.dart';
+import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/main.dart' as main;
 
+import '../cart/cart_bloc/cart_bloc.dart';
+import '../explore/bloc/explore_bloc.dart';
+import '../home/home_page.dart';
 import '../user/bloc/user_bloc.dart';
 
 class AuthPage extends StatefulWidget {
@@ -23,25 +26,32 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  late NoInteractionDialogController _dialogController;
-  late LoadDialog _loadDialog;
+  late final TabController _tabController;
 
-  late TextEditingController _loginPasswordController;
+  late final AuthBloc _authBloc;
+  final AuthenticationRepository _authRepository = AuthenticationRepository();
 
-  late bool sentAuthRequest;
+  TextEditingController _loginPasswordController = TextEditingController();
+  LoadDialog _loadDialog = LoadDialog();
+
+
   bool onLoginModule = false;
 
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<AuthBloc>(context).state.previouslyLoggedIn.then((value) => _tabController.index = value ? 0 : 1);
-    sentAuthRequest = false;
-    sendAuthenticationRequestEvent();
+
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
-    _dialogController = NoInteractionDialogController(isOpen: false);
-    _loadDialog = LoadDialog(controller: _dialogController);
-    _loginPasswordController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _authBloc = BlocProvider.of<AuthBloc>(context);
+    _authBloc.add(AuthConfirmationEvent(false));
+
+    _authRepository.getPreviouslyLoggedIn().then((value) => _tabController.index = value ? 0 : 1);
   }
 
   @override
@@ -51,7 +61,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       body: SafeArea(
         child: BlocListener<UserBloc, UserState>(
           listener: (ctx, state) {
-            if (state is UserLoggedInState) main.loginRoutine(state, context);
+            if (state is! UserLoggedInState) return;
+
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -166,14 +177,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     );
   }
 
-  void loginRoutine(AuthResult authResult) {
-    _dialogController.close();
+  void loginRoutine(TokenContainer authResult) {
     if (Navigator.of(context).canPop()) Navigator.of(context).pop();
     BlocProvider.of<UserBloc>(context).add(UserLoginEvent(authResult.accessToken));
-  }
-
-  void sendAuthenticationRequestEvent() async {
-    context.read<AuthBloc>().add(AuthConfirmationEvent(false));
-    sentAuthRequest = true;
   }
 }

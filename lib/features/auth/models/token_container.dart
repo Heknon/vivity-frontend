@@ -1,15 +1,15 @@
-class AuthResult {
+class TokenContainer {
   final String accessToken;
   final String refreshToken;
 
 //<editor-fold desc="Data Methods" defaultstate="collapsed">
 
-  const AuthResult({
+  const TokenContainer({
     required this.accessToken,
     required this.refreshToken,
   });
 
-  AuthResult copyWith({
+  TokenContainer copyWith({
     String? accessToken,
     String? refreshToken,
   }) {
@@ -17,7 +17,7 @@ class AuthResult {
       return this;
     }
 
-    return new AuthResult(
+    return new TokenContainer(
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
     );
@@ -31,13 +31,13 @@ class AuthResult {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AuthResult && runtimeType == other.runtimeType && accessToken == other.accessToken && refreshToken == other.refreshToken);
+      (other is TokenContainer && runtimeType == other.runtimeType && accessToken == other.accessToken && refreshToken == other.refreshToken);
 
   @override
   int get hashCode => accessToken.hashCode ^ refreshToken.hashCode;
 
-  factory AuthResult.fromMap(Map<String, dynamic> map) {
-    return new AuthResult(
+  factory TokenContainer.fromMap(Map<String, dynamic> map) {
+    return new TokenContainer(
       accessToken: map['access_token'] as String,
       refreshToken: map['refresh_token'] as String,
     );

@@ -102,39 +102,28 @@ class VivityDrawer extends StatelessWidget {
                 const Divider(thickness: 0),
                 buildMenuButton(
                     text: 'Profile',
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProfilePage())),
+                    onPressed: () => Navigator.of(context).pushNamed('/profile'),
                     context: context),
                 const Divider(thickness: 0),
                 buildMenuButton(
                   text: 'Settings',
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SettingsPage())),
+                  onPressed: () => Navigator.of(context).pushNamed('/settings'),
                   context: context,
                 ),
                 SizedBox(height: 7.h),
                 // TODO: Check whether already on home page.
                 buildMenuButton(
-                    text: 'Home', onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => HomePage())), context: context),
+                  text: 'Home',
+                  context: context,
+                  onPressed: () => Navigator.pushNamed(context, '/home/explore'),
+                ),
                 const Divider(thickness: 0),
-                buildMenuButton(
-                    text: 'Favorites list',
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => FavoritesPage())),
-                    context: context),
+                buildMenuButton(text: 'Favorites list', onPressed: () => Navigator.of(context).pushNamed('/favorites'), context: context),
                 SizedBox(height: 7.h),
                 buildMenuButton(
                   text: state.businessId != null ? "My business" : "Create business",
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (ctx) {
-                          if (state.businessId != null && state is BusinessUserLoggedInState) {
-                            return state.business.approved ? BusinessPage() : UnapprovedBusinessPage();
-                          }
-
-                          return CreateBusiness();
-                        },
-                      ),
-                    );
+                    Navigator.pushNamed(context, '/business');
                   },
                   context: context,
                 ),
@@ -142,7 +131,7 @@ class VivityDrawer extends StatelessWidget {
                   const Divider(thickness: 0),
                   buildMenuButton(
                     text: 'Admin controls',
-                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AdminPage())),
+                    onPressed: () => Navigator.of(context).pushNamed('/admin'),
                     context: context,
                   ),
                 ],
@@ -151,10 +140,9 @@ class VivityDrawer extends StatelessWidget {
                   text: 'Sign out',
                   onPressed: () {
                     Navigator.pop(context);
-                    context.read<UserBloc>().add(UserLogoutEvent());
+                    Navigator.pushReplacementNamed(context, '/logout');
                     ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Signing out...')));
-                    logoutRoutine(context);
                   },
                   context: context,
                   optionalStyle: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[400]?.withOpacity(0.6), fontSize: 14.sp),

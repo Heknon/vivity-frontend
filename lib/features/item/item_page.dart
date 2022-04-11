@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
+import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/explore/slideable_item_tab.dart';
@@ -37,11 +39,13 @@ import 'modifier/item_modifier.dart';
 class ItemPage extends StatefulWidget {
   final ItemModel item;
   final bool editorOpened;
+  final bool registerView;
 
   const ItemPage({
     Key? key,
     required this.item,
     this.editorOpened = false,
+    this.registerView = true,
   }) : super(key: key);
 
   @override
@@ -52,8 +56,13 @@ class _ItemPageState extends State<ItemPage> {
   late List<ItemModifierSelectorController> _selectorControllers;
   late QuantityController _quantityController;
   late LikeButtonController _likeController;
+
   late WidgetSwapperController _widgetSwapController;
+
   late PanelController _panelController;
+
+  final LoadDialog _loadDialog = LoadDialog();
+
   bool openedEditorPreviously = false;
   late final Future<Map<String, File>?>? itemImages;
 
@@ -89,7 +98,7 @@ class _ItemPageState extends State<ItemPage> {
       });
     }
 
-    addItemView(state.accessToken, widget.item.id.hexString);
+    if (widget.registerView) addItemView(state.accessToken, widget.item.id.hexString);
     _quantityController = QuantityController();
     _widgetSwapController = WidgetSwapperController();
   }
@@ -149,7 +158,8 @@ class _ItemPageState extends State<ItemPage> {
                                   return buildImagesLoadingIndicator(size);
                                 }
 
-                                List<File> images = data.entries.map((e) => e.value).toList();
+                                List<File> images =
+                                    widget.item.images.map((e) => data[e]).where((element) => element != null).map((e) => e as File).toList();
                                 return Carousel(
                                   images: images,
                                   bottomRightRadius: 30,
@@ -375,7 +385,10 @@ class _ItemPageState extends State<ItemPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Rating(rating: calculateRating(), color: Colors.white,),
+        Rating(
+          rating: calculateRating(),
+          color: Colors.white,
+        ),
         Text(
           '(${widget.item.reviews.length} reviews)',
           style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
@@ -495,9 +508,11 @@ class _ItemPageState extends State<ItemPage> {
       File? file = await filePickRoutine();
       if (file == null) return;
 
+      showDialog(context: context, builder: (ctx) => _loadDialog);
       ItemModel item = await swapImageOfItem(state.accessToken, widget.item.id.hexString, file, widget.item.images.length);
-      context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+      context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: item));
+      Navigator.pop(context);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, registerView: false)));
       return;
     }
     showDialog(
@@ -511,9 +526,11 @@ class _ItemPageState extends State<ItemPage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
+              showDialog(context: context, builder: (ctx) => _loadDialog);
               ItemModel item = await removeImageFromItem(state.accessToken, widget.item.id.hexString, index);
-              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: item));
+              Navigator.pop(context);
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, registerView: false)));
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,
@@ -528,9 +545,11 @@ class _ItemPageState extends State<ItemPage> {
               File? file = await filePickRoutine();
               if (file == null) return;
               Navigator.of(context).pop();
+              showDialog(context: context, builder: (ctx) => _loadDialog);
               ItemModel item = await swapImageOfItem(state.accessToken, widget.item.id.hexString, file, index);
-              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item)));
+              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: item));
+              Navigator.pop(context);
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, registerView: false)));
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,

@@ -69,7 +69,8 @@ Future<dynamic> updateUser(String token, {String? email, String? phone, Unit? un
 Future<Response> updatePassword(
   String token,
   String previousPassword,
-  String newPassword) async {
+  String newPassword,
+) async {
   Response response = await sendPostRequest(
       subRoute: userPasswordRoute,
       data: {

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
@@ -24,42 +25,37 @@ import 'slideable_item_tab.dart';
 import 'package:latlong2/latlong.dart';
 
 class Explore extends StatefulWidget {
+  const Explore();
+
   @override
   State<Explore> createState() => _ExploreState();
 }
 
 class _ExploreState extends State<Explore> {
   final _widgetSwapController = WidgetSwapperController();
-  late final ExploreController _controller;
+
   final Random random = Random();
-  bool firstBuild = true;
+  final ExploreController _controller = ExploreController();
 
   @override
   void initState() {
     super.initState();
 
-    _controller = ExploreController();
     _controller.addListener(() {
       setState(() {});
     });
+
+    handleStateChange(context.read<ExploreBloc>().state);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (firstBuild) {
-      handleStateChange(context.read<ExploreBloc>().state);
-      firstBuild = false;
-    }
     return LayoutBuilder(
       builder: (ctx, constraints) => BlocListener<ExploreBloc, ExploreState>(
-        listener: (ctx, state) {
-          handleStateChange(state);
-        },
+        listener: (ctx, state) => handleStateChange(state),
         child: Stack(
           children: [
-            MapGui(
-              mapBoxToken: mapBoxToken,
-            ),
+            MapGui(mapBoxToken: mapBoxToken),
             if (_controller.previewItem != null)
               Positioned(
                 bottom: 100,

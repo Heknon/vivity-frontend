@@ -14,7 +14,7 @@ import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/item_service.dart';
 
 import '../../config/themes/themes_config.dart';
-import '../../models/business.dart';
+import 'models/business.dart';
 import '../item/models/item_model.dart';
 import 'business_ui_helper.dart';
 
@@ -43,15 +43,11 @@ class _BusinessItemsPageState extends State<BusinessItemsPage> {
 
     return defaultGradientBackground(
       child: BlocListener<UserBloc, UserState>(
-        listenWhen: (UserState prevState, UserState state) {
-          if (state is BusinessUserLoggedInState && prevState is! BusinessUserLoggedInState) return true;
-          if (state is! BusinessUserLoggedInState || prevState is! BusinessUserLoggedInState) return false;
+        listenWhen: (prevState, currState) {
+          if (currState is! BusinessUserLoggedInState) return false;
+          if (prevState is! BusinessUserLoggedInState) return true;
 
-          if (state.business != prevState.business) {
-            return true;
-          }
-
-          return false;
+          return prevState.business.items != currState.business.items;
         },
         listener: (ctx, state) {
           setState(() {
@@ -82,12 +78,15 @@ class _BusinessItemsPageState extends State<BusinessItemsPage> {
                       hasEditButton: true,
                       onEditTapped: (item) {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (ctx) => ItemPage(
-                                      item: item,
-                                      editorOpened: true,
-                                    )));
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => ItemPage(
+                              item: item,
+                              editorOpened: true,
+                              registerView: false,
+                            ),
+                          ),
+                        );
                       },
                       onTap: (item) async {
                         int stock = await enterStockDialog(userStateInitial.business.ownerToken!, item, context);

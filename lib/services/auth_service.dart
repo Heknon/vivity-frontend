@@ -4,8 +4,7 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vivity/constants/api_path.dart';
-import 'package:vivity/features/auth/auth_result.dart';
-import 'package:vivity/features/auth/register_result.dart';
+import 'package:vivity/features/auth/models/token_container.dart';
 import 'package:vivity/services/api_service.dart';
 
 const FlutterSecureStorage storage = FlutterSecureStorage();
@@ -23,14 +22,14 @@ Future<RegisterResult?> login(String email, String password, String? otp, void F
   if (res.statusCode != 200) {
     if (onFail != null) onFail(res);
     return RegisterResult(
-      authResult: null,
+      tokenContainer: null,
       authStatus: res.data['data'] != null ? AuthenticationResult.values[res.data['data']] : null,
     );
     ;
   }
 
   return RegisterResult(
-    authResult: AuthResult.fromMap(res.data),
+    tokenContainer: TokenContainer.fromMap(res.data),
     authStatus: AuthenticationResult.success,
   );
 }
@@ -47,7 +46,7 @@ Future<RegisterResult> register(String email, String password, String name, Stri
   );
 
   return RegisterResult(
-    authResult: AuthResult.fromMap(res.data),
+    tokenContainer: TokenContainer.fromMap(res.data),
     authStatus: res.data.containsKey("auth_result") ? AuthenticationResult.values[res.data['auth_result'] as int] : null,
   );
 }
@@ -68,7 +67,7 @@ Future<bool> hasOTP({String? email, String? id}) async {
   return res.data['enabled'];
 }
 
-Future<AuthResult?> refreshAccessToken(String refreshToken) async {
+Future<TokenContainer?> refreshAccessToken(String refreshToken) async {
   if (!isRefreshTokenValid(refreshToken)) return null;
 
   Response res = await sendGetRequest(subRoute: "$refreshAccessTokenRoute?token=$refreshToken");
@@ -77,10 +76,10 @@ Future<AuthResult?> refreshAccessToken(String refreshToken) async {
     return null;
   }
 
-  return AuthResult.fromMap(res.data);
+  return TokenContainer.fromMap(res.data);
 }
 
-Future<AuthResult?> refreshRefreshToken(String refreshToken) async {
+Future<TokenContainer?> refreshRefreshToken(String refreshToken) async {
   if (!isRefreshTokenValid(refreshToken)) return null;
 
   Response res = await sendGetRequest(subRoute: "$refreshRefreshTokenRoute?token=$refreshToken");
@@ -89,7 +88,7 @@ Future<AuthResult?> refreshRefreshToken(String refreshToken) async {
     return null;
   }
 
-  return AuthResult.fromMap(res.data);
+  return TokenContainer.fromMap(res.data);
 }
 
 void securelyStoreCredentials(String refreshToken) {

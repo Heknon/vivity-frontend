@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/item/item_page.dart';
@@ -38,6 +39,7 @@ class ItemEditPanel extends StatefulWidget {
 class _ItemEditPanelState extends State<ItemEditPanel> {
   late ItemModel clonedItem;
   late final TextEditingController _descriptionController;
+  final LoadDialog _loadDialog = LoadDialog();
 
   @override
   void initState() {
@@ -260,6 +262,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
       return;
     }
 
+    showDialog(context: context, builder: (ctx) => _loadDialog);
     ItemModel updatedItem = await updateItem(
       state.accessToken,
       widget.item.id.hexString,
@@ -273,7 +276,8 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
       stock: clonedItem.stock,
       modificationButtons: clonedItem.itemStoreFormat.modificationButtons,
     );
-    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(updatedItem));
+    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: updatedItem));
+    Navigator.pop(context);
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: updatedItem)));
     widget.panelController.close();
   }

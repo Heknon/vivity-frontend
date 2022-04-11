@@ -9,7 +9,7 @@ import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/regex.dart';
-import 'package:vivity/features/auth/register_result.dart';
+import 'package:vivity/features/auth/authentication_result.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/auth_service.dart';
 
@@ -60,6 +60,7 @@ class _LoginModuleState extends State<LoginModule> {
                     controller: emailController,
                     validator: ValidationBuilder().minLength(5).maxLength(80).build(),
                     style: TextStyle(fontSize: 12.sp, color: Colors.black),
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: "Email",
                       labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
@@ -77,6 +78,7 @@ class _LoginModuleState extends State<LoginModule> {
                     style: TextStyle(fontSize: 12.sp, color: Colors.black),
                     obscureText: !_passwordVisible,
                     obscuringCharacter: '*',
+                    keyboardType: TextInputType.visiblePassword,
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
@@ -143,7 +145,6 @@ class _LoginModuleState extends State<LoginModule> {
 
                     String email = emailController.text.trim();
                     bool otpEnabled = await hasOTP(email: email);
-                    print(otpEnabled);
                     RegisterResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(email, passwordController.text) : null;
                     Navigator.pop(context);
                     bool shouldRequestOTP = false;

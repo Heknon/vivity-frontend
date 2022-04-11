@@ -78,7 +78,45 @@ class UserFrontendUpdate extends UserEvent {
 class BusinessUserFrontendUpdateItem extends UserEvent {
   final ItemModel item;
 
-  BusinessUserFrontendUpdateItem(this.item);
+//<editor-fold desc="Data Methods">
+
+  BusinessUserFrontendUpdateItem({
+    required this.item,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is BusinessUserFrontendUpdateItem && runtimeType == other.runtimeType && item == other.item);
+
+  @override
+  int get hashCode => item.hashCode;
+
+  @override
+  String toString() {
+    return 'BusinessUserFrontendUpdateItem{' + ' item: $item,' + '}';
+  }
+
+  BusinessUserFrontendUpdateItem copyWith({
+    ItemModel? item,
+  }) {
+    return BusinessUserFrontendUpdateItem(
+      item: item ?? this.item,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'item': this.item,
+    };
+  }
+
+  factory BusinessUserFrontendUpdateItem.fromMap(Map<String, dynamic> map) {
+    return BusinessUserFrontendUpdateItem(
+      item: map['item'] as ItemModel,
+    );
+  }
+
+//</editor-fold>
 }
 
 class BusinessUserFrontendUpdateOrder extends UserEvent {

@@ -20,12 +20,12 @@ import 'package:vivity/services/api_service.dart';
 import 'package:vivity/services/business_service.dart' as business_service;
 import 'package:vivity/services/item_service.dart';
 import '../../../constants/api_path.dart';
-import '../../../models/business.dart';
+import '../../business/models/business.dart';
 import '../../../models/address.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../models/order.dart';
-import '../../auth/auth_result.dart';
+import '../../auth/models/token_container.dart';
 
 part 'user_event.dart';
 
@@ -116,10 +116,12 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       emit(newState);
     });
 
-    on<BusinessUserFrontendUpdateItem>((event, emit) {
+
+    on<BusinessUserFrontendUpdateItem>((event, emit) async {
       if (state is! BusinessUserLoggedInState) return;
 
-      Business business = (state as BusinessUserLoggedInState).business..updateItem(event.item);
+      Business business = (state as BusinessUserLoggedInState).business.copyWith();
+      await business.updateItem(event.item);
       BusinessUserLoggedInState newState = (state as BusinessUserLoggedInState).copyWith(business: business);
       emit(newState);
     });

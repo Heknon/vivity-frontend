@@ -61,7 +61,7 @@ Future<int> enterStockDialog(String userToken, ItemModel itemModel, BuildContext
 
             ItemModel item = await updateItemStock(userToken, itemModel.id.hexString, int.parse(controller.text));
             Navigator.of(context).pop(); // TODO: Have a loading OVERLAY instead of this pop...
-            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item));
+            BlocProvider.of<UserBloc>(context).add(BusinessUserFrontendUpdateItem(item: item));
             stock.complete(int.parse(controller.text));
           },
           style: ButtonStyle(

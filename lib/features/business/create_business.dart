@@ -8,6 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
+import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:place_picker/entities/location_result.dart';
 import 'package:place_picker/place_picker.dart';
 import 'package:sizer/sizer.dart';
@@ -42,6 +44,9 @@ class _CreateBusinessState extends State<CreateBusiness> {
 
   final TextEditingController _businessNationalNumberController = TextEditingController();
 
+  final NoInteractionDialogController _dialogController = NoInteractionDialogController();
+  late final LoadDialog _loadDialog;
+
   File? ownerIdFile;
   latlng.LatLng? location;
   LocationResult? locationData;
@@ -55,169 +60,169 @@ class _CreateBusinessState extends State<CreateBusiness> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You already have a business registered!')));
     }
+
+    _loadDialog = LoadDialog(controller: _dialogController);
   }
 
   @override
   Widget build(BuildContext context) {
-    // print("build business");
-    // if (context.read<UserBloc>().state is BusinessUserLoggedInState) {
-    //   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
-    //   ScaffoldMessenger.of(context).clearSnackBars();
-    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You already have a business registered!')));
-    // }
-
     return BasePage(
-      userStateListener: (ctx, state) {
-        if (state is BusinessUserLoggedInState) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => UnapprovedBusinessPage()));
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered your business!')));
-        }
-      },
-      body: defaultGradientBackground(
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Center(
-                    child: Text(
-                      'Register business',
-                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+      body: BlocListener<UserBloc, UserState>(
+        listenWhen: (prevState, state) => state is BusinessUserLoggedInState,
+        listener: (ctx, state) {
+          if (state is BusinessUserLoggedInState) {
+            Navigator.pop(context);
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => UnapprovedBusinessPage()));
+            ScaffoldMessenger.of(context).clearSnackBars();
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered your business!')));
+          }
+        },
+        child: defaultGradientBackground(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Center(
+                      child: Text(
+                        'Register business',
+                        style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+                      ),
                     ),
                   ),
-                ),
-                // name, email, phone, national business number, business owner id, location
-                buildTextFormField('Business name', _businessNameController, ValidationBuilder().minLength(3).maxLength(40)),
-                buildTextFormField(
-                  'Business email',
-                  _businessEmailController,
-                  ValidationBuilder().add((value) => validEmail.hasMatch(value ?? "f") ? null : "Must be a valid email"),
-                ),
-                buildTextFormField(
-                  'Business phone',
-                  _businessPhoneController,
-                  ValidationBuilder().add((value) {
-                    if (value?.length != 10) return 'Must be a 10 digit number';
-                    return int.tryParse(value ?? "f") != null ? null : 'Must be a 10 digit number';
-                  }),
-                ),
-                buildTextFormField(
-                  'National business number',
-                  _businessNationalNumberController,
-                  ValidationBuilder().minLength(4).maxLength(20).add((String? value) => value == null
-                      ? "Must be a number"
-                      : double.tryParse(value) != null
-                          ? null
-                          : "Must be a number"),
-                ),
-                Divider(thickness: 0, color: Colors.transparent),
-                if (ownerIdFile == null)
+                  // name, email, phone, national business number, business owner id, location
+                  buildTextFormField('Business name', _businessNameController, ValidationBuilder().minLength(3).maxLength(40)),
+                  buildTextFormField(
+                    'Business email',
+                    _businessEmailController,
+                    ValidationBuilder().add((value) => validEmail.hasMatch(value ?? "f") ? null : "Must be a valid email"),
+                  ),
+                  buildTextFormField(
+                    'Business phone',
+                    _businessPhoneController,
+                    ValidationBuilder().add((value) {
+                      if (value?.length != 10) return 'Must be a 10 digit number';
+                      return int.tryParse(value ?? "f") != null ? null : 'Must be a 10 digit number';
+                    }),
+                  ),
+                  buildTextFormField(
+                    'National business number',
+                    _businessNationalNumberController,
+                    ValidationBuilder().minLength(4).maxLength(20).add((String? value) => value == null
+                        ? "Must be a number"
+                        : double.tryParse(value) != null
+                            ? null
+                            : "Must be a number"),
+                  ),
+                  Divider(thickness: 0, color: Colors.transparent),
+                  if (ownerIdFile == null)
+                    TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(primaryComplementaryColor),
+                        overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.4)),
+                        fixedSize: MaterialStateProperty.all(Size(40.w, 15.sp * 2)),
+                      ),
+                      onPressed: () => filePickRoutine().then((value) => setState(() => ownerIdFile = value ?? ownerIdFile)),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.folder_open_outlined,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Picture of ID',
+                            style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.white),
+                          )
+                        ],
+                      ),
+                    )
+                  else ...[
+                    Text(
+                      'Picture of business owner\'s ID',
+                      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                    ),
+                    GestureDetector(
+                      onTap: () => filePickRoutine().then((value) => setState(() => ownerIdFile = value ?? ownerIdFile)),
+                      child: Image.file(ownerIdFile!, height: 30.h),
+                    ),
+                  ],
+                  Divider(thickness: 0, color: Colors.transparent),
+                  if (locationData != null)
+                    Text(
+                      'Selected: ${locationData!.name}',
+                      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
+                    ),
                   TextButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(primaryComplementaryColor),
                       overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.4)),
                       fixedSize: MaterialStateProperty.all(Size(40.w, 15.sp * 2)),
                     ),
-                    onPressed: () => filePickRoutine().then((value) => setState(() => ownerIdFile = value ?? ownerIdFile)),
+                    onPressed: () async {
+                      LocationResult? res = await showPlacePicker();
+                      setState(() {
+                        location = res == null ? null : latlng.LatLng(res.latLng!.latitude, res.latLng!.longitude);
+                        locationData = res;
+                      });
+                    },
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.folder_open_outlined,
+                          Icons.pin_drop,
                           color: Colors.white,
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Picture of ID',
+                          'Shop location',
                           style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.white),
-                        )
+                        ),
                       ],
                     ),
-                  )
-                else ...[
-                  Text(
-                    'Picture of business owner\'s ID',
-                    style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.bold),
                   ),
-                  GestureDetector(
-                    onTap: () => filePickRoutine().then((value) => setState(() => ownerIdFile = value ?? ownerIdFile)),
-                    child: Image.file(ownerIdFile!, height: 30.h),
-                  ),
-                ],
-                Divider(thickness: 0, color: Colors.transparent),
-                if (locationData != null)
-                  Text(
-                    'Selected: ${locationData!.name}',
-                    style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal),
-                  ),
-                TextButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(primaryComplementaryColor),
-                    overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.4)),
-                    fixedSize: MaterialStateProperty.all(Size(40.w, 15.sp * 2)),
-                  ),
-                  onPressed: () async {
-                    LocationResult? res = await showPlacePicker();
-                    setState(() {
-                      location = res == null ? null : latlng.LatLng(res.latLng!.latitude, res.latLng!.longitude);
-                      locationData = res;
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.pin_drop,
-                        color: Colors.white,
+                  Divider(thickness: 0, color: Colors.transparent),
+                  Center(
+                    child: TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.secondaryVariant),
+                        overlayColor: MaterialStateProperty.all(Colors.grey),
+                        fixedSize: MaterialStateProperty.all(Size(85.w, 15.sp * 3)),
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Shop location',
-                        style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.white),
+                      child: Text(
+                        'Register',
+                        style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
                       ),
-                    ],
-                  ),
-                ),
-                Divider(thickness: 0, color: Colors.transparent),
-                Center(
-                  child: TextButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.secondaryVariant),
-                      overlayColor: MaterialStateProperty.all(Colors.grey),
-                      fixedSize: MaterialStateProperty.all(Size(85.w, 15.sp * 3)),
-                    ),
-                    child: Text(
-                      'Register',
-                      style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
-                    ),
-                    onPressed: () {
-                      if (!(_formKey.currentState?.validate() ?? true)) {
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill out correctly.')));
-                        return;
-                      } else if (ownerIdFile == null || location == null) {
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Missing business location or owner ID')));
-                        return;
-                      }
+                      onPressed: () {
+                        if (!(_formKey.currentState?.validate() ?? true)) {
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill out correctly.')));
+                          return;
+                        } else if (ownerIdFile == null || location == null) {
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Missing business location or owner ID')));
+                          return;
+                        }
 
-                      _formKey.currentState?.save();
-                      handleRegister(
-                        _businessNameController.value.text,
-                        _businessEmailController.value.text,
-                        _businessPhoneController.value.text,
-                        _businessNationalNumberController.value.text,
-                        ownerIdFile!,
-                        location!,
-                      );
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registering!')));
-                    },
+                        _formKey.currentState?.save();
+                        handleRegister(
+                          _businessNameController.value.text,
+                          _businessEmailController.value.text,
+                          _businessPhoneController.value.text,
+                          _businessNationalNumberController.value.text,
+                          ownerIdFile!,
+                          location!,
+                        );
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registering!')));
+                        showDialog(context: context, builder: (ctx) => _loadDialog);
+                      },
+                    ),
                   ),
-                ),
-                SizedBox(height: 15),
-              ],
+                  SizedBox(height: 15),
+                ],
+              ),
             ),
           ),
         ),

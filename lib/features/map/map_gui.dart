@@ -29,8 +29,6 @@ class MapGui extends StatefulWidget {
   _MapGuiState createState() => _MapGuiState();
 }
 
-int initNum = 0;
-
 class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   bool registeredLocation = false;
   LatLng fallbackLocation = LatLng(32.0668, 34.7649);
@@ -59,11 +57,11 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   void _onMapCreated(MapController _controller) async {
     MapControllerImpl controller = _controller as MapControllerImpl;
-    if (mounted && initNum.isOdd) {
-      context.read<ExploreBloc>().add(ExploreControllerUpdateEvent(controller, (context.read<UserBloc>().state as UserLoggedInState).accessToken));
+    if (mounted) {
+      UserState userState = context.read<UserBloc>().state;
+      context.read<ExploreBloc>().add(ExploreControllerUpdateEvent(controller, userState is UserLoggedInState ? userState.accessToken : null));
       _mapController = _controller;
     }
-    initNum++;
   }
 
   @override

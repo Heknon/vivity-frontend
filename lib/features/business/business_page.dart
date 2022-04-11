@@ -17,6 +17,17 @@ class BusinessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    UserState state = context.read<UserBloc>().state;
+    if (state is! BusinessUserLoggedInState) {
+      Navigator.pushReplacementNamed(context, '/business/create');
+      return CircularProgressIndicator();
+    }
+
+    if (!state.business.approved) {
+      Navigator.pushReplacementNamed(context, '/business/unapproved');
+      return CircularProgressIndicator();
+    }
+
     return DefaultTabController(
       length: 3,
       child: BasePage(

@@ -47,7 +47,6 @@ class ConfirmPage extends StatelessWidget {
   Widget buildBody(BuildContext context, Size itemSize, Size listSize) {
     return BlocConsumer<CheckoutBloc, CheckoutState>(listener: (context, state) {
       if (state is CheckoutStateShippingStage && state is! CheckoutStatePaymentStage) {
-        print(state.shippingMethod);
         Navigator.push(context, MaterialPageRoute(builder: (ctx) => state.shippingMethod == ShippingMethod.delivery ? ShippingPage() : PickupPage()));
       }
     }, builder: (context, state) {

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:objectid/objectid/objectid.dart';
+import 'package:vivity/features/business/models/business_metrics.dart';
+import 'package:vivity/features/business/models/contact_information.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/models/order.dart';
 import 'package:vivity/services/business_service.dart';
@@ -12,7 +14,7 @@ class Business {
   Future<List<ItemModel>>? _cachedOrderItems;
   Map<ObjectId, ItemModel>? _cachedItemIdMap;
 
-  final String? ownerToken;
+  final String? ownerToken = '';
   final String name;
   final ObjectId businessId;
   final LatLng location;
@@ -26,8 +28,7 @@ class Business {
   final bool approved;
   final String adminNote;
 
-  Business(
-    this.ownerToken, {
+  Business({
     required this.businessId,
     required this.name,
     required this.location,
@@ -84,7 +85,7 @@ class Business {
     return _cachedItemIdMap!;
   }
 
-  void updateItem(ItemModel item) async {
+  Future<void> updateItem(ItemModel item) async {
     List<ItemModel> cached = await _cachedItems;
     cached.removeWhere((element) => element.id == item.id);
     cached.add(item);
@@ -97,7 +98,7 @@ class Business {
     items.add(item.id);
   }
 
-  void updateOrderStatus(Order order) async {
+  Future<void> updateOrderStatus(Order order) async {
     List<Order> cached = await _cachedOrders;
     cached.removeWhere((element) => element.orderId == order.orderId);
     cached.add(order);
@@ -118,37 +119,25 @@ class Business {
     bool? approved,
     String? adminNote,
   }) {
-    if ((name == null || identical(name, this.name)) &&
-        (location == null || identical(location, this.location)) &&
-        (items == null || identical(items, this.items)) &&
-        (categories == null || identical(categories, this.categories)) &&
-        (contact == null || identical(contact, this.contact)) &&
-        (nationalBusinessId == null || identical(nationalBusinessId, this.nationalBusinessId)) &&
-        (ownerId == null || identical(ownerId, this.ownerId)) &&
-        (ownerId == null || identical(ownerId, this.ownerId))) {
-      return this;
-    }
-
     return Business(
       ownerToken ?? this.ownerToken,
       businessId: businessId ?? this.businessId,
       name: name ?? this.name,
       location: location ?? this.location,
-      items: items ?? this.items,
-      categories: categories ?? this.categories,
-      contact: contact ?? this.contact,
+      items: items ?? this.items.map((e) => ObjectId.fromBytes(e.bytes)).toList(),
+      categories: categories ?? this.categories.map((key, value) => MapEntry(key, value.map((e) => ObjectId.fromBytes(e.bytes)).toList())),
+      contact: contact ?? this.contact.copyWith(),
       nationalBusinessId: nationalBusinessId ?? this.nationalBusinessId,
       ownerId: ownerId ?? this.ownerId,
-      metrics: metrics ?? this.metrics,
-      orders: orders ?? this.orders,
+      metrics: metrics ?? this.metrics.copyWith(),
+      orders: orders ?? this.orders.map((e) => ObjectId.fromBytes(e.bytes)).toList(),
       approved: approved ?? this.approved,
       adminNote: adminNote ?? this.adminNote,
     );
   }
 
-  factory Business.fromMap(String? token, Map<String, dynamic> map) {
+  factory Business.fromMap(Map<String, dynamic> map) {
     return Business(
-      token,
       businessId: ObjectId.fromHexString(map['_id']),
       name: map['name'] as String,
       location: LatLng((map['location'][0] as num).toDouble(), (map['location'][1] as num).toDouble()),
@@ -232,124 +221,4 @@ class Business {
   String toString() {
     return 'Business{name: $name, location: $location, items: $items, categories: $categories, contact: $contact, nationalBusinessId: $nationalBusinessId, ownerId: $ownerId, metrics: $metrics, orders: $orders}';
   }
-}
-
-class ContactInformation {
-  final String phone;
-  final String email;
-  final String? instagram;
-  final String? twitter;
-  final String? facebook;
-
-  ContactInformation({
-    required this.phone,
-    required this.email,
-    this.instagram,
-    this.twitter,
-    this.facebook,
-  });
-
-  factory ContactInformation.fromMap(Map<String, dynamic> map) {
-    return ContactInformation(
-      phone: map['phone'] as String,
-      email: map['email'] as String,
-      instagram: map['instagram'] as String?,
-      twitter: map['twitter'] as String?,
-      facebook: map['facebook'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    // ignore: unnecessary_cast
-    return {
-      'phone': phone,
-      'email': email,
-      'instagram': instagram,
-      'twitter': twitter,
-      'facebook': facebook,
-    } as Map<String, dynamic>;
-  }
-
-  ContactInformation copyWith({
-    String? phone,
-    String? email,
-    String? instagram,
-    String? twitter,
-    String? facebook,
-  }) {
-    if ((phone == null || identical(phone, this.phone)) &&
-        (email == null || identical(email, this.email)) &&
-        (instagram == null || identical(instagram, this.instagram)) &&
-        (twitter == null || identical(twitter, this.twitter)) &&
-        (facebook == null || identical(facebook, this.facebook))) {
-      return this;
-    }
-
-    return ContactInformation(
-      phone: phone ?? this.phone,
-      email: email ?? this.email,
-      instagram: instagram ?? this.instagram,
-      twitter: twitter ?? this.twitter,
-      facebook: facebook ?? this.facebook,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ContactInformation &&
-          runtimeType == other.runtimeType &&
-          phone == other.phone &&
-          email == other.email &&
-          instagram == other.instagram &&
-          twitter == other.twitter &&
-          facebook == other.facebook;
-
-  @override
-  int get hashCode => phone.hashCode ^ email.hashCode ^ instagram.hashCode ^ twitter.hashCode ^ facebook.hashCode;
-
-  @override
-  String toString() {
-    return 'ContactInformation{phone: $phone, email: $email, instagram: $instagram, twitter: $twitter, facebook: $facebook}';
-  }
-}
-
-class BusinessMetrics {
-  final int views;
-
-  BusinessMetrics({
-    required this.views,
-  });
-
-  factory BusinessMetrics.fromMap(Map<String, dynamic> map) {
-    return BusinessMetrics(
-      views: (map['views'] as num).toInt(),
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    // ignore: unnecessary_cast
-    return {
-      'views': views,
-    } as Map<String, dynamic>;
-  }
-
-  BusinessMetrics copyWith({
-    int? views,
-  }) {
-    return BusinessMetrics(
-      views: views ?? this.views,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'BusinessMetrics{views: $views}';
-  }
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || other is BusinessMetrics && runtimeType == other.runtimeType && views == other.views;
-
-  @override
-  int get hashCode => views.hashCode;
 }

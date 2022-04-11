@@ -36,7 +36,7 @@ Widget buildPreviewImage(
     return SizedBox(
       height: (size?.height ?? 50) * 0.5,
       width: (size?.width ?? 50) * 0.4,
-      child: Image.memory(noImageAvailable!)
+      child: Image.memory(noImageAvailable!, fit: BoxFit.fitHeight,)
     );
   }
 

@@ -18,7 +18,6 @@ class BasePage extends StatelessWidget {
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
   final FloatingActionButtonAnimator? floatingActionButtonAnimator;
-  final void Function(BuildContext, UserState)? userStateListener;
 
   const BasePage({
     Key? key,
@@ -26,7 +25,6 @@ class BasePage extends StatelessWidget {
     this.appBar,
     this.drawer,
     this.body,
-    this.userStateListener,
     this.floatingActionButtonLocation,
     this.floatingActionButtonAnimator,
     this.floatingActionButton,
@@ -36,26 +34,21 @@ class BasePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (ctx, state) {
-        if (state is! AuthLoggedInState) return;
-
-        context.read<UserBloc>().add(UserRenewTokenEvent(state.authResult.accessToken));
+        if (state is AuthLoggedOutState) {
+          Navigator.of(context).pushReplacementNamed('/logout');
+          return;
+        } else if (state is AuthLoggedInState) {
+          context.read<UserBloc>().add(UserRenewTokenEvent(state.authResult.accessToken));
+        }
       },
-      child: BlocListener<UserBloc, UserState>(
-        listener: (ctx, state) {
-          if (userStateListener != null) userStateListener!(ctx, state);
-          if (state is UserLoggedOutState) {
-            logoutRoutine(context);
-          }
-        },
-        child: Scaffold(
-          floatingActionButton: floatingActionButton,
-          floatingActionButtonAnimator: floatingActionButtonAnimator,
-          floatingActionButtonLocation: floatingActionButtonLocation,
-          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-          appBar: appBar ?? VivityAppBar(),
-          drawer: drawer ?? const VivityDrawer(),
-          body: body,
-        ),
+      child: Scaffold(
+        floatingActionButton: floatingActionButton,
+        floatingActionButtonAnimator: floatingActionButtonAnimator,
+        floatingActionButtonLocation: floatingActionButtonLocation,
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        appBar: appBar ?? VivityAppBar(),
+        drawer: drawer ?? const VivityDrawer(),
+        body: body,
       ),
     );
   }
@@ -79,16 +72,17 @@ class BasePageBlocBuilder<B extends StateStreamable<S>, S> extends BasePage {
           appBar: appBar,
           drawer: drawer,
           resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-          userStateListener: userStateListener,
         );
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<UserBloc, UserState>(
+    return BlocListener<AuthBloc, AuthState>(
       listener: (ctx, state) {
-        if (userStateListener != null) userStateListener!(ctx, state);
-        if (state is UserLoggedOutState) {
-          logoutRoutine(context);
+        if (state is AuthLoggedOutState) {
+          Navigator.of(context).pushReplacementNamed('/logout');
+          return;
+        } else if (state is AuthLoggedInState) {
+          context.read<UserBloc>().add(UserRenewTokenEvent(state.authResult.accessToken));
         }
       },
       child: Scaffold(

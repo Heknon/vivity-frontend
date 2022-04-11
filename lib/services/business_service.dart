@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-import 'package:vivity/models/business.dart';
+import 'package:vivity/features/business/models/business.dart';
 import 'package:vivity/services/item_service.dart';
 
 import '../constants/api_path.dart';
