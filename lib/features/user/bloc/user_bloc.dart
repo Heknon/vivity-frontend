@@ -24,7 +24,7 @@ import '../../business/models/business.dart';
 import '../../../models/address.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../../models/order.dart';
+import '../../business/models/order.dart';
 import '../../auth/models/token_container.dart';
 
 part 'user_event.dart';

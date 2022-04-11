@@ -8,7 +8,7 @@ import 'package:vivity/features/user/models/business_user.dart';
 import 'package:vivity/features/user/models/user_options.dart';
 
 import '../../../models/address.dart';
-import '../../../models/order.dart';
+import '../../business/models/order.dart';
 
 class User {
   final ObjectId id;

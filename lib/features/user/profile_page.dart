@@ -4,7 +4,7 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/checkout/ui_checkout_helper.dart';
 import 'package:vivity/services/item_service.dart';
-import '../../models/order.dart';
+import '../business/models/order.dart';
 import '../item/models/item_model.dart';
 import '../order/order.dart' as order_widget;
 

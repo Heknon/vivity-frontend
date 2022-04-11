@@ -16,7 +16,7 @@ import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:vivity/models/order.dart';
+import 'package:vivity/features/business/models/order.dart';
 import 'package:vivity/services/item_service.dart';
 
 import 'models/item_model.dart';

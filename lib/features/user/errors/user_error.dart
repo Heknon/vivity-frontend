@@ -1,13 +1,30 @@
-class UserException implements Exception {}
+import 'package:dio/dio.dart';
+import 'package:vivity/services/network_exception.dart';
 
-class UserGetFailedException implements UserException {}
+class UserException extends NetworkException {
+  UserException({Response? response, String? message}) : super(response: response, message: message);
+}
 
-class UserUpdateFailedException implements UserException {}
+class UserGetFailedException extends UserException {
+  UserGetFailedException({Response? response, String? message}) : super(response: response, message: message);
+}
 
-class UserGetProfilePictureFailedException implements UserException {}
+class UserUpdateFailedException extends UserException {
+  UserUpdateFailedException({Response? response, String? message}) : super(response: response, message: message);
+}
 
-class UserFavoriteFailedException implements UserException {}
+class UserGetProfilePictureFailedException extends UserException {
+  UserGetProfilePictureFailedException({Response? response, String? message}) : super(response: response, message: message);
+}
 
-class UserRemoveFavoriteFailedException implements UserException {}
+class UserFavoriteFailedException extends UserException {
+  UserFavoriteFailedException({Response? response, String? message}) : super(response: response, message: message);
+}
 
-class UserNoAccessException implements UserException {}
+class UserRemoveFavoriteFailedException extends UserException {
+  UserRemoveFavoriteFailedException({Response? response, String? message}) : super(response: response, message: message);
+}
+
+class UserNoAccessException extends UserException {
+  UserNoAccessException({Response? response, String? message}) : super(response: response, message: message);
+}

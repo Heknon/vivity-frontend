@@ -6,7 +6,7 @@ import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/models/user_options.dart';
 import 'package:vivity/models/address.dart';
 import 'package:vivity/features/business/models/business.dart';
-import 'package:vivity/models/order.dart';
+import 'package:vivity/features/business/models/order.dart';
 
 class BusinessUser extends User {
   final ObjectId businessId;

@@ -10,7 +10,7 @@ import '../features/user/models/user_options.dart';
 import 'auth_service.dart';
 import 'package:vivity/services/api_service.dart';
 
-import '../models/order.dart';
+import '../features/business/models/order.dart';
 
 Future<Map<String, dynamic>?> getUserFromToken(String token) async {
   JWT? parsedToken = parseAccessToken(token);

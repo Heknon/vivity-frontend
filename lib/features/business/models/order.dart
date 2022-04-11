@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:objectid/objectid/objectid.dart';
+import 'package:vivity/features/business/models/order_item.dart';
 
-import 'order_item.dart';
-
-import '../../../models/address.dart';
+import '../../../../../models/address.dart';
 
 class Order {
   final ObjectId orderId;

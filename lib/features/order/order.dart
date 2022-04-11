@@ -4,7 +4,7 @@ import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-import '../../models/order.dart' as business_model;
+import '../business/models/order.dart' as business_model;
 import '../item/ui_item_helper.dart';
 import '../shipping/address.dart';
 

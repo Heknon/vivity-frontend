@@ -6,7 +6,7 @@ import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/business_service.dart';
 
 import 'models/business.dart';
-import '../../models/order.dart';
+import 'models/order.dart';
 import '../item/models/item_model.dart';
 import '../order/order.dart' as order_widget;
 import '../user/bloc/user_bloc.dart';

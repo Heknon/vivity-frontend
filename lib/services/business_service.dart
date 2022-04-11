@@ -8,7 +8,7 @@ import 'package:vivity/features/business/models/business.dart';
 import 'package:vivity/services/item_service.dart';
 
 import '../constants/api_path.dart';
-import '../models/order.dart';
+import '../features/business/models/order.dart';
 import 'api_service.dart';
 
 Future<int> addBusinessView(String token, String businessId) async {
