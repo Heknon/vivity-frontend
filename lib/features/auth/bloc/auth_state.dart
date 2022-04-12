@@ -13,8 +13,12 @@ class AuthLoggedInState extends AuthState {
 
 class AuthLoadingState extends AuthState {}
 
-class AuthLoggedOutState extends AuthState {
-  final AuthenticationStatus? status;
+class AuthFailedState extends AuthLoggedOutState {
+  final String? message;
 
-  AuthLoggedOutState({this.status});
+  AuthFailedState({this.message});
+}
+
+class AuthLoggedOutState extends AuthState {
+
 }

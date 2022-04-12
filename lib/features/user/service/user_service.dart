@@ -21,7 +21,8 @@ class UserService extends ServiceProvider {
 
   static const String profilePictureRoute = '/profile_picture';
   static const String favoriteItemRoute = '/favorite';
-  static const String exploreRoute = '/explore'; // TODO: Explore repo and search service
+  static const String exploreRoute =
+      '/explore'; // TODO: Explore repo and search service
   static const String cartRoute = '/cart'; // TODO: Cart repo and service
   static const String addressRoute = '/address';
   static const String feedRoute = '/feed'; // TODO: Feed repo and search service
@@ -40,13 +41,12 @@ class UserService extends ServiceProvider {
 
   Future<AsyncSnapshot<User>> getUser({
     bool includeCartItemModels = true,
-    bool includeBusiness = true,
   }) async {
     try {
       String accessToken = await _authRepository.getAccessToken();
-      AsyncSnapshot<Response> snapshot = await get(token: accessToken, queryParameters: {
+      AsyncSnapshot<Response> snapshot =
+          await get(token: accessToken, queryParameters: {
         "include_cart_item_models": includeCartItemModels,
-        'include_business': includeBusiness,
       });
 
       if (snapshot.hasError) {
@@ -113,10 +113,12 @@ class UserService extends ServiceProvider {
     }
   }
 
-  Future<AsyncSnapshot<Uint8List>> updateProfilePicture({required File? file}) async {
+  Future<AsyncSnapshot<Uint8List>> updateProfilePicture(
+      {required File? file}) async {
     try {
       String accessToken = await _authRepository.getAccessToken();
-      AsyncSnapshot<Response> snapshot = await postUpload(subRoute: profilePictureRoute, token: accessToken, file: file);
+      AsyncSnapshot<Response> snapshot = await postUpload(
+          subRoute: profilePictureRoute, token: accessToken, file: file);
 
       if (snapshot.hasError) {
         return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -141,7 +143,8 @@ class UserService extends ServiceProvider {
   Future<AsyncSnapshot<Uint8List>> getProfilePicture() async {
     try {
       String accessToken = await _authRepository.getAccessToken();
-      AsyncSnapshot<Response> snapshot = await get(subRoute: profilePictureRoute, token: accessToken);
+      AsyncSnapshot<Response> snapshot =
+          await get(subRoute: profilePictureRoute, token: accessToken);
 
       if (snapshot.hasError) {
         return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -191,7 +194,9 @@ class UserService extends ServiceProvider {
 
       return AsyncSnapshot.withData(
         ConnectionState.done,
-        (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
+        (response.data as List<dynamic>)
+            .map((e) => ItemModel.fromMap(e))
+            .toList(),
       );
     } on Exception catch (e) {
       return AsyncSnapshot.withError(ConnectionState.done, e);
@@ -226,7 +231,9 @@ class UserService extends ServiceProvider {
 
       return AsyncSnapshot.withData(
         ConnectionState.done,
-        (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
+        (response.data as List<dynamic>)
+            .map((e) => ItemModel.fromMap(e))
+            .toList(),
       );
     } on Exception catch (e) {
       return AsyncSnapshot.withError(ConnectionState.done, e);
@@ -373,13 +380,16 @@ class UserService extends ServiceProvider {
     Map<String, ItemModel>? cartIdItemModelMap;
     if (map.containsKey('cart_item_models')) {
       cartIdItemModelMap = {};
-      List<ItemModel> cartItemModels = (map['cart_item_models'] as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList();
+      List<ItemModel> cartItemModels =
+          (map['cart_item_models'] as List<dynamic>)
+              .map((e) => ItemModel.fromMap(e))
+              .toList();
       for (ItemModel cartItemModel in cartItemModels) {
         cartIdItemModelMap[cartItemModel.id.hexString] = cartItemModel;
       }
     }
 
-    return map.containsKey('business_id') && map.containsKey('business')
+    return map.containsKey('business_id')
         ? BusinessUser.fromMap(map, cartIdItemModelMap)
         : User.fromMap(map, cartIdItemModelMap);
   }

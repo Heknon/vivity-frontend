@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
-import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/auth/models/token_container.dart';
@@ -11,11 +10,8 @@ import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
-import 'package:vivity/main.dart' as main;
+import 'package:vivity/helpers/ui_helpers.dart';
 
-import '../cart/cart_bloc/cart_bloc.dart';
-import '../explore/bloc/explore_bloc.dart';
-import '../home/home_page.dart';
 import '../user/bloc/user_bloc.dart';
 
 class AuthPage extends StatefulWidget {
@@ -25,7 +21,8 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
+class _AuthPageState extends State<AuthPage>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   late final AuthBloc _authBloc;
@@ -33,7 +30,6 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
 
   TextEditingController _loginPasswordController = TextEditingController();
   LoadDialog _loadDialog = LoadDialog();
-
 
   bool onLoginModule = false;
 
@@ -49,20 +45,38 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     super.didChangeDependencies();
 
     _authBloc = BlocProvider.of<AuthBloc>(context);
-    _authBloc.add(AuthConfirmationEvent(false));
 
-    _authRepository.getPreviouslyLoggedIn().then((value) => _tabController.index = value ? 0 : 1);
+    _authRepository
+        .getPreviouslyLoggedIn()
+        .then((value) => _tabController.index = value ? 0 : 1);
   }
 
   @override
   Widget build(BuildContext context) {
+    AuthState authState = _authBloc.state;
+
     return Scaffold(
       backgroundColor: const Color(0xffdddddd),
       body: SafeArea(
-        child: BlocListener<UserBloc, UserState>(
+        child: BlocListener<AuthBloc, AuthState>(
           listener: (ctx, state) {
-            if (state is! UserLoggedInState) return;
+            if (state is AuthLoggedInState) {
+              Navigator.pushReplacementNamed(context, "/home/explore");
+            } else if (state is AuthFailedState) {
+              showSnackBar(state.message ?? "Authentication failed", context);
+              _loginPasswordController.text = "";
 
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            } else if (state is AuthLoggedOutState) {
+              _loginPasswordController.text = "";
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            } else if (state is AuthLoadingState) {
+              showDialog(context: context, builder: (ctx) => _loadDialog);
+            }
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -92,44 +106,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   }
 
   Widget buildAuthenticationSplashscreen() {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (ctx, state) async {
-        if (state is AuthLoggedInState) {
-          loginRoutine(state.authResult);
-        } else if (state is AuthRegisterFailedState) {
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.reason.name),
-          ));
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-            _loginPasswordController.text = "";
-          }
-        } else if (state is AuthLoggedOutState && state.status != null) {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-            _loginPasswordController.text = "";
-          }
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(state.status!.getMessage()),
-          ));
-        } else if (state is AuthLoggedOutState) {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-            _loginPasswordController.text = "";
-          }
-        }
-
-        if (state is AuthLoadingState || state is AuthLoggedInState || context.read<UserBloc>().state is UserLoadingState) {
-          showDialog(context: context, builder: (ctx) => _loadDialog);
-        }
-      },
-      builder: (ctx, state) {
-        return Expanded(
-          child: buildAuthModule(),
-        );
-      },
+    return Expanded(
+      child: buildAuthModule(),
     );
   }
 
@@ -147,7 +125,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                 child: Text(
                   'LOGIN',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 12.sp, color: fillerColor),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline3!
+                      .copyWith(fontSize: 12.sp, color: fillerColor),
                 ),
               ),
             ),
@@ -157,7 +138,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                 child: Text(
                   'REGISTER',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 12.sp, color: fillerColor),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline3!
+                      .copyWith(fontSize: 12.sp, color: fillerColor),
                 ),
               ),
             ),
@@ -175,10 +159,5 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         )
       ],
     );
-  }
-
-  void loginRoutine(TokenContainer authResult) {
-    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-    BlocProvider.of<UserBloc>(context).add(UserLoginEvent(authResult.accessToken));
   }
 }

@@ -8,6 +8,7 @@ import 'package:vivity/features/auth/models/authentication_result.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/auth/service/authentication_service.dart';
 import 'package:vivity/features/storage/storage_service.dart';
+import 'package:vivity/services/network_exception.dart';
 
 import '../models/token_container.dart';
 
@@ -16,7 +17,8 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
+  late final RestartableTimer _renewTokenTimer =
+      RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
 
   final AuthenticationRepository _authRepository = AuthenticationRepository();
   final AuthenticationService _authService = AuthenticationService();
@@ -26,26 +28,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthLoginEvent>((event, emit) async {
       emit(AuthLoadingState());
 
-      AsyncSnapshot<AuthenticationResult> loginSnapshot = await _authService.login(
-        email: event.email,
-        password: event.password,
-        otp: event.otp,
-      );
+      try {
+        TokenContainer loginResult = await _authRepository.login(
+          email: event.email,
+          password: event.password,
+          otp: event.otp,
+        );
 
-      if (loginSnapshot.hasError || !loginSnapshot.hasData || loginSnapshot.data?.tokenContainer == null) {
+        _storageService.setPreviouslyLoggedIn();
+        if (event.stayLoggedIn)
+          _storageService.storeRefreshToken(loginResult.refreshToken);
+
+        emit(AuthLoggedInState(loginResult));
+        _renewTokenTimer.reset();
+      } on NetworkException catch (e) {
         return emit(
-          AuthLoggedOutState(status: loginSnapshot.data?.authStatus ?? AuthenticationStatus.emailIncorrect),
+          AuthFailedState(
+              message: e.response?.data['error'] ??
+                  e.message ??
+                  'Authorization failed.'),
         );
       }
-
-      TokenContainer tokenContainer = loginSnapshot.data!.tokenContainer!;
-      _authRepository.login(accessToken: tokenContainer.accessToken, refreshToken: tokenContainer.refreshToken);
-
-      _storageService.setPreviouslyLoggedIn();
-      if (event.stayLoggedIn) _storageService.storeRefreshToken(tokenContainer.refreshToken);
-
-      emit(AuthLoggedInState(tokenContainer));
-      _renewTokenTimer.reset();
     });
 
     on<AuthHandlePre2FA>((event, emit) async {
@@ -53,8 +56,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       AuthenticationResult authResult = event.authResult;
 
-      if (authResult.tokenContainer == null || authResult.authStatus != AuthenticationStatus.success) {
-        emit(AuthLoggedOutState(status: authResult.authStatus ?? AuthenticationStatus.passwordIncorrect));
+      if (authResult.tokenContainer == null ||
+          authResult.authStatus != AuthenticationStatus.success) {
+        emit(AuthFailedState(
+            message: authResult.authStatus?.getMessage() ??
+                AuthenticationStatus.passwordIncorrect.getMessage()));
         return;
       }
     });
@@ -62,26 +68,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterEvent>((event, emit) async {
       emit(AuthLoadingState());
 
-      AsyncSnapshot<AuthenticationResult> snapshot = await _authService.register(
+      TokenContainer registerResult = await _authRepository.register(
         email: event.email,
         password: event.password,
         name: event.name,
         phone: event.phone,
       );
 
-      if (snapshot.hasError || !snapshot.hasData || snapshot.data?.tokenContainer == null) {
-        return emit(
-          AuthLoggedOutState(status: snapshot.data?.authStatus ?? AuthenticationStatus.emailIncorrect),
-        );
-      }
-
-      TokenContainer tokenContainer = snapshot.data!.tokenContainer!;
-      _authRepository.login(accessToken: tokenContainer.accessToken, refreshToken: tokenContainer.refreshToken);
-
       _storageService.setPreviouslyLoggedIn();
-      _storageService.storeRefreshToken(tokenContainer.refreshToken);
+      _storageService.storeRefreshToken(registerResult.refreshToken);
 
-      emit(AuthLoggedInState(tokenContainer));
+      emit(AuthLoggedInState(registerResult));
     });
 
     on<AuthConfirmationEvent>((event, emit) async {

@@ -88,7 +88,7 @@ class BusinessService extends ServiceProvider {
       return AsyncSnapshot.withError(ConnectionState.done, response);
     }
 
-    _authRepository.login(accessToken: response.data['token'], refreshToken: await _authRepository.getRefreshToken());
+    _authRepository.setTokens(accessToken: response.data['token'], refreshToken: await _authRepository.getRefreshToken());
     return AsyncSnapshot.withData(
       ConnectionState.done,
       Business.fromMap(response.data['business']!),
