@@ -2,7 +2,6 @@ import 'package:vivity/config/routes/routes_config.dart';
 import 'package:vivity/config/routes/routes_handler.dart';
 
 void initRoutes() {
-  router.define('/', handler: initialRouteHandler);
   router.define('/home/:page', handler: homeRouteHandler);
   router.define('/auth', handler: authRouteHandler);
   router.define('/error', handler: errorRouteHandler);

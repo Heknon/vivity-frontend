@@ -9,7 +9,7 @@ import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/business/create_business.dart';
 import 'package:vivity/features/business/unapproved_business_page.dart';
-import 'package:vivity/features/explore/explore.dart';
+import 'package:vivity/features/home/home_bloc.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page.dart';
 import 'package:vivity/features/item/item_page.dart';
@@ -23,30 +23,6 @@ import '../../features/error_page.dart';
 import '../../features/item/models/item_model.dart';
 import '../../features/user/bloc/user_bloc.dart';
 
-Handler initialRouteHandler = Handler(
-  handlerFunc: (BuildContext? ctx, Map<String, dynamic> params) {
-    AuthState authState = BlocProvider.of<AuthBloc>(ctx!).state;
-    Future<TokenContainer?> loggedIn = authState.verifyCredentials();
-
-    return SplashScreen<TokenContainer?>(
-      future: loggedIn,
-      onComplete: (ctx, snapshot) {
-        if (snapshot.hasError || !snapshot.hasData) {
-          Navigator.pushReplacementNamed(ctx, '/auth');
-          return;
-        }
-        UserBloc userBloc = BlocProvider.of<UserBloc>(ctx);
-        UserState userState = userBloc.state;
-
-        if (userState is! UserLoggedInState) {
-          userBloc.add(UserLoginEvent(snapshot.data!.accessToken));
-        }
-        Navigator.pushReplacementNamed(ctx, '/explore');
-      },
-    );
-  },
-);
-
 Handler errorRouteHandler = Handler(
   handlerFunc: (BuildContext? ctx, Map<String, dynamic> params) {
     return ErrorPage(message: ctx?.settings?.arguments as String?);
@@ -54,13 +30,26 @@ Handler errorRouteHandler = Handler(
 );
 
 Handler authRouteHandler = Handler(handlerFunc: (BuildContext? ctx, Map<String, dynamic> params) {
-  return AuthPage();
+  return BlocProvider(
+    create: (ctx) {
+      final AuthBloc authBloc = AuthBloc();
+      return authBloc;
+    },
+    child: AuthPage(),
+  );
 });
 
 Handler homeRouteHandler = Handler(handlerFunc: (BuildContext? ctx, Map<String, dynamic> params) {
   String page = params['page'][0].toLowerCase();
   bool isExplore = page == 'explore';
-  return HomePage(initial: isExplore ? 0 : 1);
+  return BlocProvider(
+    create: (ctx) {
+      HomeBloc bloc = HomeBloc();
+      bloc.add(HomeLoadEvent());
+      return bloc;
+    },
+    child: HomePage(initial: isExplore ? 0 : 1),
+  );
 });
 
 Handler itemIdRouteHandler = Handler(

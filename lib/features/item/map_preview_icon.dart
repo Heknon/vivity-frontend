@@ -2,21 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-import 'package:vivity/features/search_filter/widget_swapper.dart';
 
 import '../../helpers/ui_helpers.dart' as ui;
-import '../explore/explore.dart';
-import '../map/map_widget.dart';
-import 'package:latlong2/latlong.dart';
+
 
 class MapPreviewIcon extends StatelessWidget {
   final ItemModel item;
-  final ExploreController? exploreController;
+  final void Function(ItemModel)? onTap;
 
   const MapPreviewIcon({
     Key? key,
     required this.item,
-    this.exploreController,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -29,9 +26,9 @@ class MapPreviewIcon extends StatelessWidget {
         color: Colors.white,
         child: Center(
           child: InkWell(
-            onTap: () {
-              exploreController?.updatePreviewItem(item);
-            },
+            overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
+            splashFactory: InkRipple.splashFactory,
+            onTap: () => onTap != null ? onTap!(item) : null,
             child: _buildTextWidget(item.price, context),
           ),
         ),

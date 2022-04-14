@@ -40,7 +40,12 @@ class AuthenticationService extends ServiceProvider {
 
     Response response = snapshot.data!;
     if (response.statusCode! > 300) {
-      return AsyncSnapshot.withData(ConnectionState.done, AuthenticationResult(authStatus: AuthenticationStatus.emailIncorrect));
+      return AsyncSnapshot.withData(
+        ConnectionState.done,
+        AuthenticationResult(
+          authStatus: response.data['data'] != null ? AuthenticationStatus.values[response.data['data']] : AuthenticationStatus.emailIncorrect,
+        ),
+      );
     }
 
     return AsyncSnapshot.withData(

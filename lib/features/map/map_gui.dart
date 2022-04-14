@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:vivity/features/business/models/business.dart';
+import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
+import 'package:vivity/features/item/models/item_model.dart';
 import 'package:latlong2/latlong.dart';
-import '../explore/bloc/explore_bloc.dart';
-import '../user/bloc/user_bloc.dart';
+import 'package:latlng/latlng.dart' as latlng;
 import 'location_service.dart';
 import 'map_widget.dart';
 
@@ -15,6 +17,8 @@ class MapGui extends StatefulWidget {
   final BoxConstraints? constraints;
   final String mapBoxToken;
   final int flags;
+  final MapControllerImpl? controller;
+  final MapWidget Function(dynamic data)? transformDataToWidget;
 
   MapGui({
     Key? key,
@@ -23,6 +27,8 @@ class MapGui extends StatefulWidget {
     required this.mapBoxToken,
     this.flags =
         InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
+    this.controller,
+    this.transformDataToWidget,
   }) : super(key: key);
 
   @override
@@ -30,24 +36,42 @@ class MapGui extends StatefulWidget {
 }
 
 class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
-  bool registeredLocation = false;
-  LatLng fallbackLocation = LatLng(32.0668, 34.7649);
+  bool createdMap = false;
+
   late MapControllerImpl _mapController;
+  late final ExploreBloc _exploreBloc;
 
   late String token;
 
   @override
   void initState() {
     super.initState();
-    ExploreBloc exploreBloc = context.read<ExploreBloc>();
-    ExploreState state = exploreBloc.state;
-    if (state is ExploreLoaded) {
-      _mapController = state.controller;
-      exploreBloc.add(ExploreUpdateEvent());
-      return;
-    }
 
-    _mapController = MapControllerImpl();
+    latlng.LatLng fallbackLocation = latlng.LatLng(32.0668, 34.7649);
+    _mapController = widget.controller ?? MapControllerImpl();
+
+    LocationService _locationService = LocationService();
+
+    _locationService.getLocationUpdateStream(defaultLocation: fallbackLocation).then((stream) {
+      stream.listen((loc) {
+        if (!createdMap) return;
+        _mapController.move(LatLng(loc.latitude, loc.longitude), _mapController.zoom);
+      });
+    }).catchError((err) {
+      if (err is LatLng) {
+        _mapController.move(LatLng(err.latitude, err.longitude), _mapController.zoom);
+      } else {
+        if (!createdMap) return;
+        _mapController.move(LatLng(fallbackLocation.latitude, fallbackLocation.longitude), _mapController.zoom);
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _exploreBloc = context.read<ExploreBloc>();
   }
 
   @override
@@ -55,13 +79,8 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     super.dispose();
   }
 
-  void _onMapCreated(MapController _controller) async {
-    MapControllerImpl controller = _controller as MapControllerImpl;
-    if (mounted) {
-      UserState userState = context.read<UserBloc>().state;
-      context.read<ExploreBloc>().add(ExploreControllerUpdateEvent(controller, userState is UserLoggedInState ? userState.accessToken : null));
-      _mapController = _controller;
-    }
+  void onMapCreate(MapControllerImpl controllerImpl) {
+    createdMap = true;
   }
 
   @override
@@ -71,110 +90,92 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   }
 
   Widget buildMapContents() {
-    return BlocConsumer<ExploreBloc, ExploreState>(
-      listenWhen: (prev, curr) => prev is ExploreUnloaded && curr is ExploreLoaded,
-      listener: (ctx, state) {
-        if (state is! ExploreLoaded) return;
-        LocationService().getPosition(getCountryIfFail: true, defaultLocation: fallbackLocation).then((loc) async {
-          if (!mounted) return;
+    return BlocBuilder<ExploreBloc, ExploreState>(builder: (context, state) {
+      List<MapWidget> widgets = List.empty(growable: true);
+      if (state is ExploreSearched && widget.transformDataToWidget != null) {
+        for (ItemModel item in state.itemsFound) {
+          widgets.add(widget.transformDataToWidget!(item));
+        }
 
-          state.controller.move(loc, state.controller.zoom);
-          context.read<ExploreBloc>().add(ExploreUpdateEvent());
-        }).catchError((err) async {
-          if (!mounted) return;
+        for (Business business in state.businessesFound) {
+          widgets.add(widget.transformDataToWidget!(business));
+        }
+      }
 
-          state.controller.move(state.controller.center, state.controller.zoom);
-          context.read<ExploreBloc>().add(ExploreUpdateEvent());
-        });
-      },
-      builder: (context, state) {
-        MapOptions mapOptions = MapOptions(
-          center: fallbackLocation,
-          zoom: 13,
-          onMapCreated: _onMapCreated,
+      return FlutterMap(
+        options: MapOptions(
+          center: _mapController.center,
+          zoom: _mapController.zoom,
           controller: _mapController,
           maxZoom: 20,
           minZoom: 4,
           rotationThreshold: 0,
           interactiveFlags: widget.flags,
-        );
-
-        if (state is ExploreLoaded) {
-          mapOptions = MapOptions(
-            center: state.controller.center,
-            zoom: state.controller.zoom,
-            onMapCreated: _onMapCreated,
-            controller: state.controller,
+        ),
+        layers: [
+          TileLayerOptions(
+            urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
+            additionalOptions: {'accessToken': widget.mapBoxToken},
+            maxNativeZoom: 18,
             maxZoom: 20,
             minZoom: 4,
-            rotationThreshold: 0,
-            interactiveFlags: widget.flags,
-          );
-        }
-        return FlutterMap(
-          options: mapOptions,
-          layers: [
-            TileLayerOptions(
-              urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
-              additionalOptions: {'accessToken': widget.mapBoxToken},
-              maxNativeZoom: 18,
-              maxZoom: 20,
-              minZoom: 4,
-              minNativeZoom: 4,
-            ),
-            MarkerLayerOptions(
-              markers: state is ExploreLoaded
-                  ? state.mapGuiController.mapWidgets.map((e) {
-                      return Marker(
+            minNativeZoom: 4,
+          ),
+          MarkerLayerOptions(
+            markers: state is ExploreSearched && widget.transformDataToWidget != null
+                ? state.itemsFound
+                    .map((e) => widget.transformDataToWidget!(e))
+                    .map(
+                      (e) => Marker(
                         width: e.size.width,
                         height: e.size.height,
                         point: e.location,
                         builder: (ctx) => e.child,
-                      );
-                    }).toList()
-                  : [],
-            )
-          ],
-        );
-      },
-    );
+                      ),
+                    )
+                    .toList()
+                : [],
+          )
+        ],
+      );
+    });
   }
 
   @override
   bool get wantKeepAlive => true;
 }
 
-class MapGuiController extends ChangeNotifier {
-  late Set<MapWidget> _mapWidgets;
-
-  Iterable<MapWidget> get mapWidgets => _mapWidgets;
-
-  MapGuiController({Set<MapWidget>? mapWidgets}) {
-    _mapWidgets = mapWidgets ?? {};
-  }
-
-  void addWidgetToMap(MapWidget mapWidget) {
-    _mapWidgets.add(mapWidget);
-    notifyListeners();
-  }
-
-  void addWidgetsToMap(Iterable<MapWidget> mapWidgets) {
-    _mapWidgets.addAll(mapWidgets);
-    notifyListeners();
-  }
-
-  void removeWidgetFromMap(LatLng position) {
-    _mapWidgets.removeWhere((e) => position == e.location);
-    notifyListeners();
-  }
-
-  void removeWidgetsFromMap(Set<LatLng> positions) {
-    _mapWidgets.removeWhere((e) => positions.contains(e.location));
-    notifyListeners();
-  }
-
-  void clearWidgets() {
-    _mapWidgets.clear();
-    notifyListeners();
-  }
-}
+// class MapGuiController extends ChangeNotifier {
+//   late Set<MapWidget> _mapWidgets;
+//
+//   Iterable<MapWidget> get mapWidgets => _mapWidgets;
+//
+//   MapGuiController({Set<MapWidget>? mapWidgets}) {
+//     _mapWidgets = mapWidgets ?? {};
+//   }
+//
+//   void addWidgetToMap(MapWidget mapWidget) {
+//     _mapWidgets.add(mapWidget);
+//     notifyListeners();
+//   }
+//
+//   void addWidgetsToMap(Iterable<MapWidget> mapWidgets) {
+//     _mapWidgets.addAll(mapWidgets);
+//     notifyListeners();
+//   }
+//
+//   void removeWidgetFromMap(LatLng position) {
+//     _mapWidgets.removeWhere((e) => position == e.location);
+//     notifyListeners();
+//   }
+//
+//   void removeWidgetsFromMap(Set<LatLng> positions) {
+//     _mapWidgets.removeWhere((e) => positions.contains(e.location));
+//     notifyListeners();
+//   }
+//
+//   void clearWidgets() {
+//     _mapWidgets.clear();
+//     notifyListeners();
+//   }
+// }

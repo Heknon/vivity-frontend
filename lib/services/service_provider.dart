@@ -15,10 +15,7 @@ abstract class ServiceProvider {
   final String baseRoute;
   final String contentType;
 
-  ServiceProvider(
-      {this.host = api.host,
-      this.baseRoute = '',
-      this.contentType = 'application/json'});
+  ServiceProvider({this.host = api.host, this.baseRoute = '', this.contentType = 'application/json'});
 
   Future<AsyncSnapshot<Response>> get({
     String? baseRoute,
@@ -34,8 +31,7 @@ abstract class ServiceProvider {
         queryParameters,
         options,
       ) =>
-          _dioHttpService.client
-              .get(route, queryParameters: queryParameters, options: options)),
+          _dioHttpService.client.get(route, queryParameters: queryParameters, options: options)),
       queryParameters: queryParameters,
       contentType: contentType,
       token: token,
@@ -56,8 +52,7 @@ abstract class ServiceProvider {
   }) async {
     return _sendRequest(
       requestSender: ((route, queryParameters, options) =>
-          _dioHttpService.client.post(route,
-              queryParameters: queryParameters, options: options, data: data)),
+          _dioHttpService.client.post(route, queryParameters: queryParameters, options: options, data: data)),
       queryParameters: queryParameters,
       contentType: contentType,
       token: token,
@@ -79,14 +74,13 @@ abstract class ServiceProvider {
     Uint8List data = await file?.readAsBytes() ?? Uint8List(0);
 
     return _sendRequest(
-      requestSender: ((route, queryParameters, options) =>
-          _dioHttpService.client.post(route,
-              queryParameters: queryParameters,
-              options: Options(
-                headers: options?.headers,
-                requestEncoder: (_, a) => data.toList(),
-              ),
-              data: data)),
+      requestSender: ((route, queryParameters, options) => _dioHttpService.client.post(route,
+          queryParameters: queryParameters,
+          options: Options(
+            headers: options?.headers,
+            requestEncoder: (_, a) => data.toList(),
+          ),
+          data: data)),
       queryParameters: queryParameters,
       contentType: 'text/plain',
       token: token,
@@ -111,8 +105,7 @@ abstract class ServiceProvider {
         queryParameters,
         options,
       ) =>
-          _dioHttpService.client.patch(route,
-              queryParameters: queryParameters, options: options, data: data)),
+          _dioHttpService.client.patch(route, queryParameters: queryParameters, options: options, data: data)),
       queryParameters: queryParameters,
       contentType: contentType,
       token: token,
@@ -136,8 +129,7 @@ abstract class ServiceProvider {
         queryParameters,
         options,
       ) =>
-          _dioHttpService.client.delete(route,
-              queryParameters: queryParameters, options: options)),
+          _dioHttpService.client.delete(route, queryParameters: queryParameters, options: options)),
       queryParameters: queryParameters,
       contentType: contentType,
       token: token,
@@ -167,9 +159,7 @@ abstract class ServiceProvider {
   }
 
   Future<AsyncSnapshot<Response>> _sendRequest({
-    required Future<Response> Function(String route,
-            Map<String, dynamic>? queryParameters, Options? options)
-        requestSender,
+    required Future<Response> Function(String route, Map<String, dynamic>? queryParameters, Options? options) requestSender,
     String? baseRoute,
     String? subRoute,
     String? token,
@@ -177,16 +167,11 @@ abstract class ServiceProvider {
     Map<String, dynamic>? queryParameters,
     bool Function(Response)? classifyAsErrorWhen,
   }) async {
-    Map<String, String> headers =
-        buildHeaders(token: token, contentType: contentType);
+    Map<String, String> headers = buildHeaders(token: token, contentType: contentType);
 
     try {
-      Response response = await requestSender(
-          host + (baseRoute ?? this.baseRoute) + (subRoute ?? ''),
-          queryParameters,
-          Options(headers: headers));
-      if (classifyAsErrorWhen != null && classifyAsErrorWhen(response))
-        return AsyncSnapshot.withError(ConnectionState.done, response);
+      Response response = await requestSender(host + (baseRoute ?? this.baseRoute) + (subRoute ?? ''), queryParameters, Options(headers: headers));
+      if (classifyAsErrorWhen != null && classifyAsErrorWhen(response)) return AsyncSnapshot.withError(ConnectionState.done, response);
 
       return AsyncSnapshot.withData(ConnectionState.done, response);
     } on Exception catch (e) {

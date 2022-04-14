@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,8 +7,9 @@ import 'package:form_validator/form_validator.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/constants/regex.dart';
-import 'package:vivity/features/auth/authentication_result.dart';
+import 'package:vivity/features/auth/models/authentication_result.dart';
+import 'package:vivity/features/auth/repo/authentication_repository.dart';
+import 'package:vivity/features/auth/service/authentication_service.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/auth_service.dart';
 
@@ -29,6 +29,9 @@ class LoginModule extends StatefulWidget {
 class _LoginModuleState extends State<LoginModule> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+
+  final AuthenticationRepository _authRepository = AuthenticationRepository();
+  final AuthenticationService _authService = AuthenticationService();
 
   bool stayLoggedIn = false;
   bool _passwordVisible = false;
@@ -144,15 +147,15 @@ class _LoginModuleState extends State<LoginModule> {
                     showDialog(context: context, builder: (ctx) => loadDialog);
 
                     String email = emailController.text.trim();
-                    bool otpEnabled = await hasOTP(email: email);
-                    RegisterResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(email, passwordController.text) : null;
+                    bool otpEnabled = await _authRepository.hasOTP(update: true);
+                    AuthenticationResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(email, passwordController.text) : null;
                     Navigator.pop(context);
                     bool shouldRequestOTP = false;
                     if (preLoginCheck != null) {
-                      if (preLoginCheck.authStatus != AuthenticationResult.wrongOTP) {
+                      if (preLoginCheck.authStatus != AuthenticationStatus.wrongOTP) {
                         context.read<AuthBloc>().add(
-                          AuthHandlePre2FA(preLoginCheck),
-                        );
+                              AuthHandlePre2FA(preLoginCheck),
+                            );
                         return;
                       } else {
                         shouldRequestOTP = true;
@@ -196,10 +199,12 @@ class _LoginModuleState extends State<LoginModule> {
     );
   }
 
-  Future<RegisterResult?> shouldOpenOTP(String email, String password) async {
-    RegisterResult? loginResult = await login(email, password, null, null);
+  Future<AuthenticationResult?> shouldOpenOTP(String email, String password) async {
+    AsyncSnapshot<AuthenticationResult>? loginResult = await _authService.login(email: email, password: password, otp: null);
 
-    return loginResult;
+    if (loginResult.hasError || !loginResult.hasData) return null;
+
+    return loginResult.data!;
   }
 
   void handleLogin(String email, String password, String? otp) {

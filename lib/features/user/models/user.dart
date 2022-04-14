@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:objectid/objectid/objectid.dart';
+import 'package:vivity/features/business/models/order.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-import 'package:vivity/features/user/models/business_user.dart';
 import 'package:vivity/features/user/models/user_options.dart';
-
-import '../../../models/address.dart';
-import '../../business/models/order.dart';
+import 'package:vivity/models/address.dart';
 
 class User {
   final ObjectId id;
@@ -109,6 +107,16 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map, Map<String, ItemModel>? cartItemIdMap) {
+    List<dynamic> cartUnparsed = (map['cart'] as List<dynamic>);
+    List<CartItemModel> cartItems = List.empty(growable: true);
+
+    for (dynamic cartItemUnparsed in cartUnparsed) {
+      if (cartItemIdMap == null || cartItemIdMap[cartItemUnparsed['item_id'] ?? ''] == null) continue;
+      ItemModel? item = cartItemIdMap[cartItemUnparsed['item_id']];
+      if (item == null) continue;
+      cartItems.add(CartItemModel.fromMap(cartItemUnparsed, item));
+    }
+
     return User(
       id: ObjectId.fromHexString(map['id']),
       name: map['name'] as String,
@@ -118,9 +126,7 @@ class User {
       userOptions: UserOptions.fromMap(map['user_options']),
       addresses: (map['addresses'] as List<dynamic>).map((e) => Address.fromMap(e)).toList(),
       likedItems: (map['liked_items'] as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
-      cart: (map['cart'] as List<dynamic>)
-          .map((e) => CartItemModel.fromMap(e, cartItemIdMap == null ? null : cartItemIdMap[e['item_id'] ?? '']))
-          .toList(),
+      cart: cartItems,
       orderHistory: (map['order_history'] as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
     );
   }

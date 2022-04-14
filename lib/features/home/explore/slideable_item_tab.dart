@@ -4,15 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/constants/app_constants.dart';
-
-import 'package:google_fonts/google_fonts.dart';
-import 'package:vivity/features/explore/bloc/explore_bloc.dart';
-import 'package:vivity/features/item/models/item_model.dart';
-
-import '../item/classic_item.dart';
-import '../item/item_page.dart';
-import '../item/ui_item_helper.dart';
+import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
+import 'package:vivity/features/item/classic_item.dart';
+import 'package:vivity/features/item/item_page.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
 
 class SlideableItemTab extends StatelessWidget {
   const SlideableItemTab({Key? key}) : super(key: key);
@@ -51,11 +46,11 @@ class SlideableItemTab extends StatelessWidget {
       child: Container(
         color: Colors.white,
         child: BlocBuilder<ExploreBloc, ExploreState>(builder: (context, state_) {
-          if (state_ is ExploreUnloaded) return const CircularProgressIndicator();
-          ExploreLoaded state = state_ as ExploreLoaded;
+          if (state_ is ExploreBlocked || state_ is ExploreSearchable) return const CircularProgressIndicator();
+          ExploreSearched state = state_ as ExploreSearched;
 
           return buildItemContentGrid(
-            state.itemModels,
+            state.itemsFound,
             itemViewSize,
             sc,
             itemHeightMultiplier: 0.6,

@@ -280,7 +280,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
   }
 
   Future<LocationResult?> showPlacePicker() async {
-    latlng.LatLng loc = (context.read<ExploreBloc>().state as ExploreLoaded).controller.center;
+    latlng.LatLng loc = (context.read<ExploreBloc>().state as ExploreLoaded).mapController.center;
 
     LocationResult? result = await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PlacePicker(

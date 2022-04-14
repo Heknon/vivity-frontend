@@ -21,8 +21,7 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage>
-    with SingleTickerProviderStateMixin {
+class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   late final AuthBloc _authBloc;
@@ -46,14 +45,15 @@ class _AuthPageState extends State<AuthPage>
 
     _authBloc = BlocProvider.of<AuthBloc>(context);
 
-    _authRepository
-        .getPreviouslyLoggedIn()
-        .then((value) => _tabController.index = value ? 0 : 1);
+    _authRepository.getPreviouslyLoggedIn().then((value) => _tabController.index = value ? 0 : 1);
   }
 
   @override
   Widget build(BuildContext context) {
-    AuthState authState = _authBloc.state;
+    AuthState state = _authBloc.state;
+    if (state is AuthLoggedInState) {
+      Navigator.pushReplacementNamed(context, "/home/explore");
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xffdddddd),
@@ -61,16 +61,15 @@ class _AuthPageState extends State<AuthPage>
         child: BlocListener<AuthBloc, AuthState>(
           listener: (ctx, state) {
             if (state is AuthLoggedInState) {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+
               Navigator.pushReplacementNamed(context, "/home/explore");
             } else if (state is AuthFailedState) {
               showSnackBar(state.message ?? "Authentication failed", context);
               _loginPasswordController.text = "";
 
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
-              }
-            } else if (state is AuthLoggedOutState) {
-              _loginPasswordController.text = "";
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
               }
@@ -97,17 +96,13 @@ class _AuthPageState extends State<AuthPage>
                 ),
               ),
               SizedBox(height: 20),
-              buildAuthenticationSplashscreen(),
+              Expanded(
+                child: buildAuthModule(),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget buildAuthenticationSplashscreen() {
-    return Expanded(
-      child: buildAuthModule(),
     );
   }
 
@@ -125,10 +120,7 @@ class _AuthPageState extends State<AuthPage>
                 child: Text(
                   'LOGIN',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline3!
-                      .copyWith(fontSize: 12.sp, color: fillerColor),
+                  style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 12.sp, color: fillerColor),
                 ),
               ),
             ),
@@ -138,10 +130,7 @@ class _AuthPageState extends State<AuthPage>
                 child: Text(
                   'REGISTER',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline3!
-                      .copyWith(fontSize: 12.sp, color: fillerColor),
+                  style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 12.sp, color: fillerColor),
                 ),
               ),
             ),

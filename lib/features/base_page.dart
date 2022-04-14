@@ -1,11 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vivity/features/auth/auth_page.dart';
 import 'package:vivity/features/drawer/vivity_drawer.dart';
-import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
-import 'package:vivity/main.dart';
 import 'package:vivity/widgets/appbar/appbar.dart';
 
 import 'auth/bloc/auth_bloc.dart';
@@ -32,24 +29,14 @@ class BasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (ctx, state) {
-        if (state is AuthLoggedOutState) {
-          Navigator.of(context).pushReplacementNamed('/logout');
-          return;
-        } else if (state is AuthLoggedInState) {
-          context.read<UserBloc>().add(UserRenewTokenEvent(state.authResult.accessToken));
-        }
-      },
-      child: Scaffold(
-        floatingActionButton: floatingActionButton,
-        floatingActionButtonAnimator: floatingActionButtonAnimator,
-        floatingActionButtonLocation: floatingActionButtonLocation,
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-        appBar: appBar ?? VivityAppBar(),
-        drawer: drawer ?? const VivityDrawer(),
-        body: body,
-      ),
+    return Scaffold(
+      floatingActionButton: floatingActionButton,
+      floatingActionButtonAnimator: floatingActionButtonAnimator,
+      floatingActionButtonLocation: floatingActionButtonLocation,
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      appBar: appBar ?? VivityAppBar(),
+      drawer: drawer ?? const VivityDrawer(),
+      body: body,
     );
   }
 }
@@ -76,23 +63,13 @@ class BasePageBlocBuilder<B extends StateStreamable<S>, S> extends BasePage {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (ctx, state) {
-        if (state is AuthLoggedOutState) {
-          Navigator.of(context).pushReplacementNamed('/logout');
-          return;
-        } else if (state is AuthLoggedInState) {
-          context.read<UserBloc>().add(UserRenewTokenEvent(state.authResult.accessToken));
-        }
-      },
-      child: Scaffold(
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-        appBar: appBar ?? VivityAppBar(),
-        drawer: drawer ?? const VivityDrawer(),
-        body: BlocBuilder<B, S>(
-          builder: builder,
-          buildWhen: buildWhen,
-        ),
+    return Scaffold(
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      appBar: appBar ?? VivityAppBar(),
+      drawer: drawer ?? const VivityDrawer(),
+      body: BlocBuilder<B, S>(
+        builder: builder,
+        buildWhen: buildWhen,
       ),
     );
   }
