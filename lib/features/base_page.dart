@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vivity/features/drawer/vivity_drawer.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/widgets/appbar/appbar.dart';
 
 import 'auth/bloc/auth_bloc.dart';
@@ -52,7 +51,6 @@ class BasePageBlocBuilder<B extends StateStreamable<S>, S> extends BasePage {
     Widget? drawer,
     required this.builder,
     this.buildWhen,
-    void Function(BuildContext, UserState)? userStateListener,
   }) : super(
           key: key,
           body: null,

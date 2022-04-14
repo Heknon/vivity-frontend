@@ -10,7 +10,7 @@ import 'package:vivity/features/checkout/ui_checkout_helper.dart';
 import 'package:vivity/models/payment_method.dart';
 import 'package:vivity/models/shipping_method.dart';
 import '../shipping/add_address.dart';
-import '../../models/address.dart';
+import '../address/models/address.dart';
 import '../shipping/address.dart' as address_widget;
 import '../user/bloc/user_bloc.dart';
 import 'bloc/checkout_bloc.dart';

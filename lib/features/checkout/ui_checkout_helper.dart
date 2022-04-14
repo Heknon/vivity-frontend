@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/shipping/address_service.dart';
-
-import '../shipping/add_address.dart';
-import '../shipping/address.dart' as address_widget;
-import '../user/bloc/user_bloc.dart';
-import '../../models/address.dart';
-import 'bloc/checkout_bloc.dart';
+import 'package:vivity/features/address/add_address.dart';
+import 'package:vivity/features/address/address.dart' as address_widget;
+import 'package:vivity/features/address/models/address.dart';
 
 Widget buildShippingAddressList(
   List<Address> addresses,
   BuildContext context, {
-  required String token,
   int? highlightIndex,
   Set<int>? expandedIndices,
   bool canHighlight = true,
   void Function(int)? onTap,
+  void Function(int)? onDeleteTap,
   Color highlightedColor = Colors.white,
   Color unselectedColor = Colors.white70,
-  bool canDelete = true,
   Widget Function(BuildContext, Address)? expandedBuilder,
   void Function(int, bool)? onExpandTap,
 }) {
@@ -28,7 +22,7 @@ Widget buildShippingAddressList(
           expansionCallback: onExpandTap,
           children: List.generate(addresses.length, (index) {
             Address curr = addresses[index];
-            address_widget.Address widget = buildAddress(curr, token, context, canHighlight: canHighlight, index: index, canDelete: canDelete);
+            address_widget.Address widget = buildAddress(curr, token, context, canHighlight: canHighlight, index: index, onDeleteTap: onDeleteTap);
 
             return ExpansionPanel(
               headerBuilder: (ctx, isOpen) => widget,
@@ -42,7 +36,7 @@ Widget buildShippingAddressList(
           itemCount: addresses.length,
           itemBuilder: (ctx, i) {
             Address curr = addresses[i];
-            address_widget.Address widget = buildAddress(curr, token, context, canHighlight: canHighlight, index: i, canDelete: canDelete);
+            address_widget.Address widget = buildAddress(curr, token, context, canHighlight: canHighlight, index: i, onDeleteTap: onDeleteTap);
 
             return widget;
           },
@@ -51,7 +45,6 @@ Widget buildShippingAddressList(
 
 address_widget.Address buildAddress(
   Address address,
-  String token,
   BuildContext context, {
   required bool canHighlight,
   required int index,
@@ -60,6 +53,7 @@ address_widget.Address buildAddress(
   Color unselectedColor = Colors.white70,
   bool canDelete = true,
   void Function(int)? onTap,
+  void Function(int)? onDeleteTap,
 }) {
   return address_widget.Address(
     name: address.name,
@@ -76,19 +70,20 @@ address_widget.Address buildAddress(
             ? unselectedColor
             : highlightedColor,
     onTap: onTap != null ? () => onTap(index) : null,
-    onDeleteTap: canDelete
-        ? () async {
-            List<Address> newAddresses = await removeAddress(token, index);
-            context.read<UserBloc>().add(UserUpdateAddressesEvent(newAddresses));
-          }
-        : null,
-    canDelete: canDelete,
+    onDeleteTap: () => onDeleteTap != null ? onDeleteTap(index) : null,
   );
 }
 
-Widget buildAddressCreationWidget(BuildContext context) {
+Widget buildAddressCreationWidget({
+  required BuildContext context,
+  void Function(Address)? onSubmit,
+}) {
   return GestureDetector(
-    onTap: () => showDialog(context: context, builder: (ctx) => AddAddress()),
+    onTap: () => showDialog(
+        context: context,
+        builder: (ctx) => AddAddress(
+              onSubmit: onSubmit,
+            )),
     child: Container(
       width: 250,
       height: 120,

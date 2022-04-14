@@ -3,14 +3,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sizer/sizer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vivity/features/auth/repo/authentication_repository.dart';
+import 'package:vivity/features/settings/bloc/settings_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:vivity/services/user_service.dart';
 
 import '../../config/themes/themes_config.dart';
-import '../user/bloc/user_bloc.dart';
 
 class OTPPreview extends StatelessWidget {
   final String seed;
@@ -18,6 +19,8 @@ class OTPPreview extends StatelessWidget {
   final TextEditingController _controller = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
   final FocusNode _focusNode = FocusNode();
+  final AuthenticationRepository _authRepository = AuthenticationRepository();
+  final LoadDialog _loadDialog = LoadDialog();
 
   OTPPreview({Key? key, required this.email, required this.seed}) : super(key: key);
 
@@ -49,11 +52,19 @@ class OTPPreview extends StatelessWidget {
                 SizedBox(height: 10),
                 Text(
                   '2FA KEY',
-                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .headline4
+                      ?.copyWith(fontSize: 12.sp),
                 ),
                 Text(
                   formatSeed(seed),
-                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 11.sp, fontWeight: FontWeight.normal, color: fillerColor),
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .headline4
+                      ?.copyWith(fontSize: 11.sp, fontWeight: FontWeight.normal, color: fillerColor),
                 ),
                 SizedBox(height: 5),
                 TextButton(
@@ -70,7 +81,11 @@ class OTPPreview extends StatelessWidget {
                   ),
                   child: Text(
                     'Open in authenticator app',
-                    style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .headline4
+                        ?.copyWith(fontSize: 12.sp, color: Colors.white),
                   ),
                 ),
                 SizedBox(height: 15),
@@ -79,7 +94,7 @@ class OTPPreview extends StatelessWidget {
                   child: TextFormField(
                     controller: _controller,
                     validator: ValidationBuilder().add((value) {
-                      if (value == null  || value.length != 6) return "Must be a 6 digit integer";
+                      if (value == null || value.length != 6) return "Must be a 6 digit integer";
                       return int.tryParse(value) == null ? "Must be a 6 digit integer" : null;
                     }).build(),
                     focusNode: _focusNode,
@@ -100,19 +115,26 @@ class OTPPreview extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () async {
-            UserState state = context.read<UserBloc>().state;
-            if (state is! UserLoggedInState) return showSnackBar('You are not logged in...', context);
+            showDialog(context: context, builder: (ctx) => _loadDialog);
 
-            await disableOTP(state.accessToken);
-            Navigator.of(context).pop();
-            showSnackBar('Disabled 2FA', context);
+            context.read<SettingsBloc>().add(SettingsDisableOTPEvent(shouldPop: true));
           },
           style: ButtonStyle(
               splashFactory: InkRipple.splashFactory,
-              textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+              textStyle: MaterialStateProperty.all(Theme
+                  .of(context)
+                  .textTheme
+                  .headline3
+                  ?.copyWith(fontSize: 14.sp))),
           child: Text(
             'Cancel',
-            style: Theme.of(context).textTheme.headline3?.copyWith(color: Theme.of(context).primaryColor, fontSize: 14.sp),
+            style: Theme
+                .of(context)
+                .textTheme
+                .headline3
+                ?.copyWith(color: Theme
+                .of(context)
+                .primaryColor, fontSize: 14.sp),
           ),
         ),
         TextButton(
@@ -132,10 +154,20 @@ class OTPPreview extends StatelessWidget {
           },
           style: ButtonStyle(
               splashFactory: InkRipple.splashFactory,
-              textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+              textStyle: MaterialStateProperty.all(Theme
+                  .of(context)
+                  .textTheme
+                  .headline3
+                  ?.copyWith(fontSize: 14.sp))),
           child: Text(
-            'Continue',
-            style: Theme.of(context).textTheme.headline3?.copyWith(color: Theme.of(context).primaryColor, fontSize: 14.sp),
+            'Activate',
+            style: Theme
+                .of(context)
+                .textTheme
+                .headline3
+                ?.copyWith(color: Theme
+                .of(context)
+                .primaryColor, fontSize: 14.sp),
           ),
         )
       ],

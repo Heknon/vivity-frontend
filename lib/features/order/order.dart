@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/address/address.dart';
+import 'package:vivity/features/business/models/order_item.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import '../business/models/order.dart' as business_model;
 import '../item/ui_item_helper.dart';
-import '../shipping/address.dart';
 
 class Order extends StatefulWidget {
   final business_model.Order order;
@@ -47,6 +49,16 @@ class _OrderState extends State<Order> {
     Size gridSize = Size(100.w, 30.h);
     EdgeInsets padding = const EdgeInsets.all(8);
     List<business_model.OrderStatus> statusValues = business_model.OrderStatus.values;
+    List<CartItemModel> orderItemsList = List.empty(growable: true);
+    for (OrderItem orderItem in widget.order.items) {
+      ItemModel? item = orderItem.itemId != null ? _idToItemMap[orderItem.itemId?.hexString] : null;
+      if (item != null)
+        orderItemsList.add(CartItemModel(
+          modifiersChosen: orderItem.selectedModifiers,
+          quantity: orderItem.amount,
+          item: item,
+        ));
+    }
 
     return ExpandablePanel(
       header: Padding(
@@ -74,19 +86,7 @@ class _OrderState extends State<Order> {
             child: Divider(),
           ),
           buildCartItemList(
-            widget.order.items.map(
-              (e) {
-                ItemModel? item = e.itemId != null ? _idToItemMap[e.itemId?.hexString] : null;
-                return CartItemModel(
-                  previewImage: item != null ? item.images[item.previewImageIndex] : null,
-                  title: item != null ? item.itemStoreFormat.title : 'N/A',
-                  modifiersChosen: e.selectedModifiers,
-                  quantity: e.amount,
-                  price: e.price,
-                  item: item,
-                );
-              },
-            ).toList(),
+            orderItemsList,
             gridSize,
             context,
             hasQuantity: false,

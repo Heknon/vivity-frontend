@@ -5,13 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/shipping/address_service.dart';
-import '../../models/address.dart';
-
-import '../user/bloc/user_bloc.dart';
+import 'models/address.dart';
 
 class AddAddress extends StatefulWidget {
-  const AddAddress({Key? key}) : super(key: key);
+  final void Function(Address)? onSubmit;
+
+  const AddAddress({
+    Key? key,
+    this.onSubmit,
+  }) : super(key: key);
 
   @override
   State<AddAddress> createState() => _AddAddressState();
@@ -40,7 +42,11 @@ class _AddAddressState extends State<AddAddress> {
     return AlertDialog(
       scrollable: true,
       title: Text('Add Address'),
-      titleTextStyle: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
+      titleTextStyle: Theme
+          .of(context)
+          .textTheme
+          .headline4!
+          .copyWith(fontSize: 14.sp),
       content: Form(
         key: _formKey,
         child: Column(
@@ -48,13 +54,18 @@ class _AddAddressState extends State<AddAddress> {
           children: [
             Text(
               'Country/Region',
-              style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline3!
+                  .copyWith(fontSize: 13.sp),
             ),
             SizedBox(height: 5),
             CountryCodePicker(
-              onChanged: (code) => setState(() {
-                selectedCountryCode = code;
-              }),
+              onChanged: (code) =>
+                  setState(() {
+                    selectedCountryCode = code;
+                  }),
               initialSelection: selectedCountryCode!.code,
               flagDecoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(7),
@@ -75,7 +86,11 @@ class _AddAddressState extends State<AddAddress> {
                       SizedBox(width: 10),
                       Text(
                         code.name!,
-                        style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 10.sp),
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .headline3!
+                            .copyWith(fontSize: 10.sp),
                       ),
                       SizedBox(width: 10),
                       Icon(Icons.arrow_drop_down_sharp, color: Colors.grey[500])
@@ -90,7 +105,11 @@ class _AddAddressState extends State<AddAddress> {
             SizedBox(height: 10),
             Text(
               'Full name (First and Last name)',
-              style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline3!
+                  .copyWith(fontSize: 13.sp),
             ),
             SizedBox(height: 5),
             TextFormField(
@@ -105,7 +124,11 @@ class _AddAddressState extends State<AddAddress> {
             SizedBox(height: 10),
             Text(
               'Phone number',
-              style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline3!
+                  .copyWith(fontSize: 13.sp),
             ),
             SizedBox(height: 5),
             TextFormField(
@@ -113,11 +136,12 @@ class _AddAddressState extends State<AddAddress> {
               validator: ValidationBuilder()
                   .minLength(10)
                   .maxLength(10)
-                  .add((String? value) => value == null
-                      ? "Must be a number"
-                      : double.tryParse(value) != null
-                          ? null
-                          : "Must be a number")
+                  .add((String? value) =>
+              value == null
+                  ? "Must be a number"
+                  : double.tryParse(value) != null
+                  ? null
+                  : "Must be a number")
                   .build(),
               style: TextStyle(fontSize: 12.sp, color: Colors.black),
               decoration: InputDecoration(
@@ -128,7 +152,11 @@ class _AddAddressState extends State<AddAddress> {
             SizedBox(height: 10),
             Text(
               'Street address',
-              style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline3!
+                  .copyWith(fontSize: 13.sp),
             ),
             SizedBox(height: 5),
             TextFormField(
@@ -157,7 +185,11 @@ class _AddAddressState extends State<AddAddress> {
             SizedBox(height: 10),
             Text(
               'State / Province / Region',
-              style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline3!
+                  .copyWith(fontSize: 13.sp),
             ),
             SizedBox(height: 5),
             TextFormField(
@@ -178,7 +210,11 @@ class _AddAddressState extends State<AddAddress> {
                     children: [
                       Text(
                         'City',
-                        style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .headline3!
+                            .copyWith(fontSize: 13.sp),
                       ),
                       SizedBox(height: 5),
                       TextFormField(
@@ -200,7 +236,11 @@ class _AddAddressState extends State<AddAddress> {
                     children: [
                       Text(
                         'ZIP Code',
-                        style: Theme.of(context).textTheme.headline3!.copyWith(fontSize: 13.sp),
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .headline3!
+                            .copyWith(fontSize: 13.sp),
                       ),
                       SizedBox(height: 5),
                       TextFormField(
@@ -208,11 +248,12 @@ class _AddAddressState extends State<AddAddress> {
                         validator: ValidationBuilder()
                             .minLength(5)
                             .maxLength(7)
-                            .add((String? value) => value == null
-                                ? "Must be a number"
-                                : double.tryParse(value) != null
-                                    ? null
-                                    : "Must be a number")
+                            .add((String? value) =>
+                        value == null
+                            ? "Must be a number"
+                            : double.tryParse(value) != null
+                            ? null
+                            : "Must be a number")
                             .build(),
                         style: TextStyle(fontSize: 12.sp, color: Colors.black),
                         decoration: InputDecoration(
@@ -228,12 +269,19 @@ class _AddAddressState extends State<AddAddress> {
             SizedBox(height: 20),
             TextButton(
               style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.secondaryVariant),
+                  backgroundColor: MaterialStateProperty.all(Theme
+                      .of(context)
+                      .colorScheme
+                      .secondaryVariant),
                   overlayColor: MaterialStateProperty.all(Colors.grey),
                   fixedSize: MaterialStateProperty.all(Size(90.w, 15.sp * 3))),
               child: Text(
                 'Add Address',
-                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .headline4!
+                    .copyWith(fontSize: 20.sp, fontWeight: FontWeight.normal, color: Colors.white),
               ),
               onPressed: () {
                 if (!(_formKey.currentState?.validate() ?? true)) {
@@ -251,7 +299,6 @@ class _AddAddressState extends State<AddAddress> {
                   provinceController.value.text,
                   cityController.value.text,
                   zipCodeController.value.text,
-                  (context.read<UserBloc>().state as UserLoggedInState).accessToken,
                 );
               },
             ),
@@ -261,38 +308,28 @@ class _AddAddressState extends State<AddAddress> {
     );
   }
 
-  void handleSuccessfulSubmission(
-    CountryCode country,
-    String fullName,
-    String phoneNumber,
-    String street,
-    String extraAddressInfo,
-    String province,
-    String city,
-    String zipCode,
-    String token,
-  ) async {
+  void handleSuccessfulSubmission(CountryCode country,
+      String fullName,
+      String phoneNumber,
+      String street,
+      String extraAddressInfo,
+      String province,
+      String city,
+      String zipCode,) async {
     print(
         "Handling: (country: $country, name: $fullName, phone: $phoneNumber, street: $street, streetExtra: $extraAddressInfo, province: $province, city: $city, zipCode: $zipCode)");
 
-    List<Address> addresses = await addAddress(
-        token,
-        Address(
-          name: fullName.trim(),
-          country: selectedCountryCode!.code!.trim(),
-          city: city.trim(),
-          street: street.trim(),
-          extraInfo: extraAddressInfo.trim(),
-          province: province.trim(),
-          zipCode: zipCode.trim(),
-          phone: phoneNumber.trim(),
-        ),
-      context: context
+    Address address = Address(
+      name: fullName.trim(),
+      country: selectedCountryCode!.code!.trim(),
+      city: city.trim(),
+      street: street.trim(),
+      extraInfo: extraAddressInfo.trim(),
+      province: province.trim(),
+      zipCode: zipCode.trim(),
+      phone: phoneNumber.trim(),
     );
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address added!')));
 
-    context.read<UserBloc>().add(UserUpdateAddressesEvent(addresses));
+    if (widget.onSubmit != null) widget.onSubmit!(address);
   }
 }

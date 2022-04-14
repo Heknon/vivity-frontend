@@ -12,10 +12,8 @@ import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/constants/regex.dart';
 import 'package:vivity/features/auth/password_field.dart';
 import 'package:vivity/features/base_page.dart';
+import 'package:vivity/features/settings/bloc/settings_bloc.dart';
 import 'package:vivity/features/settings/otp_preview.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
-import 'package:vivity/services/auth_service.dart';
-import 'package:vivity/services/user_service.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
 import '../../helpers/ui_helpers.dart';
@@ -29,208 +27,216 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late final SettingsBloc _settingsBloc;
+
   Future<bool>? hasOTPFuture;
-  late final NoInteractionDialogController _dialogController;
-  late final LoadDialog _loadDialog;
+  late final LoadDialog _loadDialog = LoadDialog();
+  bool _loadDialogOpen = false;
 
   @override
-  void initState() {
-    super.initState();
-    _dialogController = NoInteractionDialogController();
-    _loadDialog = LoadDialog(controller: _dialogController);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _settingsBloc = context.read<SettingsBloc>();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BasePageBlocBuilder<UserBloc, UserState>(
-      builder: (ctx, state) {
-        if (state is! UserLoggedInState) return Text('You must be logged in to be here...');
+    return defaultGradientBackground(
+      child: SingleChildScrollView(
+        child: BlocListener<SettingsBloc, SettingsState>(
+          listener: (context, state) {
+            if (_loadDialogOpen) {
+              Navigator.pop(context);
+              _loadDialogOpen = false;
+            }
+            if (state is! SettingsLoaded) return;
+            if (state.responseMessage == "POP_DISABLE_2FA") {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              showSnackBar('Disabled 2FA', context);
+            }
 
-        String currencyName = state.userOptions.currencyType!.toUpperCase();
-        hasOTPFuture ??= hasOTP(id: state.id.hexString);
-
-        return defaultGradientBackground(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Text(
-                      'Personal',
-                      style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
-                    ),
-                  ),
+            if (state.hasOTP && state.otpSeed != null) {
+              showDialog(
+                context: context,
+                builder: (ctx) => SizedBox(
+                  child: OTPPreview(email: state.email, seed: state.otpSeed!),
                 ),
-                SizedBox(
-                  width: 90.w,
-                  child: SimpleCard(
-                    elevation: 7,
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                    child: Column(
-                      children: [
-                        buildPreferenceListTile("EMAIL", state.email, context, onPressed: () async {
-                          Completer<String?> completer = Completer();
-                          ValueDialog dialog = ValueDialog(
-                            "Change email",
-                            "Email",
-                            completer,
-                            validator: ValidationBuilder().add((value) => validEmail.hasMatch(value?.trim() ?? "f") ? null : "Invalid email"),
-                          );
-
-                          await showDialog(context: context, builder: (ctx) => dialog);
-                          String? email = await completer.future;
-                          if (email == null) return;
-                          showDialog(context: context, builder: (ctx) => _loadDialog);
-                          dynamic result = await updateUser(state.accessToken, email: email);
-                          handleUserUpdate(result, failureMessage: "Email already exists", successMessage: "Updated email address");
-                        }),
-                        buildPreferenceListTile("PHONE NUMBER", state.phone, context, onPressed: () async {
-                          Completer<String?> completer = Completer();
-                          ValueDialog dialog = ValueDialog(
-                            "Change phone number",
-                            "Phone number",
-                            completer,
-                            isNumber: true,
-                            parseToNumber: false,
-                            validator: ValidationBuilder().add((value) {
-                              String? trimmed = value?.trim();
-                              if (trimmed == null || trimmed.length != 10) return 'Must be a 10 digit number';
-                              return numbersRegex.hasMatch(trimmed) ? null : 'Must be a 10 digit number';
-                            }),
-                          );
-
-                          await showDialog(context: context, builder: (ctx) => dialog);
-                          String? phone = await completer.future;
-                          if (phone == null) return;
-                          showDialog(context: context, builder: (ctx) => _loadDialog);
-                          dynamic result = await updateUser(state.accessToken, phone: phone.toString());
-                          handleUserUpdate(result, failureMessage: "Failed to update phone number", successMessage: "Updated phone number");
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Text(
-                      'Preferences',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 90.w,
-                  child: SimpleCard(
-                    elevation: 7,
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                    child: Column(
-                      children: [
-                        buildPreferenceListTile(
-                          "UNITS",
-                          state.userOptions.unit == Unit.metric ? "Metric" : "Empirical",
-                          context,
-                          onPressed: () async {},
-                        ),
-                        buildPreferenceListTile(
-                          "CURRENCY",
-                          "${currency(currencyName)} $currencyName",
-                          context,
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Text(
-                      'Password & Authentication',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => changePassword(state.accessToken, ctx),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(fillerColor),
-                    padding: MaterialStateProperty.all(EdgeInsets.all(12)),
-                    overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
-                  ),
+              ).then((value) {
+                _settingsBloc.add(SettingsUnloadOTPSeedEvent());
+                showSnackBar('Enabled 2FA', context);
+              });
+            }
+          },
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
                   child: Text(
-                    'Change Password',
-                    style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
+                    'Personal',
+                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
                   ),
                 ),
-                FutureBuilder<bool>(
-                  future: hasOTPFuture,
-                  builder: (ctx, snapshot) {
-                    if (!snapshot.hasData) return Container();
+              ),
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  if (state is! SettingsLoaded) return CircularProgressIndicator();
 
-                    bool hasOtp = snapshot.data!;
-                    return hasOtp
-                        ? TextButton(
-                            onPressed: () => disableTwoFactor(state.accessToken, ctx),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(fillerColor),
-                              padding: MaterialStateProperty.all(EdgeInsets.all(12)),
-                              overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
-                            ),
-                            child: Text(
-                              'Remove 2FA',
-                              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
-                            ),
-                          )
-                        : TextButton(
-                            onPressed: () => enableTwoFactor(state.email, state.accessToken, ctx),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(fillerColor),
-                              padding: MaterialStateProperty.all(EdgeInsets.all(12)),
-                              overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
-                            ),
-                            child: Text(
-                              'Enable Two-Factor Auth',
-                              style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
-                            ),
-                          );
-                  },
-                )
-              ],
-            ),
+                  return SizedBox(
+                    width: 90.w,
+                    child: SimpleCard(
+                      elevation: 7,
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      child: Column(
+                        children: [
+                          buildPreferenceListTile("EMAIL", state.email, context, onPressed: () async {
+                            Completer<String?> completer = Completer();
+                            ValueDialog dialog = ValueDialog(
+                              "Change email",
+                              "Email",
+                              completer,
+                              validator: ValidationBuilder().add((value) => validEmail.hasMatch(value?.trim() ?? "f") ? null : "Invalid email"),
+                            );
+
+                            await showDialog(context: context, builder: (ctx) => dialog);
+                            String? email = await completer.future;
+                            if (email == null) return;
+                            showDialog(context: context, builder: (ctx) => _loadDialog);
+                            _loadDialogOpen = true;
+                            _settingsBloc.add(SettingsUpdateEmailEvent(email));
+                          }),
+                          buildPreferenceListTile("PHONE NUMBER", state.phone, context, onPressed: () async {
+                            Completer<String?> completer = Completer();
+                            ValueDialog dialog = ValueDialog(
+                              "Change phone number",
+                              "Phone number",
+                              completer,
+                              isNumber: true,
+                              parseToNumber: false,
+                              validator: ValidationBuilder().add((value) {
+                                String? trimmed = value?.trim();
+                                if (trimmed == null || trimmed.length != 10) return 'Must be a 10 digit number';
+                                return numbersRegex.hasMatch(trimmed) ? null : 'Must be a 10 digit number';
+                              }),
+                            );
+
+                            await showDialog(context: context, builder: (ctx) => dialog);
+                            String? phone = await completer.future;
+                            if (phone == null) return;
+                            showDialog(context: context, builder: (ctx) => _loadDialog);
+                            _loadDialogOpen = true;
+                            _settingsBloc.add(SettingsUpdatePhoneEvent(phone));
+                          }),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    'Preferences',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                  ),
+                ),
+              ),
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  if (state is! SettingsLoaded) return CircularProgressIndicator();
+
+                  return SizedBox(
+                    width: 90.w,
+                    child: SimpleCard(
+                      elevation: 7,
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      child: Column(
+                        children: [
+                          buildPreferenceListTile(
+                            "UNITS",
+                            state.unit == Unit.metric ? "Metric" : "Empirical",
+                            context,
+                            onPressed: () async {},
+                          ),
+                          buildPreferenceListTile(
+                            "CURRENCY",
+                            state.currency != null ? "${currency(state.currency!)} ${state.currency}" : "SELECT",
+                            context,
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    'Password & Authentication',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => changePassword(context),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(fillerColor),
+                  padding: MaterialStateProperty.all(EdgeInsets.all(12)),
+                  overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
+                ),
+                child: Text(
+                  'Change Password',
+                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
+                ),
+              ),
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (ctx, state) {
+                  if (state is! SettingsLoaded) CircularProgressIndicator();
+
+                  return (state as SettingsLoaded).hasOTP
+                      ? TextButton(
+                          onPressed: () => _settingsBloc.add(SettingsDisableOTPEvent()),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(fillerColor),
+                            padding: MaterialStateProperty.all(EdgeInsets.all(12)),
+                            overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
+                          ),
+                          child: Text(
+                            'Remove 2FA',
+                            style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
+                          ),
+                        )
+                      : TextButton(
+                          onPressed: () => _settingsBloc.add(SettingsEnableOTPEvent()),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(fillerColor),
+                            padding: MaterialStateProperty.all(EdgeInsets.all(12)),
+                            overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
+                          ),
+                          child: Text(
+                            'Enable Two-Factor Auth',
+                            style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
+                          ),
+                        );
+                },
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  void handleUserUpdate(
-    dynamic result, {
-    String? failureMessage,
-    String? successMessage,
-  }) {
-    if (result == null) {
-      Navigator.pop(context);
-      if (failureMessage != null) {
-        showSnackBar(failureMessage, context);
-      }
-      return;
-    }
-
-    context.read<UserBloc>().add(UserFrontendUpdate(options: result['options'], email: result['email'], phone: result['phone']));
-    context.read<UserBloc>().add(UserRenewTokenEvent(result['access_token']));
-    Navigator.pop(context);
-    if (successMessage != null) {
-      showSnackBar(successMessage, context);
-    }
-  }
-
-  void changePassword(String token, BuildContext context) async {
+  void changePassword(BuildContext context) async {
     TextEditingController _newPasswordController = TextEditingController();
     Completer<String?> completer = Completer();
     ValueDialog dialog = ValueDialog(
@@ -256,50 +262,20 @@ class _SettingsPageState extends State<SettingsPage> {
     String? newPassword = _newPasswordController.text;
     if (currentPassword == null || newPassword == null) return;
     showDialog(context: context, builder: (ctx) => _loadDialog);
-    Response response = await updatePassword(token, currentPassword, newPassword);
-    if (response.statusCode! > 300) {
-      showSnackBar(response.data['error'], context);
-      Navigator.pop(context);
-      return;
-    }
-
-    context.read<UserBloc>().add(UserRenewTokenEvent(response.data['access_token']));
-    Navigator.pop(context);
-    showSnackBar('Successfully changed password', context);
+    _loadDialogOpen = true;
+    _settingsBloc.add(SettingsUpdatePasswordEvent(currentPassword, newPassword));
   }
 
   void disableTwoFactor(String token, BuildContext context) async {
     showDialog(context: context, builder: (ctx) => _loadDialog);
-    Response response = await disableOTP(token);
-    Navigator.pop(context);
-    if (response.statusCode! > 300) {
-      showSnackBar('Failed to disable 2FA', context);
-      return;
-    }
-
-    setState(() {
-      hasOTPFuture = Future.value(false);
-    });
+    _loadDialogOpen = true;
+    _settingsBloc.add(SettingsDisableOTPEvent());
   }
 
   void enableTwoFactor(String email, String token, BuildContext context) async {
     showDialog(context: context, builder: (ctx) => _loadDialog);
-    Response response = await enableOTP(token);
-    Navigator.pop(context);
-    if (response.statusCode! > 300) {
-      showSnackBar('Failed to enable 2FA', context);
-      return;
-    }
-
-    setState(() {
-      hasOTPFuture = Future.value(true);
-    });
-    showDialog(
-      context: context,
-      builder: (ctx) => SizedBox(
-        child: OTPPreview(email: email, seed: response.data['secret']),
-      ),
-    );
+    _loadDialogOpen = true;
+    _settingsBloc.add(SettingsEnableOTPEvent());
   }
 
   Widget buildPreferenceListTile(

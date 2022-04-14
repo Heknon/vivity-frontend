@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:vivity/features/checkout/checkout_service.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-import '../../../models/address.dart';
+import '../../address/models/address.dart';
 import 'package:vivity/models/payment_method.dart';
 import 'package:vivity/models/shipping_method.dart';
 

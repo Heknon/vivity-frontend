@@ -132,6 +132,39 @@ class AuthenticationService extends ServiceProvider {
     );
   }
 
+  Future<AsyncSnapshot<String>> enableOTP() async {
+    AsyncSnapshot<Response> snapshot = await post(subRoute: otpSubRoute);
+    snapshot = faultyResponseShouldReturn(snapshot);
+
+    if (snapshot.hasError) {
+      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
+    } else if (!snapshot.hasData) {
+      return AsyncSnapshot.nothing();
+    }
+
+    Response response = snapshot.data!;
+    return AsyncSnapshot.withData(
+      ConnectionState.done,
+      response.data['secret'],
+    );
+  }
+
+  Future<AsyncSnapshot<bool>> disableOTP() async {
+    AsyncSnapshot<Response> snapshot = await delete(subRoute: otpSubRoute);
+    snapshot = faultyResponseShouldReturn(snapshot);
+
+    if (snapshot.hasError) {
+      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
+    } else if (!snapshot.hasData) {
+      return AsyncSnapshot.withData(ConnectionState.done, false);
+    }
+
+    return AsyncSnapshot.withData(
+      ConnectionState.done,
+      true,
+    );
+  }
+
   Future<AsyncSnapshot<AuthenticationResult>> refreshAccessToken({
     required String refreshToken,
   }) async {

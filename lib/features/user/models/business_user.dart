@@ -5,7 +5,7 @@ import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/models/user_options.dart';
-import 'package:vivity/models/address.dart';
+import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/business/models/order.dart';
 
 class BusinessUser extends User {

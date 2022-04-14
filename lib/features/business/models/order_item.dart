@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:objectid/objectid/objectid.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
+import 'package:vivity/features/cart/models/modification_button_data_host.dart';
+import 'package:vivity/features/item/models/modification_button.dart';
 
 class OrderItem {
   final ObjectId? itemId;
@@ -41,11 +43,11 @@ class OrderItem {
 
   factory OrderItem.fromCartItem(CartItemModel cartItem) {
     return OrderItem(
-      itemId: cartItem.item?.id,
+      itemId: cartItem.item.id,
       selectedModifiers: cartItem.modifiersChosen.toList(),
-      price: cartItem.price,
+      price: cartItem.item.price,
       amount: cartItem.quantity,
-      businessId: cartItem.item?.businessId,
+      businessId: cartItem.item.businessId,
     );
   }
 

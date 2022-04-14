@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/cart/models/modification_button_data_host.dart';
 import 'package:vivity/widgets/preview_dialog.dart';
 
 Iterable<Widget> buildImageDataType(ModificationButtonDataHost e, {double radius = 5.25}) {

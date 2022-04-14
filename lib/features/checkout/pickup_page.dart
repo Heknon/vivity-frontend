@@ -7,7 +7,7 @@ import 'package:vivity/features/checkout/payment_page.dart';
 import 'package:vivity/features/checkout/shipping_page.dart';
 import 'package:vivity/features/checkout/ui_checkout_helper.dart';
 import 'package:vivity/features/item/cart_item.dart';
-import '../../models/address.dart';
+import '../address/models/address.dart';
 import 'package:vivity/models/shipping_method.dart';
 
 import '../../widgets/appbar/appbar.dart';
