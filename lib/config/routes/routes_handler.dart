@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/config/routes/routes_config.dart';
 import 'package:vivity/features/auth/auth_page.dart';
-import 'package:vivity/features/auth/models/token_container.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/business/create_business.dart';
@@ -12,7 +11,7 @@ import 'package:vivity/features/business/unapproved_business_page.dart';
 import 'package:vivity/features/home/home_bloc.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page.dart';
-import 'package:vivity/features/item/item_page.dart';
+import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/splash_screen.dart';
 import 'package:vivity/features/user/profile_page.dart';
 import 'package:vivity/models/navigation_models.dart';
@@ -21,7 +20,6 @@ import 'package:vivity/services/item_service.dart';
 import '../../features/admin/admin_page.dart';
 import '../../features/error_page.dart';
 import '../../features/item/models/item_model.dart';
-import '../../features/user/bloc/user_bloc.dart';
 
 Handler errorRouteHandler = Handler(
   handlerFunc: (BuildContext? ctx, Map<String, dynamic> params) {
@@ -99,8 +97,7 @@ Handler favoritesRoute = Handler(handlerFunc: (BuildContext? context, Map<String
 
 Handler logoutRoute = Handler(
   handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
-    context?.read<UserBloc>().add(UserLogoutEvent());
-    context?.read<AuthBloc>().add(AuthLogoutEvent());
+    Navigator.popUntil(context!, (route) => route.isFirst);
     return AuthPage();
   },
 );

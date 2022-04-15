@@ -3,6 +3,8 @@ part of './cart_bloc.dart';
 @immutable
 abstract class CartEvent {}
 
+class CartSyncEvent extends CartEvent {}
+
 class CartAddItemEvent extends CartEvent {
   final CartItemModel item;
 
@@ -27,26 +29,8 @@ class CartDecrementItemEvent extends CartEvent {
   CartDecrementItemEvent(this.index);
 }
 
-class CartDeleteItemEvent extends CartEvent {
-  final int index;
-
-  CartDeleteItemEvent(this.index);
-}
-
 class CartShipmentMethodUpdateEvent extends CartEvent {
   final ShippingMethod shippingMethod;
 
   CartShipmentMethodUpdateEvent(this.shippingMethod);
-}
-
-class CartRegisterInitializer extends CartEvent {
-  final UserBloc userBloc;
-
-  CartRegisterInitializer(this.userBloc);
-}
-
-class CartSyncToUserStateEvent extends CartEvent {
-  final UserLoggedInState state;
-
-  CartSyncToUserStateEvent(this.state);
 }

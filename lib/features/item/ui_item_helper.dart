@@ -4,49 +4,30 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:objectid/objectid/objectid.dart';
-import 'package:sizer/sizer.dart';
-import 'package:vivity/constants/asset_path.dart';
+
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/like_button.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/user/repo/user_repository.dart';
 
 import '../../widgets/quantity.dart';
-import '../cart/cart_bloc/cart_bloc.dart';
-import '../user/bloc/user_bloc.dart';
+
 import 'cart_item.dart';
 import 'classic_item.dart';
 
 Widget buildPreviewImage(
-  Map<String, Uint8List>? itemImages,
-  ItemModel item, {
+  Uint8List image, {
   Size? size,
   Color imageBackgroundColor = Colors.white,
   BorderRadius borderRadius = const BorderRadius.all(Radius.circular(7)),
 }) {
-  if (itemImages == null) {
-    return SizedBox(
-      height: (size?.height ?? 50) * 0.5,
-      width: (size?.width ?? 50) * 0.4,
-      child: const CircularProgressIndicator(),
-    );
-  }
-  Uint8List? file =
-      item.previewImageIndex < item.images.length && item.previewImageIndex >= 0 ? itemImages[item.images[item.previewImageIndex]] : null;
-  if (file == null) {
-    return SizedBox(
-      height: (size?.height ?? 50) * 0.5,
-      width: (size?.width ?? 50) * 0.4,
-      child: Image.memory(noImageAvailable!, fit: BoxFit.fitHeight,)
-    );
-  }
-
   return ClipRRect(
     borderRadius: borderRadius,
     child: Container(
       color: imageBackgroundColor,
       child: Image.memory(
-        file,
-        // height: size != null ? size.height: null,
+        image,
         width: size != null ? size.width : null,
         fit: BoxFit.fill,
       ),
@@ -69,6 +50,7 @@ Widget buildItemCoupling(
   ItemModel modelLeft,
   ItemModel? modelRight,
   Size itemSize, {
+  Set<String> likedItemIds = const {},
   bool hasEditButton = false,
   void Function(ItemModel)? onEditTap,
   void Function(ItemModel)? onTap,
@@ -81,6 +63,7 @@ Widget buildItemCoupling(
     onEditTap: onEditTap != null ? () => onEditTap(modelLeft) : null,
     onTap: onTap != null ? () => onTap(modelLeft) : null,
     onLongTap: onLongTap != null ? () => onLongTap(modelLeft) : null,
+    initialLiked: likedItemIds.contains(modelLeft.id.hexString),
   );
 
   ClassicItem? rightItem = modelRight != null
@@ -90,6 +73,7 @@ Widget buildItemCoupling(
           onEditTap: onEditTap != null ? () => onEditTap(modelRight) : null,
           onTap: onTap != null ? () => onTap(modelRight) : null,
           onLongTap: onLongTap != null ? () => onLongTap(modelRight) : null,
+          initialLiked: likedItemIds.contains(modelRight.id.hexString),
         )
       : null;
   return Row(
@@ -159,34 +143,26 @@ Widget buildDatabaseLikeButton(
   BorderRadius? borderRadius,
   EdgeInsets? padding,
 }) {
-  return BlocListener<UserBloc, UserState>(
-    listener: (ctx, state) {
-      if (state is! UserLoggedInState) return;
-      for (var element in state.likedItems) {
-        if (element.id == item.id) return controller.setLiked(true);
-      }
+  UserRepository userRepository = UserRepository();
 
-      controller.setLiked(false);
+  return LikeButton(
+    color: color ?? Theme.of(context).primaryColor,
+    controller: controller,
+    // TODO: Connect to user liked items using onClick
+    initialLiked: initialLiked,
+    backgroundColor: backgroundColor,
+    splashColor: splashColor,
+    radius: radius,
+    borderRadius: borderRadius,
+    padding: padding,
+    onClick: (liked) {
+      if (liked) {
+        userRepository.addLikedItem(likedItemId: item.id.hexString);
+      } else {
+        userRepository.removeLikedItem(likedItemId: item.id.hexString);
+      }
+      controller.setLiked(!liked);
     },
-    child: LikeButton(
-      color: color ?? Theme.of(context).primaryColor,
-      controller: controller,
-      // TODO: Connect to user liked items using onClick
-      initialLiked: initialLiked,
-      backgroundColor: backgroundColor,
-      splashColor: splashColor,
-      radius: radius,
-      borderRadius: borderRadius,
-      padding: padding,
-      onClick: (liked) {
-        if (liked) {
-          context.read<UserBloc>().add(UserAddFavoriteEvent(item));
-        } else {
-          context.read<UserBloc>().add(UserRemoveFavoriteEvent(item.id));
-        }
-        controller.setLiked(!liked);
-      },
-    ),
   );
 }
 
@@ -196,8 +172,7 @@ Widget buildCartItemList(
   BuildContext context, {
   Size? itemSize,
   bool hasQuantity = true,
-  void Function(QuantityController, int?)? onQuantityDelete,
-  QuantityController? Function(int)? quantityController,
+  void Function(QuantityController, int)? onQuantityDelete,
   BorderRadius? itemBorderRadius,
   EdgeInsets? itemPadding,
   Widget? emptyCart,
@@ -211,11 +186,11 @@ Widget buildCartItemList(
       item: items[i],
       width: itemSize?.width,
       height: itemSize?.height,
-      onQuantityIncrement: hasQuantity && !onlyQuantity ? (_, id) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!)) : null,
-      onQuantityDecrement: hasQuantity && !onlyQuantity ? (_, id) => BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!)) : null,
-      onQuantityDelete: hasQuantity && !onlyQuantity ? onQuantityDelete : null,
-      quantityController: quantityController != null ? quantityController(i) : null,
-      id: items[i].insertionId,
+      onQuantityIncrement:
+          hasQuantity && !onlyQuantity ? (quantityController) => BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(i)) : null,
+      onQuantityDecrement:
+          hasQuantity && !onlyQuantity ? (quantityController) => BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(i)) : null,
+      onQuantityDelete: hasQuantity && !onlyQuantity && onQuantityDelete != null ? (qc) => onQuantityDelete(qc, i) : null,
       borderRadius: itemBorderRadius,
       elevation: elevation,
       includeQuantityControls: includeQuantityControls,

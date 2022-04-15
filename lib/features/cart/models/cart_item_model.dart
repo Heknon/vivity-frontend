@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/cart/models/modification_button_data_host.dart';
 import 'package:vivity/features/item/models/item_model.dart';
@@ -21,20 +22,22 @@ class CartItemModel {
       (other is CartItemModel &&
           runtimeType == other.runtimeType &&
           item == other.item &&
-          modifiersChosen == other.modifiersChosen &&
+          listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()) &&
           quantity == other.quantity);
 
+  bool looseEquals(Object other) =>
+      identical(this, other) ||
+      (other is CartItemModel &&
+          runtimeType == other.runtimeType &&
+          item == other.item &&
+          listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()));
+
   @override
-  int get hashCode =>
-      item.hashCode ^ modifiersChosen.hashCode ^ quantity.hashCode;
+  int get hashCode => item.hashCode ^ modifiersChosen.hashCode ^ quantity.hashCode;
 
   @override
   String toString() {
-    return 'CartItemModel{' +
-        ' item: $item,' +
-        ' modifiersChosen: $modifiersChosen,' +
-        ' quantity: $quantity,' +
-        '}';
+    return 'CartItemModel{' + ' item: $item,' + ' modifiersChosen: $modifiersChosen,' + ' quantity: $quantity,' + '}';
   }
 
   CartItemModel copyWith({
@@ -65,8 +68,7 @@ class CartItemModel {
 
     return CartItemModel(
       item: item,
-      modifiersChosen: (map['modifiers_chosen'] as List<dynamic>)
-          .map((e) => ModificationButtonDataHost.fromMap(e)),
+      modifiersChosen: (map['modifiers_chosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)),
       quantity: map['quantity'] as int,
     );
   }

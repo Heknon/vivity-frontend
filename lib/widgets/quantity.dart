@@ -14,12 +14,11 @@ class Quantity extends StatefulWidget {
   final SnackBar? maxFailSnackbar;
   final SnackBar? minFailSnackbar;
   final QuantityController? controller;
-  final int? id;
   final bool deletable;
   final bool onlyQuantity;
-  final void Function(QuantityController, int?)? onDelete;
-  final void Function(QuantityController, int?)? onIncrement;
-  final void Function(QuantityController, int?)? onDecrement;
+  final void Function(QuantityController)? onDelete;
+  final void Function(QuantityController)? onIncrement;
+  final void Function(QuantityController)? onDecrement;
 
   const Quantity({
     Key? key,
@@ -35,7 +34,6 @@ class Quantity extends StatefulWidget {
     this.onDelete,
     this.onIncrement,
     this.onDecrement,
-    this.id,
     this.deletable = false,
     this.onlyQuantity = false,
   }) : super(key: key);

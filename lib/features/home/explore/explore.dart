@@ -9,7 +9,7 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vivity/features/cart/shopping_cart.dart';
-import 'package:vivity/features/item/item_page.dart';
+import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/map_preview_icon.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/item/preview_item.dart';

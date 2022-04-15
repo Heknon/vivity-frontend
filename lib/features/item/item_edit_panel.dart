@@ -8,19 +8,18 @@ import 'package:form_validator/form_validator.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
-import 'package:vivity/features/item/item_page.dart';
-import 'package:vivity/features/item/modification_button_preview.dart';
-import 'package:vivity/features/item/modifier/item_modifier.dart';
-import 'package:vivity/features/item/modifier/item_modifier_container.dart';
-import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
-import 'package:vivity/features/item/ui_item_helper.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
-import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/features/business/models/order.dart';
+import 'package:vivity/features/item/item_page/item_page.dart';
+import 'package:vivity/features/item/models/modification_button.dart';
+import 'package:vivity/features/item/models/modification_button_data_type.dart';
+import 'package:vivity/features/item/models/modification_button_side.dart';
+import 'package:vivity/features/item/modification_button_preview.dart';
+import 'package:vivity/features/item/repo/item_repository.dart';
+import 'package:vivity/features/item/ui_item_helper.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/services/item_service.dart';
 
 import 'models/item_model.dart';
-import 'modifier/item_modifier_service.dart';
 
 class ItemEditPanel extends StatefulWidget {
   final ItemModel item;
@@ -37,6 +36,8 @@ class ItemEditPanel extends StatefulWidget {
 }
 
 class _ItemEditPanelState extends State<ItemEditPanel> {
+  ItemRepository _itemRepository = ItemRepository();
+
   late ItemModel clonedItem;
   late final TextEditingController _descriptionController;
   final LoadDialog _loadDialog = LoadDialog();
@@ -255,17 +256,10 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
   }
 
   void submit() async {
-    UserState state = context.read<UserBloc>().state;
-    if (state is! BusinessUserLoggedInState) {
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ahhhh!!! How are you here??')));
-      return;
-    }
-
     showDialog(context: context, builder: (ctx) => _loadDialog);
-    ItemModel updatedItem = await updateItem(
-      state.accessToken,
-      widget.item.id.hexString,
+    // TODO: Create bloc for edit panel
+    ItemModel updatedItem = await _itemRepository.updateItem(
+      id: widget.item.id.hexString,
       tags: clonedItem.tags.map((e) => e.trim()).toList(),
       title: clonedItem.itemStoreFormat.title.trim(),
       subtitle: clonedItem.itemStoreFormat.subtitle?.trim(),

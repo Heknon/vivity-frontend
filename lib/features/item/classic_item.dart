@@ -2,27 +2,25 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/item/like_button.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/services/item_service.dart';
 import 'package:vivity/widgets/simple_card.dart';
 import '../../config/themes/themes_config.dart';
-import 'item_page.dart';
-import 'background_image.dart';
 import 'package:vivity/widgets/rating.dart';
 
 import 'models/item_model.dart';
 
 class ClassicItem extends StatefulWidget {
   final ItemModel item;
+  final bool initialLiked;
   final Size? size;
   final bool editButton;
   final VoidCallback? onEditTap;
@@ -32,6 +30,7 @@ class ClassicItem extends StatefulWidget {
   const ClassicItem({
     Key? key,
     required this.item,
+    required this.initialLiked,
     this.size,
     this.editButton = false,
     this.onEditTap,
@@ -45,7 +44,6 @@ class ClassicItem extends StatefulWidget {
 
 class _ClassicItemState extends State<ClassicItem> {
   late LikeButtonController _likeButtonController;
-  Future<Map<String, File>?>? itemImages;
 
   @override
   void initState() {
@@ -55,18 +53,8 @@ class _ClassicItemState extends State<ClassicItem> {
 
   @override
   Widget build(BuildContext context) {
-    UserState state = context.read<UserBloc>().state;
-    if (state is! UserLoggedInState) return Text('You need to be logged in to see items.');
-
-    itemImages ??= getCachedItemImages(state.accessToken, List.of([widget.item]));
-
-    bool initialLiked = false;
     if (!widget.editButton) {
-      for (var element in state.likedItems) {
-        if (element.id == widget.item.id) initialLiked = true;
-      }
-
-      _likeButtonController.setLiked(initialLiked);
+      _likeButtonController.setLiked(widget.initialLiked);
     }
 
     return LayoutBuilder(builder: (ctx, constraints) {
@@ -83,19 +71,14 @@ class _ClassicItemState extends State<ClassicItem> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                  height: size.height * 0.65,
-                  width: size.width,
-                  child: FutureBuilder<Map<String, Uint8List>?>(
-                    future: readImagesBytes(itemImages),
-                    builder: (context, snapshot) {
-                      return buildPreviewImage(
-                        snapshot.data,
-                        widget.item,
-                        size: size,
-                        borderRadius: const BorderRadius.only(topLeft: Radius.circular(7), topRight: Radius.circular(7)),
-                      );
-                    }
-                  )),
+                height: size.height * 0.65,
+                width: size.width,
+                child: buildPreviewImage(
+                  widget.item.previewImage ?? noImageAvailable,
+                  size: size,
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(7), topRight: Radius.circular(7)),
+                ),
+              ),
               Padding(
                 padding: EdgeInsets.all(5),
                 child: Row(
@@ -138,7 +121,7 @@ class _ClassicItemState extends State<ClassicItem> {
                             widget.item,
                             _likeButtonController,
                             context,
-                            initialLiked,
+                            widget.initialLiked,
                             color: primaryComplementaryColor,
                             backgroundColor: Colors.transparent,
                             splashColor: Colors.grey[600]!.withOpacity(0.6),

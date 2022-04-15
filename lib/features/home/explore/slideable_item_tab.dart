@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/item/classic_item.dart';
-import 'package:vivity/features/item/item_page.dart';
+import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 
 class SlideableItemTab extends StatelessWidget {

@@ -6,7 +6,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vivity/features/item/errors/item_error.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/models/modification_button.dart';
 import 'package:vivity/features/item/service/item_service.dart';
+import 'package:vivity/helpers/list_utils.dart';
 
 class ItemRepository {
   static final ItemRepository _itemRepository = ItemRepository._();
@@ -130,18 +132,25 @@ class ItemRepository {
       }
 
       ItemModel updatedItem = snapshot.data!;
-      updatedItem = updatedItem.copyWith(images: List.generate(index + 1, (i) => index == i ? image.readAsBytesSync() : null));
+      List<Uint8List?> nullImagesPlaceholders = List.generate(index + 1, (i) => index == i ? image.readAsBytesSync() : null);
+      List<Uint8List> nonNullImages = List.empty(growable: true);
+      for (Uint8List? image in nullImagesPlaceholders) {
+        if (image != null) nonNullImages.add(image);
+      }
+      updatedItem = updatedItem.copyWith(images: nonNullImages);
       _registerNetworkItemModelToCache(updatedItem, false);
 
       return _itemModelCache[updatedItem.id.hexString]!;
     }
 
     ItemModel item = _itemModelCache[id]!;
-    item = item.copyWith(
-      images: List.generate(index + 1, (i) {
-        return index == i ? image.readAsBytesSync() : null;
-      }),
-    );
+    List<Uint8List?> nullImagesPlaceholders = List.generate(index + 1, (i) => index == i ? image.readAsBytesSync() : null);
+    List<Uint8List> nonNullImages = List.empty(growable: true);
+    for (Uint8List? image in nullImagesPlaceholders) {
+      if (image != null) nonNullImages.add(image);
+    }
+
+    item = item.copyWith(images: nonNullImages);
     _registerNetworkItemModelToCache(item, false);
 
     return _itemModelCache[id]!;
@@ -168,21 +177,30 @@ class ItemRepository {
       _registerNetworkItemModelToCache(updatedItem, false);
       ItemModel cachedItem = _itemModelCache[updatedItem.id.hexString]!;
       List<Uint8List?> newImages = List.empty(growable: true);
-      for (int i = 0; i < (cachedItem.images?.length ?? 0); i++) {
-        if (i != index) newImages.add(cachedItem.images?[i]);
+      for (int i = 0; i < cachedItem.images.length; i++) {
+        if (i != index) newImages.add(cachedItem.images[i]);
+      }
+      List<Uint8List> nonNullImages = List.empty(growable: true);
+      for (Uint8List? image in newImages) {
+        if (image != null) nonNullImages.add(image);
       }
 
-      _itemModelCache[updatedItem.id.hexString] = cachedItem.copyWith(images: newImages);
+      _itemModelCache[updatedItem.id.hexString] = cachedItem.copyWith(images: nonNullImages);
       return _itemModelCache[updatedItem.id.hexString]!;
     }
 
     ItemModel item = _itemModelCache[id]!;
     List<Uint8List?> newImages = List.empty(growable: true);
-    for (int i = 0; i < (item.images?.length ?? 0); i++) {
-      if (i != index) newImages.add(item.images?[i]);
+    for (int i = 0; i < item.images.length; i++) {
+      if (i != index) newImages.add(item.images[i]);
     }
 
-    _itemModelCache[item.id.hexString] = item.copyWith(images: newImages);
+    List<Uint8List> nonNullImages = List.empty(growable: true);
+    for (Uint8List? image in newImages) {
+      if (image != null) nonNullImages.add(image);
+    }
+
+    _itemModelCache[item.id.hexString] = item.copyWith(images: nonNullImages);
     return _itemModelCache[id]!;
   }
 
@@ -276,18 +294,18 @@ class ItemRepository {
     ItemModel? oldModel = _itemModelCache[itemModel.id.hexString];
 
     /// if there is no old model just update to new model and continue since there is no need to see if image data should be set
-    if (oldModel == null || oldModel.images == null) {
+    if (oldModel == null || oldModel.images.isEmpty) {
       _itemModelCache[itemModel.id.hexString] = itemModel;
       return;
     }
 
-    int oldImagesLength = oldModel.images?.length ?? 0;
-    int newImagesLength = itemModel.images?.length ?? 0;
+    int oldImagesLength = oldModel.images.length;
+    int newImagesLength = itemModel.images.length;
 
     /// go through the images of both old and new models.
     List<Uint8List?> images = List.generate(max(oldImagesLength, newImagesLength), (i) {
-      Uint8List? oldImage = i < oldImagesLength ? (oldModel.images?[i]) : null;
-      Uint8List? newImage = i < newImagesLength ? (itemModel.images?[i]) : null;
+      Uint8List? oldImage = oldModel.images.getOrNull(i);
+      Uint8List? newImage = itemModel.images.getOrNull(i);
       // if old image is available but there is no new image keep the old one if images werent updated
       if (oldImage != null && newImage == null && !imagesFetched) {
         return oldImage;
@@ -296,8 +314,13 @@ class ItemRepository {
       return newImage;
     });
 
+    List<Uint8List> imagesNonNull = List.empty(growable: true);
+    for (Uint8List? image in images) {
+      if (image != null) imagesNonNull.add(image);
+    }
+
     /// set the image data found with copyWith and set it as the new item model
-    _itemModelCache[itemModel.id.hexString] = itemModel.copyWith(images: images);
+    _itemModelCache[itemModel.id.hexString] = itemModel.copyWith(images: imagesNonNull);
   }
 
   /// This is a 100% network call
@@ -343,6 +366,27 @@ class ItemRepository {
     }
 
     ItemModel updatedItem = snapshot.data!;
+    _registerNetworkItemModelToCache(updatedItem, false);
+
+    return _itemModelCache[updatedItem.id.hexString]!;
+  }
+
+  Future<ItemModel> addView({
+    required String id,
+  }) async {
+    ItemModel? item = await getItemFromId(itemId: id);
+    if (item == null) throw ItemUpdateFailedException(message: "Item doesn't exist");
+    gracefullyUpdateItems([item]);
+
+    AsyncSnapshot<int> snapshot = await _itemService.addView(
+      id: id,
+    );
+
+    if (snapshot.hasError || !snapshot.hasData) {
+      throw ItemUpdateFailedException(response: snapshot.error is Response ? snapshot.error! as Response : null);
+    }
+
+    ItemModel updatedItem = item.copyWith(metrics: item.metrics.copyWith(views: snapshot.data!));
     _registerNetworkItemModelToCache(updatedItem, false);
 
     return _itemModelCache[updatedItem.id.hexString]!;

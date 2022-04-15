@@ -5,16 +5,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
-import 'package:uuid/uuid.dart';
-import 'package:vivity/constants/app_constants.dart';
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
 import 'package:vivity/features/checkout/confirm_page.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
+import 'package:vivity/models/shipping_method.dart';
 import 'package:vivity/widgets/quantity.dart';
 import '../item/cart_item.dart';
-import 'cart_bloc/cart_bloc.dart';
-import 'cart_bloc/cart_state.dart';
-import 'cart_service.dart';
 
 class CartView extends StatefulWidget {
   final ScrollController? scrollController;
@@ -54,10 +51,13 @@ class _CartViewState extends State<CartView> {
               return curr != prev;
             },
             listener: (ctx, CartState state) {
-              if (price != state.priceTotal) {
-                updateCost(state.priceTotal);
+              if (state is! CartLoaded) return;
+
+              if (price != state.total) {
+                updateCost(state.total);
               }
-              price = state.priceTotal;
+
+              price = state.total;
             },
             builder: (context, CartState state) {
               return Column(
@@ -67,16 +67,25 @@ class _CartViewState extends State<CartView> {
                     padding: EdgeInsets.only(top: listPadding),
                     height: listSize.height,
                     width: listSize.width,
-                    child: state.cartIsEmpty
+                    child: state is! CartLoaded
                         ? Align(
                             alignment: Alignment.center.add(Alignment(constraints.maxWidth / 4, 0)),
                             child: Text(
-                              "Start adding items to your cart!",
+                              "There was an error loading the cart",
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
                             ),
                           )
-                        : buildItemsList(itemsPadding, itemSize, state),
+                        : state.items.isEmpty
+                            ? Align(
+                                alignment: Alignment.center.add(Alignment(constraints.maxWidth / 4, 0)),
+                                child: Text(
+                                  "Start adding items to your cart!",
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp),
+                                ),
+                              )
+                            : buildItemsList(itemsPadding, itemSize, state),
                   ),
                   Spacer(),
                   Padding(
@@ -85,8 +94,8 @@ class _CartViewState extends State<CartView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        buildCheckoutButton(context),
-                        buildCheckoutCostInfo(state.priceTotal),
+                        buildCheckoutButton(context, state),
+                        buildCheckoutCostInfo(state is! CartLoaded ? 0 : state.total),
                       ],
                     ),
                   )
@@ -99,7 +108,7 @@ class _CartViewState extends State<CartView> {
     );
   }
 
-  Widget buildItemsList(double itemsPadding, Size itemSize, CartState state) {
+  Widget buildItemsList(double itemsPadding, Size itemSize, CartLoaded state) {
     return ListView.builder(
       itemCount: state.items.length,
       controller: widget.scrollController,
@@ -111,11 +120,9 @@ class _CartViewState extends State<CartView> {
             item: state.items[i],
             width: itemSize.width,
             height: itemSize.height,
-            onQuantityIncrement: onQuantityIncrement,
-            onQuantityDecrement: onQuantityDecrement,
-            onQuantityDelete: onDelete,
-            quantityController: state.getItemQuantityController(state.items[i].insertionId),
-            id: state.items[i].insertionId,
+            onQuantityIncrement: (qc) => onQuantityIncrement(qc, i),
+            onQuantityDecrement: (qc) => onQuantityDecrement(qc, i),
+            onQuantityDelete: (qc) => onDelete(qc, i),
             onlyQuantity: false,
           ),
         ),
@@ -155,7 +162,7 @@ class _CartViewState extends State<CartView> {
     );
   }
 
-  Padding buildCheckoutButton(BuildContext context) {
+  Padding buildCheckoutButton(BuildContext context, CartState state) {
     return Padding(
       padding: EdgeInsets.only(left: 8),
       child: TextButton(
@@ -170,11 +177,10 @@ class _CartViewState extends State<CartView> {
           splashFactory: InkSplash.splashFactory,
         ),
         onPressed: () {
-          saveCart(context);
           context.read<CheckoutBloc>().add(
                 CheckoutInitializeEvent(
-                  items: context.read<CartBloc>().state.items,
-                  shippingMethod: context.read<CartBloc>().state.shippingMethod,
+                  items: state is! CartLoaded ? [] : state.items,
+                  shippingMethod: state is! CartLoaded ? ShippingMethod.delivery : state.shippingMethod,
                   cuponCode: "",
                 ),
               );
@@ -193,18 +199,17 @@ class _CartViewState extends State<CartView> {
     );
   }
 
-  void onQuantityIncrement(QuantityController quantityController, int? id) {
-    BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(id!));
+  void onQuantityIncrement(QuantityController quantityController, int index) {
+    BlocProvider.of<CartBloc>(context).add(CartIncrementItemEvent(index));
   }
 
-  void onQuantityDecrement(QuantityController quantityController, int? id) {
-    BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(id!));
+  void onQuantityDecrement(QuantityController quantityController, int index) {
+    BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(index));
   }
 
-  void onDelete(QuantityController quantityController, int? id) {
-    BlocProvider.of<CartBloc>(context).add(CartDeleteItemEvent(id!));
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleting item')));
+  void onDelete(QuantityController quantityController, index) {
+    BlocProvider.of<CartBloc>(context).add(CartRemoveItemEvent(index));
+    showSnackBar('Removing from cart...', context);
   }
 
   void updateCost(double priceTotal) {

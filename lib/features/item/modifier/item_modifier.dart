@@ -1,17 +1,11 @@
-import 'dart:math';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/models/modification_button.dart';
 import 'package:vivity/features/item/modifier/bloc/item_modifier_bloc.dart';
 import 'package:vivity/features/item/modifier/item_modifier_container.dart';
 import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
-import 'package:vivity/helpers/item_data_helper.dart';
-
-import 'item_modifier_service.dart';
 
 class ItemModifier extends StatefulWidget {
   final ModificationButton modificationButton;

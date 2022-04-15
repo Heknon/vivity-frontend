@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/item/item_page.dart';
+import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';

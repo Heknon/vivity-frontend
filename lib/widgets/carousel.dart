@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_options.dart';
@@ -8,7 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
 
 class Carousel extends StatefulWidget {
-  final List<File> images;
+  final List<Uint8List> images;
 
   /// Scaling is applied to size. Sizes are a percentage of the screen.
   final Size imageSize;
@@ -56,7 +57,7 @@ class _CarouselState extends State<Carousel> {
 
   @override
   Widget build(BuildContext context) {
-    List<Image> images = widget.images.map((e) => Image.file(
+    List<Image> images = widget.images.map((e) => Image.memory(
       e,
       alignment: Alignment.topCenter,
       fit: BoxFit.fitHeight,

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/models/modification_button_data_type.dart';
 import 'package:vivity/helpers/item_data_helper.dart';
 
 const double modifierTextSize = 14;

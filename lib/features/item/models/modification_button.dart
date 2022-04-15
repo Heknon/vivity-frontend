@@ -1,3 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:vivity/features/item/models/modification_button_data_type.dart';
+import 'package:vivity/features/item/models/modification_button_side.dart';
+
 class ModificationButton {
   final String name;
   final ModificationButtonSide side;

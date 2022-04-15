@@ -2,27 +2,44 @@ part of 'item_modifier_bloc.dart';
 
 /// State has a list of chosen items
 
-class ItemModifierState extends Equatable {
+class ItemModifierState {
   final Set<int> chosenIndices;
 
-  const ItemModifierState(this.chosenIndices);
+  const ItemModifierState({this.chosenIndices = const {}});
 
-  factory ItemModifierState.initial({Set<int> chosenIndices = const {}}) {
-    return ItemModifierState(chosenIndices);
-  }
-
-  factory ItemModifierState.fromStateAddIndex(ItemModifierState state, int addedIndex) {
-    Set<int> clone = Set.of(state.chosenIndices);
-    clone.add(addedIndex);
-    return ItemModifierState(clone);
-  }
-
-  factory ItemModifierState.fromStateRemoveIndex(ItemModifierState state, int removedIndex) {
-    Set<int> clone = Set.of(state.chosenIndices);
-    clone.remove(removedIndex);
-    return ItemModifierState(clone);
-  }
+//<editor-fold desc="Data Methods">
 
   @override
-  List<Object?> get props => [chosenIndices];
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is ItemModifierState && runtimeType == other.runtimeType && chosenIndices == other.chosenIndices);
+
+  @override
+  int get hashCode => chosenIndices.hashCode;
+
+  @override
+  String toString() {
+    return 'ItemModifierState{' + ' chosenIndices: $chosenIndices,' + '}';
+  }
+
+  ItemModifierState copyWith({
+    Set<int>? chosenIndices,
+  }) {
+    return ItemModifierState(
+      chosenIndices: chosenIndices ?? this.chosenIndices,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'chosenIndices': this.chosenIndices,
+    };
+  }
+
+  factory ItemModifierState.fromMap(Map<String, dynamic> map) {
+    return ItemModifierState(
+      chosenIndices: map['chosenIndices'] as Set<int>,
+    );
+  }
+
+//</editor-fold>
 }

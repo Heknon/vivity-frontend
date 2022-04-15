@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/models/modification_button_data_type.dart';
 import 'package:vivity/features/item/modifier/bloc/item_modifier_bloc.dart';
 
 import 'item_modifier_service.dart';

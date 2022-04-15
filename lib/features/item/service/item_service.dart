@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:vivity/constants/api_path.dart' as api_route;
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/models/modification_button.dart';
 import 'package:vivity/services/service_provider.dart';
 
 class ItemService extends ServiceProvider {
@@ -18,6 +19,7 @@ class ItemService extends ServiceProvider {
   static const String itemImageRoute = "/{item_id}/image";
   static const String itemRoute = "/{item_id}";
   static const String itemReviewRoute = "/{item_id}/review";
+  static const String itemViewRoute = "/{item_id}/view";
 
   ItemService._() : super(baseRoute: api_route.itemRoute);
 
@@ -42,7 +44,7 @@ class ItemService extends ServiceProvider {
 
     return AsyncSnapshot.withData(
       ConnectionState.done,
-      (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e, hasImages: getItemImages)).toList(),
+      (response.data as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
     );
   }
 
@@ -287,6 +289,26 @@ class ItemService extends ServiceProvider {
     return AsyncSnapshot.withData(
       ConnectionState.done,
       ItemModel.fromMap(response.data),
+    );
+  }
+
+  Future<AsyncSnapshot<int>> addView({
+    required String id,
+  }) async {
+    String accessToken = await _authRepository.getAccessToken();
+    AsyncSnapshot<Response> snapshot = await delete(subRoute: itemViewRoute.replaceFirst("{item_id}", id), token: accessToken);
+    snapshot = faultyResponseShouldReturn(snapshot);
+
+    if (snapshot.hasError) {
+      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
+    } else if (!snapshot.hasData) {
+      return AsyncSnapshot.nothing();
+    }
+
+    Response response = snapshot.data!;
+    return AsyncSnapshot.withData(
+      ConnectionState.done,
+      (response.data as num).toInt(),
     );
   }
 }

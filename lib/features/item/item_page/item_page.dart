@@ -1,40 +1,36 @@
 import 'dart:io';
 
 import 'package:advanced_panel/panel.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
-import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
-import 'package:vivity/features/explore/slideable_item_tab.dart';
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
+import 'package:vivity/features/cart/models/modification_button_data_host.dart';
+import 'package:vivity/features/cart/repo/cart_repository.dart';
 import 'package:vivity/features/item/item_edit_panel.dart';
+import 'package:vivity/features/item/item_page/bloc/item_page_bloc.dart';
+import 'package:vivity/features/item/models/modification_button.dart';
+import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:vivity/services/item_service.dart';
-import '../base_page.dart';
-import '../cart/cart_bloc/cart_bloc.dart';
-import '../cart/shopping_cart.dart';
+import '../../base_page.dart';
+import '../../cart/shopping_cart.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/item/modifier/item_modifier_selector.dart';
-import 'package:vivity/features/search_filter/filter_bar.dart';
 import 'package:vivity/features/search_filter/filter_side_bar.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 import 'package:vivity/widgets/appbar/appbar.dart';
 import 'package:vivity/widgets/carousel.dart';
 import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/rating.dart';
-import 'package:vivity/widgets/simple_card.dart';
 
-import 'like_button.dart';
-import 'modifier/item_modifier.dart';
+import '../like_button.dart';
+import '../modifier/item_modifier.dart';
 
 class ItemPage extends StatefulWidget {
   final ItemModel item;
@@ -53,6 +49,10 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> {
+  late final ItemRepository _itemRepository = ItemRepository();
+  late final ItemPageBloc _bloc;
+  late final CartBloc _cartBloc;
+
   late List<ItemModifierSelectorController> _selectorControllers;
   late QuantityController _quantityController;
   late LikeButtonController _likeController;
@@ -64,18 +64,14 @@ class _ItemPageState extends State<ItemPage> {
   final LoadDialog _loadDialog = LoadDialog();
 
   bool openedEditorPreviously = false;
-  late final Future<Map<String, File>?>? itemImages;
+  bool _loadDialogOpen = false;
 
   @override
   void initState() {
     super.initState();
 
-    UserState state = context.read<UserBloc>().state;
-    if (state is! UserLoggedInState) return;
-
     _likeController = LikeButtonController();
     _panelController = PanelController();
-    itemImages = getCachedItemImages(state.accessToken, List.of([widget.item]));
 
     _selectorControllers = List.generate(
       widget.item.itemStoreFormat.modificationButtons.length,
@@ -98,34 +94,23 @@ class _ItemPageState extends State<ItemPage> {
       });
     }
 
-    if (widget.registerView) addItemView(state.accessToken, widget.item.id.hexString);
+    if (widget.registerView) _itemRepository.addView(id: widget.item.id.hexString);
     _quantityController = QuantityController();
     _widgetSwapController = WidgetSwapperController();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _bloc = context.read<ItemPageBloc>();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    UserState state = context.read<UserBloc>().state;
-    if (state is! UserLoggedInState) return Text("How are you here 🕵️‍♂️‍");
-
-    bool initialLiked = false;
-    bool ownsBusiness = state.businessId != null && state.businessId == widget.item.businessId;
-
-    for (var element in state.likedItems) {
-      if (element.id == widget.item.id) initialLiked = true;
-    }
-
-    _likeController.setLiked(initialLiked);
-
-    if (widget.editorOpened) {
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-        if (!openedEditorPreviously) {
-          _panelController.open();
-          setState(() {
-            openedEditorPreviously = true;
-          });
-        }
-      });
+    if (widget.editorOpened && !openedEditorPreviously) {
+      _panelController.open();
+      openedEditorPreviously = true;
     }
 
     return BasePage(
@@ -134,117 +119,111 @@ class _ItemPageState extends State<ItemPage> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) => defaultGradientBackground(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: constraints.maxHeight * 0.66,
-                      width: 100.w,
-                      child: Stack(
-                        alignment: Alignment.topCenter,
-                        children: [
-                          FutureBuilder(
-                              future: itemImages,
-                              builder: (context, snapshot) {
-                                Size size = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5);
-                                if (!snapshot.hasData) {
-                                  return buildImagesLoadingIndicator(size);
-                                }
+          child: BlocBuilder<ItemPageBloc, ItemPageState>(
+            builder: (context, state) {
+              ItemPageState pageState = state;
+              if (pageState is! ItemPageLoaded)
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
 
-                                Map<String, File>? data = snapshot.data as Map<String, File>?;
-                                if (data == null) {
-                                  return buildImagesLoadingIndicator(size);
-                                }
-
-                                List<File> images =
-                                    widget.item.images.map((e) => data[e]).where((element) => element != null).map((e) => e as File).toList();
-                                return Carousel(
-                                  images: images,
-                                  bottomRightRadius: 30,
-                                  bottomLeftRadius: 30,
-                                  showAddImage: ownsBusiness,
-                                  initialPage: widget.item.previewImageIndex,
-                                  imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
-                                  onImageTap: ownsBusiness
-                                      ? (index) async {
-                                          await handleImageTap(index, images.length, state);
-                                        }
-                                      : null,
-                                );
-                              }),
-                          Positioned(
-                            bottom: 0,
-                            child: buildModificationButtons(),
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: constraints.maxHeight * 0.66,
+                          width: 100.w,
+                          child: Stack(
+                            alignment: Alignment.topCenter,
+                            children: [
+                              Carousel(
+                                images: widget.item.images,
+                                bottomRightRadius: 30,
+                                bottomLeftRadius: 30,
+                                showAddImage: pageState.ownsItem,
+                                initialPage: widget.item.previewImageIndex,
+                                imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
+                                onImageTap: pageState.ownsItem
+                                    ? (index) async {
+                                        await handleImageTap(index, widget.item.images.length);
+                                      }
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                child: buildModificationButtons(),
+                              ),
+                            ],
                           ),
+                        ),
+                        Spacer(),
+                        buildDetailsTab(constraints, context),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    child: ConstrainedBox(
+                      child: ShoppingCart(),
+                      constraints: constraints,
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: 50,
+                        maxWidth: MediaQuery.of(context).size.width,
+                        minHeight: pageState.ownsItem ? 90 : 55,
+                        maxHeight: pageState.ownsItem ? 90 : 55,
+                      ),
+                      child: FilterSideBar(
+                        controller: _widgetSwapController,
+                        customBody: [
+                          buildDatabaseLikeButton(
+                            widget.item,
+                            _likeController,
+                            context,
+                            pageState.isLiked,
+                            color: primaryComplementaryColor,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            splashColor: Colors.white.withOpacity(0.6),
+                            borderRadius: const BorderRadius.all(Radius.circular(15)),
+                            padding: const EdgeInsets.all(4),
+                          ),
+                          if (pageState.ownsItem)
+                            Material(
+                              color: Theme.of(context).primaryColor,
+                              child: IconButton(
+                                splashColor: Colors.white.withOpacity(0.6),
+                                splashRadius: 20,
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  _panelController.open();
+                                },
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
                         ],
                       ),
                     ),
-                    Spacer(),
-                    buildDetailsTab(constraints, context),
-                  ],
-                ),
-              ),
-              Positioned(
-                child: ConstrainedBox(
-                  child: ShoppingCart(),
-                  constraints: constraints,
-                ),
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: 50,
-                    maxWidth: MediaQuery.of(context).size.width,
-                    minHeight: ownsBusiness ? 90 : 55,
-                    maxHeight: ownsBusiness ? 90 : 55,
                   ),
-                  child: FilterSideBar(
-                    controller: _widgetSwapController,
-                    customBody: [
-                      buildDatabaseLikeButton(
-                        widget.item,
-                        _likeController,
-                        context,
-                        initialLiked,
-                        color: primaryComplementaryColor,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        splashColor: Colors.white.withOpacity(0.6),
-                        borderRadius: const BorderRadius.all(Radius.circular(15)),
-                        padding: const EdgeInsets.all(4),
+                  if (pageState.ownsItem)
+                    Positioned(
+                      bottom: -100.w * 0.2,
+                      child: ConstrainedBox(
+                        child: ItemEditPanel(item: widget.item, panelController: _panelController),
+                        constraints: BoxConstraints(minWidth: 100.w, maxHeight: 100.h, maxWidth: 100.w, minHeight: 100.h),
                       ),
-                      if (ownsBusiness)
-                        Material(
-                          color: Theme.of(context).primaryColor,
-                          child: IconButton(
-                            splashColor: Colors.white.withOpacity(0.6),
-                            splashRadius: 20,
-                            visualDensity: VisualDensity.compact,
-                            onPressed: () {
-                              _panelController.open();
-                            },
-                            icon: const Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                    ],
-                  ),
-                ),
-              ),
-              if (ownsBusiness)
-                Positioned(
-                  bottom: -100.w * 0.2,
-                  child: ConstrainedBox(
-                    child: ItemEditPanel(item: widget.item, panelController: _panelController),
-                    constraints: BoxConstraints(minWidth: 100.w, maxHeight: 100.h, maxWidth: 100.w, minHeight: 100.h),
-                  ),
-                ),
-            ],
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -335,7 +314,8 @@ class _ItemPageState extends State<ItemPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30))),
       color: Colors.white,
       child: InkWell(
-        onTap: () {
+        overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
+        onTap: () async {
           bool shouldAdd = true;
           for (ItemModifierSelectorController controller in _selectorControllers) {
             if (controller.chosenIndices.isEmpty) {
@@ -354,26 +334,27 @@ class _ItemPageState extends State<ItemPage> {
             return;
           }
 
-          BlocProvider.of<CartBloc>(context).add(
-            CartAddItemEvent(
-              CartItemModel.fromItemModel(
-                model: widget.item,
-                quantity: _quantityController.quantity,
-                dataChosen: generateChosenData(),
-              ),
-            ),
-          );
+          showDialog(context: context, builder: (ctx) => _loadDialog);
+          _loadDialogOpen = true;
+          _cartBloc.add(CartAddItemEvent(CartItemModel(
+            quantity: _quantityController.quantity,
+            modifiersChosen: generateChosenData(),
+            item: widget.item,
+          )));
+          await _cartBloc.stream.first;
+
+          if (_loadDialogOpen) {
+            Navigator.pop(context);
+            _loadDialogOpen = false;
+          }
         },
-        child: Ink(
+        child: Container(
+          height: 7.h,
           decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),
-          child: Container(
-            height: 7.h,
-            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(30))),
-            child: Center(
-              child: Text(
-                'Cart',
-                style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
-              ),
+          child: Center(
+            child: Text(
+              'Cart',
+              style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 14.sp),
             ),
           ),
         ),
@@ -468,16 +449,22 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Map<int, Iterable<int>> generateChosenData() {
-    Map<int, Iterable<int>> result = {};
-    int index = 0;
+  List<ModificationButtonDataHost> generateChosenData() {
+    List<ModificationButtonDataHost> dataHosts = List.empty(growable: true);
+    ItemModel item = widget.item;
 
-    for (ItemModifierSelectorController controller in _selectorControllers) {
-      result[index] = controller.chosenIndices;
-      index++;
+    for (int i = 0; i < _selectorControllers.length; i++) {
+      ItemModifierSelectorController controller = _selectorControllers[i];
+      ModificationButton modButton = item.itemStoreFormat.modificationButtons[i];
+      List<Object> data = List.empty(growable: true);
+      for (int index in controller.chosenIndices) {
+        data.add(modButton.data[index]);
+      }
+
+      dataHosts.add(ModificationButtonDataHost(name: modButton.name, dataType: modButton.dataType, selectedData: data));
     }
 
-    return result;
+    return dataHosts;
   }
 
   double calculateRating() {
@@ -500,19 +487,15 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  Future<void> handleImageTap(int index, int imagesLength, UserState state) async {
-    if (state is! UserLoggedInState) return;
-
+  Future<void> handleImageTap(int index, int imagesLength) async {
     bool isLast = index == imagesLength;
     if (isLast) {
       File? file = await filePickRoutine();
       if (file == null) return;
 
       showDialog(context: context, builder: (ctx) => _loadDialog);
-      ItemModel item = await swapImageOfItem(state.accessToken, widget.item.id.hexString, file, widget.item.images.length);
-      context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: item));
-      Navigator.pop(context);
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, registerView: false)));
+      _loadDialogOpen = true;
+      _bloc.add(ItemPageSwapImagesEvent(index: index, image: file));
       return;
     }
     showDialog(
@@ -527,10 +510,8 @@ class _ItemPageState extends State<ItemPage> {
             onPressed: () async {
               Navigator.pop(context);
               showDialog(context: context, builder: (ctx) => _loadDialog);
-              ItemModel item = await removeImageFromItem(state.accessToken, widget.item.id.hexString, index);
-              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: item));
-              Navigator.pop(context);
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, registerView: false)));
+              _loadDialogOpen = true;
+              _bloc.add(ItemPageDeleteImageEvent(index: index));
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,
@@ -546,10 +527,8 @@ class _ItemPageState extends State<ItemPage> {
               if (file == null) return;
               Navigator.of(context).pop();
               showDialog(context: context, builder: (ctx) => _loadDialog);
-              ItemModel item = await swapImageOfItem(state.accessToken, widget.item.id.hexString, file, index);
-              context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: item));
-              Navigator.pop(context);
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: item, registerView: false)));
+              _loadDialogOpen = true;
+              _bloc.add(ItemPageSwapImagesEvent(index: index, image: file));
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,

@@ -36,7 +36,7 @@ class CartRepository {
 
     List<CartItemModel> cartItems = snapshot.data!;
     _cart = cartItems;
-    return _cart!;
+    return _cart!.map((e) => e.copyWith()).toList();
   }
 
   Future<List<CartItemModel>> replaceCart({
@@ -62,10 +62,76 @@ class CartRepository {
 
       List<CartItemModel> items = snapshot.data!;
       _cart = items;
-      return _cart!;
+      return _cart!.map((e) => e.copyWith()).toList();
     }
 
     _cart = cartItems;
-    return _cart!;
+    return _cart!.map((e) => e.copyWith()).toList();
+  }
+
+  Future<List<CartItemModel>> addItemToCart({
+    required CartItemModel cartItem,
+    required bool updateDatabase,
+    bool update = false,
+    bool fetchImages = false,
+  }) async {
+    List<CartItemModel> cartItems = await _cartRepository.getCart(update: update, fetchImages: fetchImages);
+    cartItems.add(cartItem);
+
+    if (updateDatabase) {
+      AsyncSnapshot<List<CartItemModel>> snapshot =
+      await _cartService.replaceCart(
+        cartItems: cartItems,
+        fetchImages: fetchImages,
+        update: update,
+      );
+
+      if (snapshot.hasError || !snapshot.hasData) {
+        throw CartFetchException(
+          response:
+          snapshot.error is Response ? snapshot.error! as Response : null,
+        );
+      }
+
+      List<CartItemModel> items = snapshot.data!;
+      _cart = items;
+      return _cart!.map((e) => e.copyWith()).toList();
+    }
+
+    _cart = cartItems;
+    return _cart!.map((e) => e.copyWith()).toList();
+  }
+
+  Future<List<CartItemModel>> removeItemFromCart({
+    required CartItemModel cartItem,
+    required bool updateDatabase,
+    bool update = false,
+    bool fetchImages = false,
+  }) async {
+    List<CartItemModel> cartItems = await _cartRepository.getCart(update: update, fetchImages: fetchImages);
+    cartItems.removeWhere((e) => e == cartItem);
+
+    if (updateDatabase) {
+      AsyncSnapshot<List<CartItemModel>> snapshot =
+      await _cartService.replaceCart(
+        cartItems: cartItems,
+        fetchImages: fetchImages,
+        update: update,
+      );
+
+      if (snapshot.hasError || !snapshot.hasData) {
+        throw CartFetchException(
+          response:
+          snapshot.error is Response ? snapshot.error! as Response : null,
+        );
+      }
+
+      List<CartItemModel> items = snapshot.data!;
+      _cart = items;
+      return _cart!.map((e) => e.copyWith()).toList();
+    }
+
+    _cart = cartItems;
+    return _cart!.map((e) => e.copyWith()).toList();
   }
 }

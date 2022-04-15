@@ -1,26 +1,25 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
 
 part 'item_modifier_event.dart';
 
 part 'item_modifier_state.dart';
 
 class ItemModifierBloc extends Bloc<ItemModifierEvent, ItemModifierState> {
-  ItemModifierBloc({Iterable<int> initialDataChosen = const []})
-      : super(ItemModifierState.initial(chosenIndices: Set.of(initialDataChosen))) {
-    on<ItemModifierEvent>((event, emit) {
-      if (event is ItemModifierAddItemEvent) {
-        emit(ItemModifierState.fromStateAddIndex(state, event.addedItemIndex));
-      } else if (event is ItemModifierRemoveItemEvent) {
-        emit(ItemModifierState.fromStateRemoveIndex(state, event.removedItemIndex));
-      }
-    });
-  }
+  ItemModifierBloc({Iterable<int> initialDataChosen = const []}) : super(ItemModifierState(chosenIndices: Set.of(initialDataChosen))) {
+    on<ItemModifierAddItemEvent>((event, emit) {
+      Set<int> newIndices = Set.of(state.chosenIndices);
+      newIndices.add(event.index);
 
-  @override
-  void onTransition(Transition<ItemModifierEvent, ItemModifierState> transition) {
-    super.onTransition(transition);
+      emit(state.copyWith(chosenIndices: newIndices));
+    });
+
+    on<ItemModifierRemoveItemEvent>((event, emit) {
+      Set<int> newIndices = Set.of(state.chosenIndices);
+      newIndices.removeWhere((element) => element == event.index);
+
+      emit(state.copyWith(chosenIndices: newIndices));
+    });
   }
 }

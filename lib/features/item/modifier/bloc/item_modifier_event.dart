@@ -1,23 +1,17 @@
 part of 'item_modifier_bloc.dart';
 
-abstract class ItemModifierEvent extends Equatable {
+abstract class ItemModifierEvent {
   const ItemModifierEvent();
 }
 
 class ItemModifierAddItemEvent extends ItemModifierEvent {
-  final int addedItemIndex;
+  final int index;
 
-  const ItemModifierAddItemEvent(this.addedItemIndex);
-
-  @override
-  List<Object?> get props => [addedItemIndex];
+  const ItemModifierAddItemEvent(this.index);
 }
 
 class ItemModifierRemoveItemEvent extends ItemModifierEvent {
-  final int removedItemIndex;
+  final int index;
 
-  const ItemModifierRemoveItemEvent(this.removedItemIndex);
-
-  @override
-  List<Object?> get props => [removedItemIndex];
+  const ItemModifierRemoveItemEvent(this.index);
 }
