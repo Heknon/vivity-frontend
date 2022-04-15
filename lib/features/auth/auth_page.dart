@@ -5,14 +5,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
-import 'package:vivity/features/auth/models/token_container.dart';
 import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-
-import '../user/bloc/user_bloc.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({Key? key}) : super(key: key);

@@ -2,12 +2,9 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/admin/business_approver.dart';
 import 'package:vivity/features/base_page.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
-import 'package:vivity/services/admin_service.dart';
 
 import '../business/models/business.dart';
 
@@ -31,9 +28,6 @@ class _AdminPageState extends State<AdminPage> {
 
   @override
   Widget build(BuildContext context) {
-    UserState state = context.read<UserBloc>().state;
-    if (state is! UserLoggedInState || !state.isSystemAdmin) return const Text('Seriously... How u here?');
-
     unapprovedBusinesses ??= getUnapprovedBusinesses(state.accessToken);
 
     return BasePage(

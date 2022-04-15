@@ -1,8 +1,6 @@
 import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:vivity/features/auth/models/authentication_result.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
@@ -17,8 +15,7 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  late final RestartableTimer _renewTokenTimer =
-      RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
+  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
 
   final AuthenticationRepository _authRepository = AuthenticationRepository();
   final AuthenticationService _authService = AuthenticationService();
@@ -36,17 +33,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         _storageService.setPreviouslyLoggedIn();
-        if (event.stayLoggedIn)
-          _storageService.storeRefreshToken(loginResult.refreshToken);
+        if (event.stayLoggedIn) _storageService.storeRefreshToken(loginResult.refreshToken);
 
         emit(AuthLoggedInState(loginResult));
         _renewTokenTimer.reset();
       } on NetworkException catch (e) {
         return emit(
-          AuthFailedState(
-              message: e.response?.data['error'] ??
-                  e.message ??
-                  'Authorization failed.'),
+          AuthFailedState(message: e.response?.data['error'] ?? e.message ?? 'Authorization failed.'),
         );
       }
     });
@@ -56,11 +49,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       AuthenticationResult authResult = event.authResult;
 
-      if (authResult.tokenContainer == null ||
-          authResult.authStatus != AuthenticationStatus.success) {
-        emit(AuthFailedState(
-            message: authResult.authStatus?.getMessage() ??
-                AuthenticationStatus.passwordIncorrect.getMessage()));
+      if (authResult.tokenContainer == null || authResult.authStatus != AuthenticationStatus.success) {
+        emit(AuthFailedState(message: authResult.authStatus?.getMessage() ?? AuthenticationStatus.passwordIncorrect.getMessage()));
         return;
       }
     });

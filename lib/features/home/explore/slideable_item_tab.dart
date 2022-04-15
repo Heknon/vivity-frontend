@@ -10,7 +10,12 @@ import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 
 class SlideableItemTab extends StatelessWidget {
-  const SlideableItemTab({Key? key}) : super(key: key);
+  final Set<String> likedItemIds;
+
+  const SlideableItemTab({
+    Key? key,
+    required this.likedItemIds,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +71,7 @@ class SlideableItemTab extends StatelessWidget {
                 editButton: widget.editButton,
                 onEditTap: widget.onEditTap,
                 onTap: openContainer,
+                initialLiked: likedItemIds.contains(item.id.hexString),
               ),
               openBuilder: (ctx, _) => ItemPage(item: item),
             ),

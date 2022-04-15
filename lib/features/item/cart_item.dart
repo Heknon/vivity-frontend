@@ -10,7 +10,6 @@ import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
-import '../../services/item_service.dart';
 import 'item_data_section.dart';
 
 class CartItem extends StatefulWidget {

@@ -215,7 +215,7 @@ Widget buildCartItemList(
   );
 }
 
-Widget buildTab(Text title, Size tabSize, BoxConstraints constraints) {
+Widget buildTab(Widget title, Size tabSize, BoxConstraints constraints) {
   return Positioned(
     bottom: 0,
     width: tabSize.width,

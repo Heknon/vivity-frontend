@@ -6,10 +6,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/business/models/business_metrics.dart';
 import 'package:vivity/features/business/models/contact_information.dart';
-import 'package:vivity/features/item/models/item_model.dart';
-import 'package:vivity/features/business/models/order.dart';
-import 'package:vivity/services/business_service.dart';
-import 'package:vivity/services/item_service.dart';
 
 class Business {
   final String? ownerToken = '';

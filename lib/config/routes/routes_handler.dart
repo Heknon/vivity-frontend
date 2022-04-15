@@ -8,14 +8,14 @@ import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/business/create_business.dart';
 import 'package:vivity/features/business/unapproved_business_page.dart';
-import 'package:vivity/features/home/home_bloc.dart';
+import 'package:vivity/features/home/bloc/home_bloc.dart';
 import 'package:vivity/features/home/home_page.dart';
-import 'package:vivity/features/item/favorites_page.dart';
+import 'package:vivity/features/item/favorites_page/favorites_page.dart';
 import 'package:vivity/features/item/item_page/item_page.dart';
+import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/splash_screen.dart';
 import 'package:vivity/features/user/profile_page.dart';
 import 'package:vivity/models/navigation_models.dart';
-import 'package:vivity/services/item_service.dart';
 
 import '../../features/admin/admin_page.dart';
 import '../../features/error_page.dart';
@@ -52,11 +52,10 @@ Handler homeRouteHandler = Handler(handlerFunc: (BuildContext? ctx, Map<String, 
 
 Handler itemIdRouteHandler = Handler(
   handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
-    String token = params['token'][0];
     String id = params['id'][0];
 
     return SplashScreen<ItemModel?>(
-      future: getItemFromId(token, ObjectId.fromHexString(id)),
+      future: ItemRepository().getItemFromId(itemId: id),
       onComplete: (BuildContext ctx, AsyncSnapshot<ItemModel?> snapshot) {
         if (snapshot.hasError) {
           router.navigateTo(ctx, '/error', routeSettings: RouteSettings(arguments: snapshot.error.toString()));

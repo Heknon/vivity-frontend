@@ -124,7 +124,7 @@ class _QuantityState extends State<Quantity> {
         return;
       }
       _controller.incrementQuantity();
-      if (widget.onIncrement != null) widget.onIncrement!(_controller, widget.id);
+      if (widget.onIncrement != null) widget.onIncrement!(_controller);
       preparedToDelete = false;
       return;
     }
@@ -138,7 +138,7 @@ class _QuantityState extends State<Quantity> {
       if (widget.deletable && _controller.quantity == _controller.min) {
         if (preparedToDelete) {
           _controller.updateCurrentQuantity(0);
-          if (widget.onDelete != null) widget.onDelete!(_controller, widget.id);
+          if (widget.onDelete != null) widget.onDelete!(_controller);
           return;
         }
         ScaffoldMessenger.of(context).clearSnackBars();
@@ -149,7 +149,7 @@ class _QuantityState extends State<Quantity> {
     }
 
     _controller.decrementQuantity();
-    if (widget.onDecrement != null) widget.onDecrement!(_controller, widget.id);
+    if (widget.onDecrement != null) widget.onDecrement!(_controller);
   }
 }
 
@@ -193,10 +193,5 @@ class QuantityController extends ChangeNotifier {
   void decrementQuantity() {
     _quantity--;
     notifyListeners();
-  }
-
-  void _quantityCheck(int newQuantity) {
-    if (newQuantity > max) {
-    } else if (newQuantity < min) {}
   }
 }

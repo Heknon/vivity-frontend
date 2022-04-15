@@ -3,13 +3,11 @@ import 'dart:async';
 import 'package:advanced_panel/panel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/business/models/order.dart';
-import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/models/modification_button.dart';
 import 'package:vivity/features/item/models/modification_button_data_type.dart';
 import 'package:vivity/features/item/models/modification_button_side.dart';
@@ -17,7 +15,7 @@ import 'package:vivity/features/item/modification_button_preview.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:vivity/services/item_service.dart';
+import 'package:vivity/models/navigation_models.dart';
 
 import 'models/item_model.dart';
 
@@ -270,9 +268,8 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
       stock: clonedItem.stock,
       modificationButtons: clonedItem.itemStoreFormat.modificationButtons,
     );
-    context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: updatedItem));
     Navigator.pop(context);
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => ItemPage(item: updatedItem)));
+    Navigator.pushReplacementNamed(context, "/item", arguments: ItemPageNavigation(item: updatedItem, isView: false));
     widget.panelController.close();
   }
 

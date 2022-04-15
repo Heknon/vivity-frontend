@@ -7,15 +7,10 @@ import 'package:flutter_map/plugin_api.dart';
 import 'package:latlng/latlng.dart';
 import 'package:meta/meta.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:vivity/features/business/models/business.dart';
 import 'package:vivity/features/item/models/item_model.dart';
-import 'package:vivity/features/map/map_gui.dart';
-import 'package:vivity/features/map/map_widget.dart';
 import 'package:vivity/features/search/errors/search_execption.dart';
 import 'package:vivity/features/search/service/search_service.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
-import 'package:vivity/services/item_service.dart';
 
 part 'explore_event.dart';
 

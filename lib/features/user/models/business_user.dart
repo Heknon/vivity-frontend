@@ -23,6 +23,7 @@ class BusinessUser extends User {
     required List<ItemModel> likedItems,
     required List<CartItemModel> cart,
     required List<Order> orderHistory,
+    required bool isAdmin,
   }) : super(
           id: id,
           name: name,
@@ -34,6 +35,7 @@ class BusinessUser extends User {
           likedItems: likedItems,
           cart: cart,
           orderHistory: orderHistory,
+          isAdmin: isAdmin,
         );
 
   Map<String, dynamic> toMap() {
@@ -57,6 +59,7 @@ class BusinessUser extends User {
       addresses: user.addresses,
       likedItems: user.likedItems,
       cart: user.cart,
+      isAdmin: user.isAdmin,
     );
   }
 }

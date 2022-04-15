@@ -11,7 +11,6 @@ import 'package:vivity/features/auth/models/authentication_result.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/auth/service/authentication_service.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:vivity/services/auth_service.dart';
 
 import '../../config/themes/themes_config.dart';
 import 'bloc/auth_bloc.dart';

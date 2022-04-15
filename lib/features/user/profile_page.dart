@@ -4,10 +4,8 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/checkout/ui_checkout_helper.dart';
-import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/profile_bloc/profile_bloc.dart';
 import 'package:vivity/features/user/service/user_service.dart';
-import 'package:vivity/services/item_service.dart';
 import '../business/models/order.dart';
 import '../item/models/item_model.dart';
 import '../order/order.dart' as order_widget;
@@ -21,7 +19,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late final ProfileBloc _bloc;
-  late final UserService _userService;
 
   @override
   void initState() {
@@ -33,7 +30,6 @@ class _ProfilePageState extends State<ProfilePage> {
     super.didChangeDependencies();
 
     _bloc = context.read<ProfileBloc>();
-    _userService = UserService();
   }
 
   @override

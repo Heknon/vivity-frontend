@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
+import 'package:vivity/features/item/models/modification_button_data_type.dart';
 import 'package:vivity/helpers/item_data_helper.dart';
 
 class ItemDataSection extends StatelessWidget {
@@ -28,7 +28,7 @@ class ItemDataSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              itemModel.title,
+              itemModel.item.itemStoreFormat.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp),

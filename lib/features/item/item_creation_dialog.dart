@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
-import 'package:no_interaction_dialog/no_interaction_dialog.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
+import 'package:vivity/features/item/repo/item_repository.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
 
-import '../../services/item_service.dart';
 import 'models/item_model.dart';
 
 class ItemCreationDialog extends StatelessWidget {
+  final ItemRepository _itemRepository = ItemRepository();
+
   final TextEditingController _controllerTitle = TextEditingController();
   final TextEditingController _controllerSubtitle = TextEditingController();
   final TextEditingController _controllerPrice = TextEditingController();
@@ -20,7 +20,12 @@ class ItemCreationDialog extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final LoadDialog _loadDialog = LoadDialog();
 
-  ItemCreationDialog({Key? key}) : super(key: key);
+  final void Function(ItemModel)? onCreateItem;
+
+  ItemCreationDialog({
+    Key? key,
+    this.onCreateItem,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +68,7 @@ class ItemCreationDialog extends StatelessWidget {
                 SizedBox(height: 10),
                 TextFormField(
                   controller: _controllerPrice,
-                  validator: ValidationBuilder()
-                      .add((value) => double.tryParse(value ?? "f") != null ? null : "Must be an decimal number.")
-                      .build(),
+                  validator: ValidationBuilder().add((value) => double.tryParse(value ?? "f") != null ? null : "Must be an decimal number.").build(),
                   style: TextStyle(fontSize: 12.sp, color: Colors.black),
                   keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -130,13 +133,6 @@ class ItemCreationDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: () async {
-            UserState state = context.read<UserBloc>().state;
-            if (state is! BusinessUserLoggedInState) {
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You are not a business user.')));
-              return;
-            }
-
             if (!(_formKey.currentState?.validate() ?? false)) {
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please enter all fields correctly.')));
@@ -144,8 +140,7 @@ class ItemCreationDialog extends StatelessWidget {
             }
 
             showDialog(context: context, builder: (ctx) => _loadDialog);
-            ItemModel createdItem = await createItem(
-              state.accessToken,
+            ItemModel createdItem = await _itemRepository.createItemModel(
               title: _controllerTitle.text,
               price: double.parse(_controllerPrice.text),
               subtitle: _controllerSubtitle.text,
@@ -154,10 +149,9 @@ class ItemCreationDialog extends StatelessWidget {
               tags: _controllerTags.text.split(",").map((e) => e.trim()).toList(),
             );
             Navigator.pop(context);
-            context.read<UserBloc>().add(BusinessUserFrontendUpdateItem(item: createdItem));
-            ScaffoldMessenger.of(context).clearSnackBars();
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Created item ${createdItem.itemStoreFormat.title}.')));
+            showSnackBar('Created item ${createdItem.itemStoreFormat.title}.', context);
             Navigator.of(context).pop();
+            if (onCreateItem != null) onCreateItem!(createdItem);
           },
           style: ButtonStyle(
               splashFactory: InkRipple.splashFactory,

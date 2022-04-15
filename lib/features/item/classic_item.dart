@@ -1,17 +1,13 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/item/like_button.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
-import 'package:vivity/services/item_service.dart';
 import 'package:vivity/widgets/simple_card.dart';
 import '../../config/themes/themes_config.dart';
 import 'package:vivity/widgets/rating.dart';

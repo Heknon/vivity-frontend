@@ -1,8 +1,5 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/item/like_button.dart';
@@ -11,7 +8,6 @@ import 'package:vivity/widgets/rating.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
 import '../../config/themes/themes_config.dart';
-import '../../services/item_service.dart';
 import 'models/item_model.dart';
 
 class PreviewItem extends StatefulWidget {

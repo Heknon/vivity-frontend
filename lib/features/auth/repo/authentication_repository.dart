@@ -82,32 +82,6 @@ class AuthenticationRepository {
     return tokenContainer;
   }
 
-  Future<TokenContainer> register({
-    required String email,
-    required String password,
-    required String name,
-    required String phone,
-  }) async {
-    AsyncSnapshot<AuthenticationResult> snapshot = await _authService.register(
-      email: email,
-      password: password,
-      name: name,
-      phone: phone,
-    );
-
-    if (snapshot.hasError || !snapshot.hasData || snapshot.data?.tokenContainer == null) {
-      throw AuthFailedException(
-        response: snapshot.error is Response ? snapshot.error as Response : null,
-        message: snapshot.data?.authStatus?.getMessage() ?? "Authentication failed",
-      );
-    }
-
-    TokenContainer tokenContainer = snapshot.data!.tokenContainer!;
-    _accessToken = tokenContainer.accessToken;
-    _refreshToken = tokenContainer.refreshToken;
-    return tokenContainer;
-  }
-
 
   Future<String> enableOTP() async {
     AsyncSnapshot<String> snapshot = await _authService.enableOTP();

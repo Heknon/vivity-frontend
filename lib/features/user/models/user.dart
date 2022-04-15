@@ -19,6 +19,7 @@ class User {
   final List<ItemModel> likedItems;
   final List<CartItemModel> cart;
   final List<Order> orderHistory;
+  final bool isAdmin;
 
 //<editor-fold desc="Data Methods">
 
@@ -33,6 +34,7 @@ class User {
     required this.likedItems,
     required this.cart,
     required this.orderHistory,
+    required this.isAdmin,
   });
 
   @override
@@ -49,7 +51,8 @@ class User {
           addresses == other.addresses &&
           likedItems == other.likedItems &&
           cart == other.cart &&
-          orderHistory == other.orderHistory);
+          orderHistory == other.orderHistory &&
+          isAdmin == other.isAdmin);
 
   @override
   int get hashCode =>
@@ -62,7 +65,8 @@ class User {
       addresses.hashCode ^
       likedItems.hashCode ^
       cart.hashCode ^
-      orderHistory.hashCode;
+      orderHistory.hashCode ^
+      isAdmin.hashCode;
 
   @override
   String toString() {
@@ -77,6 +81,7 @@ class User {
         ' likedItems: $likedItems,' +
         ' cart: $cart,' +
         ' orderHistory: $orderHistory,' +
+        ' isAdmin: $isAdmin,' +
         '}';
   }
 
@@ -91,6 +96,7 @@ class User {
     List<ItemModel>? likedItems,
     List<CartItemModel>? cart,
     List<Order>? orderHistory,
+    bool? isAdmin,
   }) {
     return User(
       id: id ?? this.id,
@@ -103,6 +109,7 @@ class User {
       likedItems: likedItems ?? this.likedItems,
       cart: cart ?? this.cart,
       orderHistory: orderHistory ?? this.orderHistory,
+      isAdmin: isAdmin ?? this.isAdmin,
     );
   }
 
@@ -128,6 +135,7 @@ class User {
       likedItems: (map['liked_items'] as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
       cart: cartItems,
       orderHistory: (map['order_history'] as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
+      isAdmin: map['is_system_admin'] ?? false
     );
   }
 

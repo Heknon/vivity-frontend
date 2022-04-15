@@ -1,11 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vivity/features/cart/cart_service.dart';
-import 'package:vivity/features/item/models/item_model.dart';
-import 'package:vivity/features/user/bloc/user_bloc.dart';
-
-import 'features/cart/cart_bloc/cart_bloc.dart';
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/cart/repo/cart_repository.dart';
 
 class AppSystemManager extends StatefulWidget {
   final Widget child;
@@ -17,11 +14,20 @@ class AppSystemManager extends StatefulWidget {
 }
 
 class _AppSystemManagerState extends State<AppSystemManager> with WidgetsBindingObserver {
+  late final CartBloc _bloc;
+  final CartRepository _cartRepository = CartRepository();
+
   @override
   void initState() {
     super.initState();
     print("OBSERVE");
     WidgetsBinding.instance!.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bloc = context.read<CartBloc>();
   }
 
   @override
@@ -32,11 +38,13 @@ class _AppSystemManagerState extends State<AppSystemManager> with WidgetsBinding
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // TODO: Save cart to database here
     switch (state) {
       case AppLifecycleState.inactive:
         print('inactive');
-        saveCart(context);
+        CartState cartState = _bloc.state;
+        if (cartState is CartLoaded) {
+          _cartRepository.replaceCart(cartItems: cartState.items, updateDatabase: true);
+        }
         break;
       case AppLifecycleState.paused:
         print('paused');

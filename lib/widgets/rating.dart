@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
-import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/item/models/review.dart';
 
 class Rating extends StatelessWidget {
   final double rating;
