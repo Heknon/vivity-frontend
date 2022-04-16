@@ -142,7 +142,7 @@ class ItemModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': this.id,
+      '_id': this.id,
       'businessId': this.businessId,
       'businessName': this.businessName,
       'itemStoreFormat': this.itemStoreFormat,
@@ -176,11 +176,11 @@ class ItemModel {
       tags: (map['tags'] as List<dynamic>).map((e) => e as String).toList(),
       location: LatLng(
         (map['location'][0] as num).toDouble(),
-        (map['location'][0] as num).toDouble(),
+        (map['location'][1] as num).toDouble(),
       ),
       price: (map['price'] as num).toDouble(),
-      previewImage: images.getOrNull((map['preview_image'] as num).toInt().clamp(0, images.length)),
-      previewImageIndex: (map['preview_image'] as num).toInt().clamp(0, images.length),
+      previewImage: images.getOrNull((map['preview_image_index'] as num).toInt().clamp(0, images.length)),
+      previewImageIndex: (map['preview_image_index'] as num).toInt().clamp(0, images.length),
       brand: map['brand'] as String,
       category: map['category'] as String,
       stock: (map['stock'] as num).toInt(),

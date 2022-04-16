@@ -1,3 +1,4 @@
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vivity/constants/api_path.dart';
@@ -239,8 +240,8 @@ class AuthenticationService extends ServiceProvider {
     return AsyncSnapshot.withData(
       ConnectionState.done,
       JwtKeyContainer(
-        accessKey: response.data['access_key'],
-        refreshKey: response.data['refresh_key'],
+        accessKey: RSAPublicKey(response.data['access_key']),
+        refreshKey: RSAPublicKey(response.data['refresh_key']),
       ),
     );
   }

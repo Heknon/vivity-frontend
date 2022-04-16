@@ -11,6 +11,7 @@ import 'package:vivity/features/business/models/business.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/search/errors/search_execption.dart';
 import 'package:vivity/features/search/service/search_service.dart';
+import 'package:vivity/helpers/map_helper.dart';
 
 part 'explore_event.dart';
 
@@ -81,6 +82,10 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       return;
     }
     const int blockSearchBelowDistance = 10;
+    if (mapController.ifInitialized() == null) {
+      _timer.reset();
+      return;
+    }
 
     double distanceFromLastFetch = lastUpdateLocation != null
         ? Geolocator.distanceBetween(

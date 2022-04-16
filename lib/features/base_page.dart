@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vivity/features/drawer/bloc_wrapped_vivity_drawer.dart';
 import 'package:vivity/features/drawer/vivity_drawer.dart';
 import 'package:vivity/widgets/appbar/appbar.dart';
 
@@ -34,7 +35,7 @@ class BasePage extends StatelessWidget {
       floatingActionButtonLocation: floatingActionButtonLocation,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       appBar: appBar ?? VivityAppBar(),
-      drawer: drawer ?? const VivityDrawer(),
+      drawer: drawer ?? BlocWrappedVivityDrawer(),
       body: body,
     );
   }
@@ -64,7 +65,7 @@ class BasePageBlocBuilder<B extends StateStreamable<S>, S> extends BasePage {
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       appBar: appBar ?? VivityAppBar(),
-      drawer: drawer ?? const VivityDrawer(),
+      drawer: drawer ?? BlocWrappedVivityDrawer(),
       body: BlocBuilder<B, S>(
         builder: builder,
         buildWhen: buildWhen,

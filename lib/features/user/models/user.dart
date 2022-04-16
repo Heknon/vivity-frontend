@@ -125,13 +125,13 @@ class User {
     }
 
     return User(
-      id: ObjectId.fromHexString(map['id']),
+      id: ObjectId.fromHexString(map['_id']),
       name: map['name'] as String,
       email: map['email'] as String,
       phone: map['phone'] as String,
       profilePicture: base64Decode(map['profile_picture']),
-      userOptions: UserOptions.fromMap(map['user_options']),
-      addresses: (map['addresses'] as List<dynamic>).map((e) => Address.fromMap(e)).toList(),
+      userOptions: UserOptions.fromMap(map['options']),
+      addresses: (map['shipping_addresses'] as List<dynamic>).map((e) => Address.fromMap(e)).toList(),
       likedItems: (map['liked_items'] as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
       cart: cartItems,
       orderHistory: (map['order_history'] as List<dynamic>).map((e) => Order.fromMap(e)).toList(),

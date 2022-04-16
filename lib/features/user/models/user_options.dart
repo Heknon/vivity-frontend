@@ -42,7 +42,7 @@ class UserOptions {
   factory UserOptions.fromMap(Map<String, dynamic> map) {
     return UserOptions(
       unit: Unit.values[(map['unit'] as num).toInt()],
-      currencyType: map['currencyType'] as String,
+      currencyType: map['currency_type'] as String,
     );
   }
 

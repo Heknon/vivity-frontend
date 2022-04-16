@@ -31,7 +31,7 @@ class UserService extends ServiceProvider {
   static const String resetPasswordEmailSendRoute = '/forgot';
   static const String changePasswordRoute = '/password';
 
-  final AuthenticationRepository _authRepository = AuthenticationRepository();
+  static final AuthenticationRepository _authRepository = AuthenticationRepository();
 
   UserService._() : super(baseRoute: userRoute);
 

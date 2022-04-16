@@ -33,7 +33,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     HomeState homeState = _homeBloc.state;
     if ((homeState is HomeLoading || homeState is HomeBlocked) && !loadDialogOpen) {
-      showDialog(context: context, builder: (ctx) => _loadDialog);
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        showDialog(context: context, builder: (ctx) => _loadDialog);
+      });
       loadDialogOpen = true;
     }
 

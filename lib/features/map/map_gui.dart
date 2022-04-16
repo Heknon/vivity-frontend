@@ -26,7 +26,7 @@ class MapGui extends StatefulWidget {
     this.constraints,
     required this.mapBoxToken,
     this.flags =
-        InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
+    InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
     this.controller,
     this.transformDataToWidget,
   }) : super(key: key);
@@ -38,6 +38,7 @@ class MapGui extends StatefulWidget {
 class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   bool createdMap = false;
 
+  latlng.LatLng fallbackLocation = latlng.LatLng(32.0668, 34.7649);
   late MapControllerImpl _mapController;
   late final ExploreBloc _exploreBloc;
 
@@ -47,7 +48,6 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
 
-    latlng.LatLng fallbackLocation = latlng.LatLng(32.0668, 34.7649);
     _mapController = widget.controller ?? MapControllerImpl();
 
     LocationService _locationService = LocationService();
@@ -104,8 +104,8 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
       return FlutterMap(
         options: MapOptions(
-          center: _mapController.center,
-          zoom: _mapController.zoom,
+          center: isMapWasInitialized ? _mapController.center : LatLng(fallbackLocation.latitude, fallbackLocation.longitude),
+          zoom: isMapWasInitialized ? _mapController.zoom : 13,
           controller: _mapController,
           maxZoom: 20,
           minZoom: 4,
@@ -124,16 +124,17 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
           MarkerLayerOptions(
             markers: state is ExploreSearched && widget.transformDataToWidget != null
                 ? state.itemsFound
-                    .map((e) => widget.transformDataToWidget!(e))
-                    .map(
-                      (e) => Marker(
-                        width: e.size.width,
-                        height: e.size.height,
-                        point: e.location,
-                        builder: (ctx) => e.child,
-                      ),
-                    )
-                    .toList()
+                .map((e) => widget.transformDataToWidget!(e))
+                .map(
+                  (e) =>
+                  Marker(
+                    width: e.size.width,
+                    height: e.size.height,
+                    point: e.location,
+                    builder: (ctx) => e.child,
+                  ),
+            )
+                .toList()
                 : [],
           )
         ],
@@ -143,6 +144,15 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
 
   @override
   bool get wantKeepAlive => true;
+
+  bool get isMapWasInitialized {
+    try {
+      _mapController.center;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 // class MapGuiController extends ChangeNotifier {

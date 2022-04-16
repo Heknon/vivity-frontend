@@ -26,11 +26,9 @@ class DioHttpService {
   }
 
   void initializeInterceptors() {
-    _dioClient.interceptors.add(RetryOnConnectionChangeInterceptor(dio: dioClient));
+    _dioClient.interceptors.add(RetryOnConnectionChangeInterceptor(dio: _dioClient));
   }
 }
-
-late final Dio dioClient;
 
 /// Interceptor
 class RetryOnConnectionChangeInterceptor extends Interceptor {
