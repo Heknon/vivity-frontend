@@ -69,7 +69,7 @@ class CartItemModel {
     return CartItemModel(
       item: item,
       modifiersChosen: (map['modifiers_chosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)),
-      quantity: map['quantity'] as int,
+      quantity: (map['quantity'] as num).toInt(),
     );
   }
 

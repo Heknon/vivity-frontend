@@ -2,9 +2,14 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/admin/admin_unapproved_list.dart';
+import 'package:vivity/features/admin/bloc/admin_page_bloc.dart';
 import 'package:vivity/features/admin/business_approver.dart';
 import 'package:vivity/features/base_page.dart';
+import 'package:vivity/helpers/ui_helpers.dart';
 
 import '../business/models/business.dart';
 
@@ -16,20 +21,23 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
-  Future<List<Business>>? unapprovedBusinesses;
-  Future<Map<String, Uint8List>>? businessIdImageMapFuture;
-  late final Map<String, Future<Uint8List>> businessIdImageMap;
+  final LoadDialog _loadDialog = LoadDialog();
+  late final AdminPageBloc _bloc;
+  bool isLoadingOpen = false;
 
   @override
   void initState() {
     super.initState();
-    businessIdImageMap = {};
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bloc = context.read<AdminPageBloc>();
   }
 
   @override
   Widget build(BuildContext context) {
-    unapprovedBusinesses ??= getUnapprovedBusinesses(state.accessToken);
-
     return BasePage(
       resizeToAvoidBottomInset: true,
       body: LayoutBuilder(builder: (context, constraints) {
@@ -46,64 +54,35 @@ class _AdminPageState extends State<AdminPage> {
                     ),
                   ),
                 ),
-                FutureBuilder<List<Business>>(
-                  future: unapprovedBusinesses,
-                  builder: (ctx, snapshot) {
-                    if (!snapshot.hasData) {
-                      return CircularProgressIndicator();
+                BlocConsumer<AdminPageBloc, AdminPageState>(
+                  listener: (context, state) {
+                    if (isLoadingOpen) {
+                      Navigator.pop(context);
+                      isLoadingOpen = false;
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is! AdminPageLoaded) {
+                      return Text(
+                        "There are no businesses in need\nof approval",
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp),
+                      );
                     }
 
-                    List<Business> businesses = snapshot.data!;
-
-                    businessIdImageMapFuture ??= getOwnerIdImagesFromBusinessIds(businesses.map((e) => e.businessId.hexString).toList());
-                    return FutureBuilder<Map<String, Uint8List>>(
-                      future: businessIdImageMapFuture,
-                      builder: (context, snapshot) {
-                        List<Business> buildableBusinesses =
-                            businesses.where((element) => snapshot.data?.containsKey(element.businessId.hexString) ?? false).toList();
-
-                        if (!snapshot.hasData || buildableBusinesses.isEmpty) {
-                          return Text(
-                            "There are no businesses in need\nof approval",
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp),
-                          );
-                        }
-
-                        return Column(
-                          children: List.generate(
-                            max(0, buildableBusinesses.length * 2 - 1),
-                            (i) {
-                              if (i.isOdd) return Divider();
-                              Business business = buildableBusinesses[i ~/ 2];
-                              return BusinessApprover(
-                                business: business,
-                                ownerIdImageBytes: snapshot.data![business.businessId.hexString]!,
-                                approvePressed: (note) async {
-                                  Business updated = await updateBusinessApproval(state.accessToken, business.businessId.hexString, true, note);
-
-                                  ScaffoldMessenger.of(context).clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Approved ${updated.name}')));
-                                  setState(() {
-                                    if (updated.approved) {
-                                      buildableBusinesses.removeWhere((element) => element.businessId == updated.businessId);
-                                      unapprovedBusinesses = getUnapprovedBusinesses(state.accessToken);
-                                    }
-                                  });
-                                },
-                                declinePressed: (note) async {
-                                  Business updated = await updateBusinessApproval(state.accessToken, business.businessId.hexString, false, note);
-                                  if (updated.approved) {
-                                    buildableBusinesses.removeWhere((element) => element.businessId == updated.businessId);
-                                  }
-
-                                  ScaffoldMessenger.of(context).clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Declined request and sent note to owner!')));
-                                },
-                              );
-                            },
-                          ),
-                        );
+                    return AdminUnapprovedList(
+                      businesses: state.unapprovedBusinesses,
+                      approvePressed: (business, note) {
+                        showDialog(context: context, builder: (ctx) => _loadDialog);
+                        isLoadingOpen = true;
+                        _bloc.add(AdminPageMoveToApprovedEvent(note: note, businessId: business.businessId.hexString));
+                        showSnackBar('Approved ${business.name}', context);
+                      },
+                      declinePressed: (business, note) {
+                        showDialog(context: context, builder: (ctx) => _loadDialog);
+                        isLoadingOpen = true;
+                        _bloc.add(AdminPageMoveToUnapprovedEvent(note: note, businessId: business.businessId.hexString));
+                        showSnackBar('Declined request and sent note to owner!', context);
                       },
                     );
                   },

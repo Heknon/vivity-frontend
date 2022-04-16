@@ -1,8 +1,5 @@
-import 'dart:ffi';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +14,12 @@ import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/constants/app_constants.dart';
 import 'package:vivity/constants/regex.dart';
 import 'package:vivity/features/base_page.dart';
-import 'package:vivity/features/business/business_page.dart';
+import 'package:vivity/features/business/create_business/bloc/create_business_bloc.dart';
 import 'package:vivity/features/business/unapproved_business_page.dart';
-import 'package:vivity/features/explore/bloc/explore_bloc.dart';
+import 'package:vivity/features/map/location_service.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:latlong2/latlong.dart' as latlng;
+import 'package:latlng/latlng.dart' as latlng;
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart' as loc_interface;
-
-import '../user/bloc/user_bloc.dart';
 
 class CreateBusiness extends StatefulWidget {
   CreateBusiness({Key? key}) : super(key: key);
@@ -46,35 +41,43 @@ class _CreateBusinessState extends State<CreateBusiness> {
 
   final NoInteractionDialogController _dialogController = NoInteractionDialogController();
   late final LoadDialog _loadDialog;
+  late final CreateBusinessBloc _bloc;
 
   File? ownerIdFile;
   latlng.LatLng? location;
   LocationResult? locationData;
 
+  bool isLoadingOpen = false;
+
   @override
   void initState() {
     super.initState();
-
-    if (context.read<UserBloc>().state is BusinessUserLoggedInState) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => BusinessPage()));
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You already have a business registered!')));
-    }
 
     _loadDialog = LoadDialog(controller: _dialogController);
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _bloc = context.read<CreateBusinessBloc>();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BasePage(
-      body: BlocListener<UserBloc, UserState>(
-        listenWhen: (prevState, state) => state is BusinessUserLoggedInState,
-        listener: (ctx, state) {
-          if (state is BusinessUserLoggedInState) {
+      body: BlocListener<CreateBusinessBloc, CreateBusinessState>(
+        listener: (context, state) {
+          if (isLoadingOpen && state is! CreateBusinessCreating) {
             Navigator.pop(context);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => UnapprovedBusinessPage()));
-            ScaffoldMessenger.of(context).clearSnackBars();
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered your business!')));
+            isLoadingOpen = false;
+
+            if (state is CreateBusinessFailedCreating) {
+              showSnackBar(state.message, context);
+            } else if (state is CreateBusinessCreated) {
+              Navigator.pushNamed(context, '/business');
+              showSnackBar('Created business!', context);
+            }
           }
         },
         child: defaultGradientBackground(
@@ -134,7 +137,8 @@ class _CreateBusinessState extends State<CreateBusiness> {
                           const SizedBox(width: 10),
                           Text(
                             'Picture of ID',
-                            style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.white),
+                            style:
+                                Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.sp, fontWeight: FontWeight.normal, color: Colors.white),
                           )
                         ],
                       ),
@@ -238,15 +242,14 @@ class _CreateBusinessState extends State<CreateBusiness> {
     File ownerId,
     latlng.LatLng location,
   ) {
-    context.read<UserBloc>().add(UserRegisterBusinessEvent(
-          businessName: businessName.trim(),
-          businessEmail: businessEmail.trim(),
-          businessPhone: businessPhone.trim(),
-          businessNationalId: nationalBusinessNumber.trim(),
-          ownerId: ownerId,
-          location: location,
-          context: context,
-        ));
+    _bloc.add(CreateBusinessCreateEvent(
+      businessName: businessName.trim(),
+      businessEmail: businessEmail.trim(),
+      businessPhone: businessPhone.trim(),
+      nationalBusinessNumber: nationalBusinessNumber.trim(),
+      ownerId: ownerId,
+      location: location,
+    ));
   }
 
   Widget buildTextFormField(String labelText, TextEditingController controller, ValidationBuilder validation) {
@@ -280,7 +283,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
   }
 
   Future<LocationResult?> showPlacePicker() async {
-    latlng.LatLng loc = (context.read<ExploreBloc>().state as ExploreLoaded).mapController.center;
+    latlng.LatLng loc = await LocationService().getPosition(defaultLocation: latlng.LatLng(31.0461, 34.8516));
 
     LocationResult? result = await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => PlacePicker(

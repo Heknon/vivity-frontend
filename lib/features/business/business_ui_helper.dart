@@ -1,18 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/features/item/repo/item_repository.dart';
 
-import '../../services/item_service.dart';
 import '../item/models/item_model.dart';
-import '../user/bloc/user_bloc.dart';
 
-Future<int> enterStockDialog(String userToken, ItemModel itemModel, BuildContext context) async {
+Future<int> enterStockDialog(ItemModel itemModel, BuildContext context) async {
   Completer<int> stock = Completer();
   final TextEditingController controller = TextEditingController(text: itemModel.stock.toString());
   final GlobalKey<FormState> formKey = GlobalKey();
+  final ItemRepository _itemRepository = ItemRepository();
+  final LoadDialog loadDialog = LoadDialog();
 
   showDialog(
     context: context,
@@ -59,9 +60,11 @@ Future<int> enterStockDialog(String userToken, ItemModel itemModel, BuildContext
               return;
             }
 
-            ItemModel item = await updateItemStock(userToken, itemModel.id.hexString, int.parse(controller.text));
-            Navigator.of(context).pop(); // TODO: Have a loading OVERLAY instead of this pop...
-            BlocProvider.of<UserBloc>(context).add(BusinessUserFrontendUpdateItem(item: item));
+            Navigator.of(context).pop();
+
+            showDialog(context: context, builder: (ctx) => loadDialog);
+            ItemModel item = await _itemRepository.updateItemStock(id: itemModel.id.hexString, stock: int.parse(controller.text));
+            Navigator.pop(context);
             stock.complete(int.parse(controller.text));
           },
           style: ButtonStyle(

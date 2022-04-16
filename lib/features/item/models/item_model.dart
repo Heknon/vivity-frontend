@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:latlng/latlng.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/item/models/item_metrics.dart';
 import 'package:vivity/features/item/models/item_store_format.dart';
 import 'package:vivity/features/item/models/review.dart';
 import 'package:vivity/helpers/list_utils.dart';
-import 'package:latlong2/latlong.dart';
+
 
 class ItemModel {
   final ObjectId id;

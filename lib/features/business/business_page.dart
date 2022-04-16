@@ -1,29 +1,41 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sizer/sizer.dart';
 import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/base_page.dart';
+import 'package:vivity/features/business/bloc/business_bloc.dart';
 import 'package:vivity/features/business/business_items_page.dart';
 import 'package:vivity/features/business/business_orders_page.dart';
 import 'package:vivity/features/item/item_creation_dialog.dart';
 
 import '../../widgets/appbar/appbar.dart';
-import '../user/bloc/user_bloc.dart';
 import 'business_statistics_page.dart';
 
-class BusinessPage extends StatelessWidget {
+class BusinessPage extends StatefulWidget {
   const BusinessPage({Key? key}) : super(key: key);
 
   @override
+  State<BusinessPage> createState() => _BusinessPageState();
+}
+
+class _BusinessPageState extends State<BusinessPage> {
+  late final BusinessBloc _bloc;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bloc = context.read<BusinessBloc>();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    UserState state = context.read<UserBloc>().state;
-    if (state is! BusinessUserLoggedInState) {
+    BusinessState state = _bloc.state;
+    if (state is BusinessNoBusiness) {
       Navigator.pushReplacementNamed(context, '/business/create');
       return CircularProgressIndicator();
     }
 
-    if (!state.business.approved) {
+    if (state is BusinessLoaded && !state.business.approved) {
       Navigator.pushReplacementNamed(context, '/business/unapproved');
       return CircularProgressIndicator();
     }
@@ -33,9 +45,11 @@ class BusinessPage extends StatelessWidget {
       child: BasePage(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            showDialog(context: context, builder: (ctx) {
-              return ItemCreationDialog();
-            });
+            showDialog(
+                context: context,
+                builder: (ctx) {
+                  return ItemCreationDialog();
+                });
           },
           backgroundColor: primaryComplementaryColor,
           child: Icon(
@@ -53,17 +67,24 @@ class BusinessPage extends StatelessWidget {
             indicatorColor: Colors.white,
           ),
         ),
-        body: BlocBuilder<UserBloc, UserState>(
+        body: BlocConsumer<BusinessBloc, BusinessState>(
+          listener: (context, state) {
+            if (state is BusinessNoBusiness) {
+              Navigator.pushReplacementNamed(context, '/business/create');
+            } else if (state is BusinessLoaded && !state.business.approved) {
+              Navigator.pushReplacementNamed(context, '/business/unapproved');
+            }
+          },
           builder: (context, state) {
-            if (state is! BusinessUserLoggedInState) {
-              return const Text('One of two things: You are either not logged in or don\'t own a business.\nEither way, how are you here 🤨');
+            if (state is! BusinessLoaded) {
+              return CircularProgressIndicator();
             }
 
             return TabBarView(
               children: [
-                BusinessItemsPage(),
-                BusinessOrdersPage(),
-                BusinessStatisticsPage(),
+                BusinessItemPage(business: state.business, items: state.items, businessBloc: _bloc),
+                BusinessOrdersPage(business: state.business, orderItems: state.orderItems, orders: state.orders, businessBloc: _bloc),
+                BusinessStatisticsPage(business: state.business, items: state.items, orders: state.orders),
               ],
             );
           },

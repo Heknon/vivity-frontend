@@ -5,20 +5,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/business/models/business.dart';
 
 import '../../config/themes/themes_config.dart';
 
 class BusinessApprover extends StatefulWidget {
   final Business business;
-  final Uint8List ownerIdImageBytes;
   final void Function(String)? approvePressed;
   final void Function(String)? declinePressed;
 
   BusinessApprover({
     Key? key,
     required this.business,
-    required this.ownerIdImageBytes,
     this.approvePressed,
     this.declinePressed,
   }) : super(key: key);
@@ -35,9 +34,9 @@ class _BusinessApproverState extends State<BusinessApprover> {
   @override
   Widget build(BuildContext context) {
     TextStyle? buttonTextStyle = Theme.of(context).textTheme.headline4?.copyWith(fontSize: 18.sp);
-    Widget image = ClipRRect(
+    final Widget image = ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(8)),
-      child: Image.memory(widget.ownerIdImageBytes),
+      child: Image.memory(widget.business.ownerId ?? noImageAvailable),
     );
 
     return Padding(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/cart/repo/cart_repository.dart';
+import 'package:vivity/helpers/list_utils.dart';
 
 import '../../../models/shipping_method.dart';
 
@@ -18,7 +19,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
       List<CartItemModel> cartItems = await _cartRepository.getCart(update: true, fetchImages: true);
 
-      emit(CartLoaded(items: cartItems, shippingMethod: ShippingMethod.delivery));
+      emit(CartLoaded(items: cartItems));
     });
 
     on<CartAddItemEvent>((event, emit) {
@@ -36,8 +37,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       CartState newState = state;
       if (newState is! CartLoaded) return;
 
-      List<CartItemModel> newItems = sadeIndexEdit(
-        newState.items,
+      List<CartItemModel> newItems = newState.items.safeIndexEdit(
         event.index,
         edit: (prev) => null,
       );
@@ -50,8 +50,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       CartState newState = state;
       if (newState is! CartLoaded) return;
 
-      List<CartItemModel> newItems = sadeIndexEdit(
-        newState.items,
+      List<CartItemModel> newItems = newState.items.safeIndexEdit(
         event.index,
         edit: (prev) => prev.copyWith(quantity: prev.quantity + 1),
       );
@@ -64,8 +63,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       CartState newState = state;
       if (newState is! CartLoaded) return;
 
-      List<CartItemModel> newItems = sadeIndexEdit(
-        newState.items,
+      List<CartItemModel> newItems = newState.items.safeIndexEdit(
         event.index,
         edit: (prev) => prev.copyWith(quantity: prev.quantity - 1),
       );
@@ -97,23 +95,5 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     if (!added) newList.add(item);
     return newList;
-  }
-
-  List<CartItemModel> sadeIndexEdit(
-    List<CartItemModel> items,
-    int index, {
-    required CartItemModel? Function(CartItemModel) edit,
-  }) {
-    List<CartItemModel> newItems = List.empty(growable: true);
-    for (int i = 0; i < items.length; i++) {
-      if (i == index) {
-        CartItemModel? newItem = edit(items[i]);
-        if (newItem != null) newItems.add(newItem);
-      } else {
-        newItems.add(items[i]);
-      }
-    }
-
-    return newItems;
   }
 }

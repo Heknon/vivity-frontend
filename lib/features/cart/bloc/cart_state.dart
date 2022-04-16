@@ -4,15 +4,12 @@ abstract class CartState {
   const CartState();
 }
 
-class CartBlocked extends CartState {
-}
+class CartBlocked extends CartState {}
 
-class CartLoading extends CartBlocked {
-}
+class CartLoading extends CartBlocked {}
 
 class CartLoaded extends CartState {
   final List<CartItemModel> items;
-  final ShippingMethod shippingMethod;
 
   double get total {
     double sum = 0;
@@ -24,37 +21,20 @@ class CartLoaded extends CartState {
 
 //<editor-fold desc="Data Methods">
 
-
   const CartLoaded({
     required this.items,
-    required this.shippingMethod,
   });
 
+  @override
+  bool operator ==(Object other) => identical(this, other) || (other is CartLoaded && runtimeType == other.runtimeType && items == other.items);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-          (other is CartLoaded &&
-              runtimeType == other.runtimeType &&
-              items == other.items &&
-              shippingMethod == other.shippingMethod
-          );
-
-
-  @override
-  int get hashCode =>
-      items.hashCode ^
-      shippingMethod.hashCode;
-
+  int get hashCode => items.hashCode;
 
   @override
   String toString() {
-    return 'CartStateLoaded{' +
-        ' items: $items,' +
-        ' shippingMethod: $shippingMethod,' +
-        '}';
+    return 'CartStateLoaded{' + ' items: $items,' + '}';
   }
-
 
   CartLoaded copyWith({
     List<CartItemModel>? items,
@@ -62,25 +42,8 @@ class CartLoaded extends CartState {
   }) {
     return CartLoaded(
       items: items ?? this.items,
-      shippingMethod: shippingMethod ?? this.shippingMethod,
     );
   }
-
-
-  Map<String, dynamic> toMap() {
-    return {
-      'items': this.items,
-      'shippingMethod': this.shippingMethod,
-    };
-  }
-
-  factory CartLoaded.fromMap(Map<String, dynamic> map) {
-    return CartLoaded(
-      items: map['items'] as List<CartItemModel>,
-      shippingMethod: map['shippingMethod'] as ShippingMethod,
-    );
-  }
-
 
 //</editor-fold>
 }

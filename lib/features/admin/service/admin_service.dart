@@ -10,6 +10,7 @@ class AdminService extends ServiceProvider {
   final AuthenticationRepository _authRepository = AuthenticationRepository();
 
   static const String unapprovedBusinessesRoute = '/business/unapproved';
+  static const String approvedBusinessesRoute = '/business/approved';
   static const String approveBusinessesRoute = '/business/approve';
 
   AdminService._();
@@ -21,6 +22,31 @@ class AdminService extends ServiceProvider {
   }) async {
     String accessToken = await _authRepository.getAccessToken();
     AsyncSnapshot<Response> snapshot = await get(subRoute: unapprovedBusinessesRoute, token: accessToken, queryParameters: {
+      "get_images": getImages,
+    });
+
+    if (snapshot.hasError) {
+      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
+    } else if (!snapshot.hasData) {
+      return AsyncSnapshot.nothing();
+    }
+
+    Response response = snapshot.data!;
+    if (response.statusCode! > 300) {
+      return AsyncSnapshot.withError(ConnectionState.done, response);
+    }
+
+    return AsyncSnapshot.withData(
+      ConnectionState.done,
+      (snapshot.data! as List<dynamic>).map((e) => Business.fromMap(e)).toList(),
+    );
+  }
+
+  Future<AsyncSnapshot<List<Business>>> getApprovedBusinesses({
+    required bool getImages,
+  }) async {
+    String accessToken = await _authRepository.getAccessToken();
+    AsyncSnapshot<Response> snapshot = await get(subRoute: approvedBusinessesRoute, token: accessToken, queryParameters: {
       "get_images": getImages,
     });
 

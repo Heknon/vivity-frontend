@@ -6,10 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
-import 'package:vivity/features/checkout/bloc/checkout_bloc.dart';
-import 'package:vivity/features/checkout/confirm_page.dart';
+
 import 'package:vivity/helpers/ui_helpers.dart';
-import 'package:vivity/models/shipping_method.dart';
+
 import 'package:vivity/widgets/quantity.dart';
 import '../item/cart_item.dart';
 
@@ -177,14 +176,7 @@ class _CartViewState extends State<CartView> {
           splashFactory: InkSplash.splashFactory,
         ),
         onPressed: () {
-          context.read<CheckoutBloc>().add(
-                CheckoutInitializeEvent(
-                  items: state is! CartLoaded ? [] : state.items,
-                  shippingMethod: state is! CartLoaded ? ShippingMethod.delivery : state.shippingMethod,
-                  cuponCode: "",
-                ),
-              );
-          Navigator.push(context, MaterialPageRoute(builder: (ctx) => ConfirmPage()));
+          Navigator.pushNamed(context, '/checkout/confirm');
         },
         child: Text(
           'Checkout',

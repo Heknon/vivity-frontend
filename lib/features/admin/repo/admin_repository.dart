@@ -13,6 +13,7 @@ class AdminRepository {
   factory AdminRepository() => _adminRepository;
 
   List<Business>? _unapprovedBusinesses;
+  List<Business>? _approvedBusinesses;
 
   Future<List<Business>> getUnapprovedBusinesses({
     bool update = false,
@@ -28,6 +29,22 @@ class AdminRepository {
     List<Business> business = snapshot.data!;
     _unapprovedBusinesses = business;
     return _unapprovedBusinesses!;
+  }
+
+  Future<List<Business>> getApprovedBusinesses({
+    bool update = false,
+    bool getImages = true,
+  }) async {
+    if (_approvedBusinesses != null && !update) return _approvedBusinesses!;
+
+    AsyncSnapshot<List<Business>> snapshot = await _adminService.getApprovedBusinesses(getImages: getImages);
+    if (snapshot.hasError || !snapshot.hasData) {
+      throw UserNoAccessException(response: snapshot.error is Response ? snapshot.error as Response : null);
+    }
+
+    List<Business> business = snapshot.data!;
+    _approvedBusinesses = business;
+    return _approvedBusinesses!;
   }
 
   Future<Business> updateBusinessApprovalStatus({
