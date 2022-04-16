@@ -1,18 +1,19 @@
+import 'package:fluro/fluro.dart';
 import 'package:vivity/config/routes/routes_config.dart';
 import 'package:vivity/config/routes/routes_handler.dart';
 
 void initRoutes() {
-  router.define('/home/:page', handler: homeRouteHandler);
-  router.define('/auth', handler: authRouteHandler);
-  router.define('/error', handler: errorRouteHandler);
-  router.define('/profile', handler: profileRoute);
-  router.define('/settings', handler: settingsRoute);
-  router.define('/business', handler: businessRoute);
-  router.define('/business/unapproved', handler: unapprovedBusinessRoute);
-  router.define('/business/create', handler: createBusinessRoute);
-  router.define('/admin', handler: adminPanelRoute);
-  router.define('/logout', handler: logoutRoute);
-  router.define('/favorites', handler: favoritesRoute);
-  router.define('/item', handler: itemRouteHandler);
+  router.define('/home/:page', handler: homeRouteHandler, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/auth', handler: authRouteHandler, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/error', handler: errorRouteHandler, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/profile', handler: profileRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/settings', handler: settingsRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/business', handler: businessRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/business/unapproved', handler: unapprovedBusinessRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/business/create', handler: createBusinessRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/admin', handler: adminPanelRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/logout', handler: logoutRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/favorites', handler: favoritesRoute, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
+  router.define('/item', handler: itemRouteHandler, transitionType: TransitionType.fadeIn, transitionDuration: Duration(seconds: 1));
   router.define('/item/:token/:id', handler: itemIdRouteHandler);
 }

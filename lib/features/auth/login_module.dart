@@ -146,7 +146,7 @@ class _LoginModuleState extends State<LoginModule> {
                     showDialog(context: context, builder: (ctx) => loadDialog);
 
                     String email = emailController.text.trim();
-                    bool otpEnabled = await _authRepository.hasOTP(update: true);
+                    bool otpEnabled = await _authRepository.hasOTPByEmail(email: email, update: true);
                     AuthenticationResult? preLoginCheck = otpEnabled ? await shouldOpenOTP(email, passwordController.text) : null;
                     Navigator.pop(context);
                     bool shouldRequestOTP = false;

@@ -136,7 +136,7 @@ Handler logoutRoute = Handler(
   handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
     Navigator.popUntil(context!, (route) => route.isFirst);
     return BlocProvider(
-      create: (context) => AuthBloc(),
+      create: (context) => AuthBloc()..add(AuthLogoutEvent()),
       child: AuthPage(),
     );
   },

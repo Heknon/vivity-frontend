@@ -402,4 +402,8 @@ class ItemRepository {
       }
     }
   }
+
+  void dispose() {
+    _itemModelCache.clear();
+  }
 }

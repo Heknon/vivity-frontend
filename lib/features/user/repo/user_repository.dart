@@ -30,7 +30,7 @@ class UserRepository {
 
     AsyncSnapshot<User> snapshot = await _userService.getUser();
     if (snapshot.hasError || !snapshot.hasData) {
-      throw UserGetFailedException();
+      return Future.error(UserGetFailedException());
     }
 
     _user = snapshot.data!;
@@ -145,5 +145,9 @@ class UserRepository {
     _user = (await getUser()).copyWith(likedItems: itemModels);
 
     return _user!;
+  }
+
+  void dispose() {
+    _user = null;
   }
 }

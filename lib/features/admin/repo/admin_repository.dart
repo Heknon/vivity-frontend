@@ -62,4 +62,9 @@ class AdminRepository {
     _unapprovedBusinesses?.add(business);
     return business;
   }
+
+  void dispose() {
+    _approvedBusinesses = null;
+    _unapprovedBusinesses = null;
+  }
 }

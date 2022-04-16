@@ -2,10 +2,15 @@ import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
+import 'package:vivity/features/admin/repo/admin_repository.dart';
 import 'package:vivity/features/auth/models/authentication_result.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/auth/service/authentication_service.dart';
+import 'package:vivity/features/business/repo/user_business_repository.dart';
+import 'package:vivity/features/cart/repo/cart_repository.dart';
+import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/storage/storage_service.dart';
+import 'package:vivity/features/user/repo/user_repository.dart';
 import 'package:vivity/services/network_exception.dart';
 
 import '../models/token_container.dart';
@@ -39,7 +44,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _renewTokenTimer.reset();
       } on NetworkException catch (e) {
         return emit(
-          AuthFailedState(message: e.response?.data['error'] ?? e.message ?? 'Authorization failed.'),
+          AuthFailedState(message: e.message ?? e.response?.data['error'] ?? 'Authorization failed.'),
         );
       }
     });
@@ -58,12 +63,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterEvent>((event, emit) async {
       emit(AuthLoadingState());
 
-      TokenContainer registerResult = await _authRepository.register(
-        email: event.email,
-        password: event.password,
-        name: event.name,
-        phone: event.phone,
-      );
+      TokenContainer registerResult;
+      try {
+        registerResult = await _authRepository.register(
+          email: event.email,
+          password: event.password,
+          name: event.name,
+          phone: event.phone,
+        );
+      } on Exception catch (e) {
+        if (e is NetworkException) return emit(AuthFailedState(message: e.message ?? (e.response?.data['error']) ?? 'Failed to register'));
+        return emit(AuthFailedState(message: e.toString()));
+      }
 
       _storageService.setPreviouslyLoggedIn();
       _storageService.storeRefreshToken(registerResult.refreshToken);
@@ -91,14 +102,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     on<AuthLogoutEvent>((event, emit) async {
-      if (state is! AuthLoggedOutState) {
-        _authService.logout();
-        _authRepository.logout();
-        _storageService.deleteRefreshToken();
+      _authService.logout();
+      _authRepository.dispose();
+      _storageService.deleteRefreshToken();
 
-        _renewTokenTimer.cancel();
-        emit(AuthLoggedOutState());
-      }
+      ItemRepository().dispose();
+      UserBusinessRepository().dispose();
+      UserRepository().dispose();
+      AdminRepository().dispose();
+      CartRepository().dispose();
+
+      _renewTokenTimer.cancel();
+      emit(AuthLoggedOutState());
     });
   }
 

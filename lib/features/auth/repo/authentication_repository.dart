@@ -193,6 +193,16 @@ class AuthenticationRepository {
       return false;
     }
 
+    _hasOTP = snapshot.data ?? false;
+    return _hasOTP!;
+  }
+
+  Future<bool> hasOTPByEmail({required String email, bool update = false}) async {
+    AsyncSnapshot<bool> snapshot = await _authService.hasOTP(email: email);
+    if (snapshot.hasError || !snapshot.hasData) {
+      return false;
+    }
+
     return snapshot.data ?? false;
   }
 
@@ -222,4 +232,10 @@ class AuthenticationRepository {
   Future<bool> _isAccessTokenValid(String token) async => _isTokenValid(token, (await getKeyContainer()).accessKey);
 
   Future<bool> _isRefreshTokenValid(String token) async => _isTokenValid(token, (await getKeyContainer()).refreshKey);
+
+  void dispose() {
+    _refreshToken = null;
+    _hasOTP = null;
+    _accessToken = null;
+  }
 }

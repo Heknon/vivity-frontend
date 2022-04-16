@@ -129,7 +129,7 @@ class User {
       name: map['name'] as String,
       email: map['email'] as String,
       phone: map['phone'] as String,
-      profilePicture: base64Decode(map['profile_picture']),
+      profilePicture: map['profile_picture'] != null ? base64Decode(map['profile_picture']) : null,
       userOptions: UserOptions.fromMap(map['options']),
       addresses: (map['shipping_addresses'] as List<dynamic>).map((e) => Address.fromMap(e)).toList(),
       likedItems: (map['liked_items'] as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),

@@ -64,7 +64,7 @@ class AuthenticationService extends ServiceProvider {
     required String name,
     required String phone,
   }) async {
-    AsyncSnapshot<Response> snapshot = await post(subRoute: loginSubRoute, data: {
+    AsyncSnapshot<Response> snapshot = await post(subRoute: registerSubRoute, data: {
       "email": email,
       "password": password,
       "name": name,

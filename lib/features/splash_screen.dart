@@ -34,7 +34,6 @@ class _SplashScreenState<T> extends State<SplashScreen<T>> {
     widget.future.then((value) {
       if (widget.onComplete != null) widget.onComplete!(context, AsyncSnapshot.withData(ConnectionState.done, value));
     }).catchError((err) {
-      throw err;
       if (widget.onComplete != null) widget.onComplete!(context, AsyncSnapshot.withError(ConnectionState.done, err));
     }).timeout(widget.timeout, onTimeout: () {
       if (widget.onComplete != null) widget.onComplete!(context, AsyncSnapshot.nothing());

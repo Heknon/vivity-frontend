@@ -97,11 +97,14 @@ class _VivityDrawerState extends State<VivityDrawer> {
                               )
                             : placeholderPfp,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Hello,\n${state.name}',
-                          style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.white, fontSize: 16.sp),
+                      SizedBox(
+                        width: 40.w,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Hello,\n${state.name}',
+                            style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.white, fontSize: 16.sp),
+                          ),
                         ),
                       )
                     ],

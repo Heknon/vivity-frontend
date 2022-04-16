@@ -47,6 +47,7 @@ class Vivity extends StatelessWidget {
         builder: (ctx, orientation, type) {
           loginResult ??= UserRepository().getUser();
 
+
           return AppSystemManager(
             child: MaterialApp(
               title: 'Vivity',

@@ -42,49 +42,49 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return defaultGradientBackground(
-      child: SingleChildScrollView(
-        child: BlocListener<SettingsBloc, SettingsState>(
-          listener: (context, state) {
-            if (_loadDialogOpen) {
-              Navigator.pop(context);
-              _loadDialogOpen = false;
-            }
-            if (state is! SettingsLoaded) return;
-            if (state.responseMessage == "POP_DISABLE_2FA") {
-              Navigator.pop(context);
-              Navigator.pop(context);
-              showSnackBar('Disabled 2FA', context);
-            }
+    return BasePage(
+      body: defaultGradientBackground(
+        child: SingleChildScrollView(
+          child: BlocConsumer<SettingsBloc, SettingsState>(
+            listener: (context, state) {
+              if (_loadDialogOpen) {
+                Navigator.pop(context);
+                _loadDialogOpen = false;
+              }
+              if (state is! SettingsLoaded) return;
+              if (state.responseMessage == "POP_DISABLE_2FA") {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                showSnackBar('Disabled 2FA', context);
+              }
 
-            if (state.hasOTP && state.otpSeed != null) {
-              showDialog(
-                context: context,
-                builder: (ctx) => SizedBox(
-                  child: OTPPreview(email: state.email, seed: state.otpSeed!),
-                ),
-              ).then((value) {
-                _settingsBloc.add(SettingsUnloadOTPSeedEvent());
-                showSnackBar('Enabled 2FA', context);
-              });
-            }
-          },
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: Text(
-                    'Personal',
-                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+              if (state.hasOTP && state.otpSeed != null) {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => SizedBox(
+                    child: OTPPreview(email: state.email, seed: state.otpSeed!),
                   ),
-                ),
-              ),
-              BlocBuilder<SettingsBloc, SettingsState>(
-                builder: (context, state) {
-                  if (state is! SettingsLoaded) return CircularProgressIndicator();
+                ).then((value) {
+                  _settingsBloc.add(SettingsUnloadOTPSeedEvent());
+                  showSnackBar('Enabled 2FA', context);
+                });
+              }
+            },
+            builder: (ctx, state) {
+              if (state is! SettingsLoaded) return CircularProgressIndicator();
 
-                  return SizedBox(
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        'Personal',
+                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
                     width: 90.w,
                     child: SimpleCard(
                       elevation: 7,
@@ -132,25 +132,19 @@ class _SettingsPageState extends State<SettingsPage> {
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: Text(
-                    'Preferences',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
                   ),
-                ),
-              ),
-              BlocBuilder<SettingsBloc, SettingsState>(
-                builder: (context, state) {
-                  if (state is! SettingsLoaded) return CircularProgressIndicator();
-
-                  return SizedBox(
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        'Preferences',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
                     width: 90.w,
                     child: SimpleCard(
                       elevation: 7,
@@ -172,37 +166,31 @@ class _SettingsPageState extends State<SettingsPage> {
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: Text(
-                    'Password & Authentication',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
                   ),
-                ),
-              ),
-              TextButton(
-                onPressed: () => changePassword(context),
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(fillerColor),
-                  padding: MaterialStateProperty.all(EdgeInsets.all(12)),
-                  overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
-                ),
-                child: Text(
-                  'Change Password',
-                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
-                ),
-              ),
-              BlocBuilder<SettingsBloc, SettingsState>(
-                builder: (ctx, state) {
-                  if (state is! SettingsLoaded) CircularProgressIndicator();
-
-                  return (state as SettingsLoaded).hasOTP
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Text(
+                        'Password & Authentication',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => changePassword(context),
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(fillerColor),
+                      padding: MaterialStateProperty.all(EdgeInsets.all(12)),
+                      overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.6)),
+                    ),
+                    child: Text(
+                      'Change Password',
+                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
+                    ),
+                  ),
+                  state.hasOTP
                       ? TextButton(
                           onPressed: () => _settingsBloc.add(SettingsDisableOTPEvent()),
                           style: ButtonStyle(
@@ -226,10 +214,10 @@ class _SettingsPageState extends State<SettingsPage> {
                             'Enable Two-Factor Auth',
                             style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
                           ),
-                        );
-                },
-              ),
-            ],
+                        ),
+                ],
+              );
+            },
           ),
         ),
       ),

@@ -134,4 +134,8 @@ class CartRepository {
     _cart = cartItems;
     return _cart!.map((e) => e.copyWith()).toList();
   }
+
+  void dispose() {
+    _cart = null;
+  }
 }

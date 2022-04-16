@@ -139,4 +139,10 @@ class UserBusinessRepository {
     _items = filteredResult;
     return _items!;
   }
+
+  void dispose() {
+    _items = null;
+    _orders = null;
+    _business = null;
+  }
 }
