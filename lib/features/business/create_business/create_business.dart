@@ -75,7 +75,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
             if (state is CreateBusinessFailedCreating) {
               showSnackBar(state.message, context);
             } else if (state is CreateBusinessCreated) {
-              Navigator.pushNamed(context, '/business');
+              Navigator.pushReplacementNamed(context, '/business');
               showSnackBar('Created business!', context);
             }
           }
@@ -221,6 +221,7 @@ class _CreateBusinessState extends State<CreateBusiness> {
                         ScaffoldMessenger.of(context).clearSnackBars();
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registering!')));
                         showDialog(context: context, builder: (ctx) => _loadDialog);
+                        isLoadingOpen = true;
                       },
                     ),
                   ),

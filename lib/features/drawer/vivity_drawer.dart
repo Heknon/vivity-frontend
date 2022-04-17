@@ -135,7 +135,7 @@ class _VivityDrawerState extends State<VivityDrawer> {
                   buildMenuButton(
                     text: state.ownsBusiness ? "My business" : "Create business",
                     onPressed: () {
-                      Navigator.pushNamed(context, '/business');
+                      state.ownsBusiness ? Navigator.pushNamed(context, '/business') : Navigator.pushNamed(context, '/business/create');
                     },
                     context: context,
                   ),

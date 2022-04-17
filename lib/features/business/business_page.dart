@@ -30,7 +30,7 @@ class _BusinessPageState extends State<BusinessPage> {
   @override
   Widget build(BuildContext context) {
     BusinessState state = _bloc.state;
-    if (state is BusinessNoBusiness) {
+    if (state is! BusinessUnloaded && state is BusinessNoBusiness) {
       WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
         Navigator.pushReplacementNamed(context, '/business/create');
       });

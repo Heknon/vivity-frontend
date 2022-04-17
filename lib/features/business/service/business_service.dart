@@ -36,7 +36,7 @@ class BusinessService extends ServiceProvider {
     User user = await _userRepository.getUser();
     if (user is! BusinessUser) throw UserNoAccessException();
 
-    AsyncSnapshot<Response> snapshot = await get();
+    AsyncSnapshot<Response> snapshot = await get(token: await _authRepository.getAccessToken());
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -65,7 +65,7 @@ class BusinessService extends ServiceProvider {
     required File ownerId,
   }) async {
     User user = await _userRepository.getUser();
-    if (user is! BusinessUser) throw UserNoAccessException();
+    if (user is BusinessUser) throw UserNoAccessException();
 
     AsyncSnapshot<Response> snapshot = await post(token: await _authRepository.getAccessToken(), data: {
       "name": name,
@@ -144,7 +144,7 @@ class BusinessService extends ServiceProvider {
     User user = await _userRepository.getUser();
     if (user is! BusinessUser) throw UserNoAccessException();
 
-    AsyncSnapshot<Response> snapshot = await get(token: await _authRepository.getAccessToken());
+    AsyncSnapshot<Response> snapshot = await get(subRoute: '/orders', token: await _authRepository.getAccessToken());
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -157,9 +157,10 @@ class BusinessService extends ServiceProvider {
       return AsyncSnapshot.withError(ConnectionState.done, response);
     }
 
+
     return AsyncSnapshot.withData(
       ConnectionState.done,
-      (snapshot.data! as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
+      (response.data as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
     );
   }
 
