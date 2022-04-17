@@ -1,9 +1,12 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/base_page.dart';
+import 'package:vivity/features/item/classic_item.dart';
 import 'package:vivity/features/item/favorites_page/bloc/favorites_bloc.dart';
+import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 
 class FavoritesPage extends StatelessWidget {
@@ -34,7 +37,30 @@ class FavoritesPage extends StatelessWidget {
               return state.favoritedItems.isNotEmpty
                   ? SizedBox.fromSize(
                       size: gridSize,
-                      child: buildItemContentGrid(state.favoritedItems, gridSize, ScrollController(), itemHeightMultiplier: 0.55),
+                      child: buildItemContentGrid(
+                        state.favoritedItems,
+                        gridSize,
+                        ScrollController(),
+                        itemHeightMultiplier: 0.55,
+                        builder: (item, widget) {
+                          Widget itemPageWidget = ItemPage(item: item);
+
+                          return OpenContainer(
+                            tappable: false,
+                            closedElevation: 7,
+                            transitionType: ContainerTransitionType.fade,
+                            transitionDuration: Duration(milliseconds: 1000),
+                            closedBuilder: (ctx, VoidCallback openContainer) => ClassicItem(
+                              item: item,
+                              key: widget.key,
+                              editButton: widget.editButton,
+                              onEditTap: widget.onEditTap,
+                              onTap: openContainer,
+                            ),
+                            openBuilder: (ctx, _) => itemPageWidget,
+                          );
+                        },
+                      ),
                     )
                   : Center(
                       child: Text(

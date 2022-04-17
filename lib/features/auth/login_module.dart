@@ -152,9 +152,7 @@ class _LoginModuleState extends State<LoginModule> {
                     bool shouldRequestOTP = false;
                     if (preLoginCheck != null) {
                       if (preLoginCheck.authStatus != AuthenticationStatus.wrongOTP) {
-                        context.read<AuthBloc>().add(
-                              AuthHandlePre2FA(preLoginCheck),
-                            );
+                        context.read<AuthBloc>().add(AuthHandlePre2FA(preLoginCheck));
                         return;
                       } else {
                         shouldRequestOTP = true;
@@ -162,13 +160,14 @@ class _LoginModuleState extends State<LoginModule> {
                     }
                     String? otp;
                     if (otpEnabled && shouldRequestOTP) {
-                      Completer<int> completer = Completer();
+                      Completer<String> completer = Completer();
                       ValueDialog dialog = ValueDialog(
                         "2FA",
                         "6 digit code",
                         completer,
                         isNumber: true,
                         showCancel: false,
+                        parseToNumber: false,
                         validator: ValidationBuilder().add((value) {
                           if (value == null || value.length != 6) return 'Must be a 6 digit code';
                           if (int.tryParse(value) == null) return 'Must be a 6 digit code';
@@ -181,7 +180,7 @@ class _LoginModuleState extends State<LoginModule> {
                                 onWillPop: () async => false,
                                 child: dialog,
                               ));
-                      otp = (await completer.future).toString();
+                      otp = await completer.future;
                     }
 
                     handleLogin(email, passwordController.text, otp);

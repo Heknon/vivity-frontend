@@ -5,10 +5,12 @@ import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/auth/models/authentication_result.dart';
 import 'package:vivity/features/auth/models/jwt_key_container.dart';
 import 'package:vivity/features/auth/models/token_container.dart';
+import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/services/service_provider.dart';
 
 class AuthenticationService extends ServiceProvider {
   static final AuthenticationService _authenticationService = AuthenticationService._();
+  static final AuthenticationRepository _authRepository = AuthenticationRepository();
 
   static const String loginSubRoute = '/login';
   static const String registerSubRoute = '/register';
@@ -113,7 +115,10 @@ class AuthenticationService extends ServiceProvider {
   }) async {
     assert(email != null || id != null, "Must pass email or id");
 
-    AsyncSnapshot<Response> snapshot = await get(subRoute: otpSubRoute);
+    String params = "";
+    if (id != null) params += "${params.isNotEmpty ? "&" : ""}id=$id";
+    if (email != null) params += "${params.isNotEmpty ? "&" : ""}email=$email";
+    AsyncSnapshot<Response> snapshot = await get(subRoute: otpSubRoute + "?$params");
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -134,7 +139,7 @@ class AuthenticationService extends ServiceProvider {
   }
 
   Future<AsyncSnapshot<String>> enableOTP() async {
-    AsyncSnapshot<Response> snapshot = await post(subRoute: otpSubRoute);
+    AsyncSnapshot<Response> snapshot = await post(subRoute: otpSubRoute, token: await _authRepository.getAccessToken());
     snapshot = faultyResponseShouldReturn(snapshot);
 
     if (snapshot.hasError) {
@@ -151,7 +156,7 @@ class AuthenticationService extends ServiceProvider {
   }
 
   Future<AsyncSnapshot<bool>> disableOTP() async {
-    AsyncSnapshot<Response> snapshot = await delete(subRoute: otpSubRoute);
+    AsyncSnapshot<Response> snapshot = await delete(subRoute: otpSubRoute, token: await _authRepository.getAccessToken());
     snapshot = faultyResponseShouldReturn(snapshot);
 
     if (snapshot.hasError) {
@@ -162,7 +167,7 @@ class AuthenticationService extends ServiceProvider {
 
     return AsyncSnapshot.withData(
       ConnectionState.done,
-      true,
+      false,
     );
   }
 

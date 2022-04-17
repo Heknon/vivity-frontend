@@ -86,7 +86,6 @@ class _ShippingPageState extends State<ShippingPage> {
                     onTap: (i) => state.confirmationStageState.shippingMethod == ShippingMethod.delivery
                         ? setState(() {
                           selectedAddress = selectedAddress == i ? null : i;
-                          print(selectedAddress);
                         })
                         : null,
                   ),

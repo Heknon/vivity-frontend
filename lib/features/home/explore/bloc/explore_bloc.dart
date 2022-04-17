@@ -20,7 +20,7 @@ part 'explore_state.dart';
 class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
   final SearchService _searchService = SearchService();
 
-  final MapControllerImpl mapController = MapControllerImpl();
+  late MapControllerImpl mapController;
   LatLng? lastUpdateLocation;
   late final RestartableTimer _timer;
 
@@ -39,6 +39,8 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
 
     on<ExploreLoad>((event, emit) {
       if (state is ExploreSearchable) return;
+
+      mapController = MapControllerImpl();
 
       _timer.reset();
       emit(ExploreSearchable());

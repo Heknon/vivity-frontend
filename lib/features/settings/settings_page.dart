@@ -52,22 +52,42 @@ class _SettingsPageState extends State<SettingsPage> {
                 _loadDialogOpen = false;
               }
               if (state is! SettingsLoaded) return;
-              if (state.responseMessage == "POP_DISABLE_2FA") {
-                Navigator.pop(context);
-                Navigator.pop(context);
-                showSnackBar('Disabled 2FA', context);
+
+              if (state.responseMessage != null && state.responseMessage!.isNotEmpty) {
+                showSnackBar(state.responseMessage!, context);
               }
 
+              bool cancelingOtp = false;
+              bool resetMessage = true;
               if (state.hasOTP && state.otpSeed != null) {
+                resetMessage = false;
                 showDialog(
                   context: context,
                   builder: (ctx) => SizedBox(
-                    child: OTPPreview(email: state.email, seed: state.otpSeed!),
+                    height: 300,
+                    width: 70.w,
+                    child: OTPPreview(
+                      email: state.email,
+                      seed: state.otpSeed!,
+                      onCancelPressed: (ctx) {
+                        Navigator.pop(ctx);
+                        showDialog(context: context, builder: (ctx) => _loadDialog);
+                        _loadDialogOpen = true;
+                        cancelingOtp = true;
+
+                        context.read<SettingsBloc>().add(SettingsDisableOTPEvent());
+                      },
+                    ),
                   ),
                 ).then((value) {
+                  if (cancelingOtp) return;
                   _settingsBloc.add(SettingsUnloadOTPSeedEvent());
                   showSnackBar('Enabled 2FA', context);
                 });
+              }
+
+              if (state.responseMessage != null && resetMessage) {
+                _settingsBloc.add(SettingsResetMessageEvent());
               }
             },
             builder: (ctx, state) {

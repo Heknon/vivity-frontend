@@ -99,7 +99,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       } on Exception catch (e) {
         newState = (state as SettingsLoaded).copyWith(
           hasOTP: false,
-          responseMessage: "Enabled OTP",
+          responseMessage: "Failed to enable OTP",
         );
       }
       emit(newState);
@@ -112,12 +112,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       try {
         bool hasOtp = await _authRepository.disableOTP();
 
-        newState = (state as SettingsLoaded).copyWith(responseMessage: null, hasOTP: hasOtp, otpSeed: null);
+        newState = (state as SettingsLoaded).copyWith(responseMessage: "Disabled OTP", hasOTP: hasOtp, otpSeed: null);
       } on Exception catch (e) {
         newState = (state as SettingsLoaded).copyWith(
           hasOTP: false,
           otpSeed: null,
-          responseMessage: event.shouldPop ? "POP_DISABLE_2FA" : "Disabled OTP",
+          responseMessage: "Disabled OTP",
         );
       }
       emit(newState);
@@ -128,8 +128,17 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
       SettingsLoaded newState = (state as SettingsLoaded).copyWith(
         otpSeed: null,
+        resetResponseMessage: true,
+        responseMessage: null,
       );
       emit(newState);
+    });
+
+    on<SettingsResetMessageEvent>((event, emit) {
+      SettingsState s = state;
+      if (s is! SettingsLoaded) return;
+
+      emit(s.copyWith(responseMessage: null, resetResponseMessage: true));
     });
 
     on<SettingsUnloadEvent>((event, emit) {

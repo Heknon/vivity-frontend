@@ -69,6 +69,7 @@ class SettingsLoaded extends SettingsState {
     Unit? unit,
     String? currency,
     String? responseMessage,
+    bool resetResponseMessage = false,
   }) {
     return SettingsLoaded(
       hasOTP: hasOTP ?? this.hasOTP,
@@ -77,7 +78,7 @@ class SettingsLoaded extends SettingsState {
       phone: phone ?? this.phone,
       unit: unit ?? this.unit,
       currency: currency ?? this.currency,
-      responseMessage: responseMessage ?? this.responseMessage,
+      responseMessage: resetResponseMessage ? responseMessage : responseMessage ?? this.responseMessage,
     );
   }
 

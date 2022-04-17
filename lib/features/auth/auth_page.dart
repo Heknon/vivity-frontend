@@ -10,6 +10,7 @@ import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 
@@ -54,6 +55,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       Navigator.pushReplacementNamed(context, "/home/explore");
       BlocProvider.of<CartBloc>(context).add(CartSyncEvent());
       BlocProvider.of<LikedBloc>(context).add(LikedLoadEvent());
+      BlocProvider.of<ExploreBloc>(context).add(ExploreLoad());
     }
 
     return Scaffold(
@@ -69,6 +71,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               Navigator.pushReplacementNamed(context, "/home/explore");
               BlocProvider.of<CartBloc>(context).add(CartSyncEvent());
               BlocProvider.of<LikedBloc>(context).add(LikedLoadEvent());
+              BlocProvider.of<ExploreBloc>(context).add(ExploreLoad());
             } else if (state is AuthFailedState) {
               showSnackBar(state.message ?? "Authentication failed", context);
               _loginPasswordController.text = "";

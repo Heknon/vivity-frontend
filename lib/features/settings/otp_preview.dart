@@ -21,8 +21,14 @@ class OTPPreview extends StatelessWidget {
   final FocusNode _focusNode = FocusNode();
   final AuthenticationRepository _authRepository = AuthenticationRepository();
   final LoadDialog _loadDialog = LoadDialog();
+  final void Function(BuildContext)? onCancelPressed;
 
-  OTPPreview({Key? key, required this.email, required this.seed}) : super(key: key);
+  OTPPreview({
+    Key? key,
+    required this.email,
+    required this.seed,
+    this.onCancelPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -52,19 +58,11 @@ class OTPPreview extends StatelessWidget {
                 SizedBox(height: 10),
                 Text(
                   '2FA KEY',
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .headline4
-                      ?.copyWith(fontSize: 12.sp),
+                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                 ),
                 Text(
                   formatSeed(seed),
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .headline4
-                      ?.copyWith(fontSize: 11.sp, fontWeight: FontWeight.normal, color: fillerColor),
+                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 11.sp, fontWeight: FontWeight.normal, color: fillerColor),
                 ),
                 SizedBox(height: 5),
                 TextButton(
@@ -81,11 +79,7 @@ class OTPPreview extends StatelessWidget {
                   ),
                   child: Text(
                     'Open in authenticator app',
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .headline4
-                        ?.copyWith(fontSize: 12.sp, color: Colors.white),
+                    style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp, color: Colors.white),
                   ),
                 ),
                 SizedBox(height: 15),
@@ -114,27 +108,15 @@ class OTPPreview extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () async {
-            showDialog(context: context, builder: (ctx) => _loadDialog);
-
-            context.read<SettingsBloc>().add(SettingsDisableOTPEvent(shouldPop: true));
+          onPressed: () {
+            onCancelPressed != null ? onCancelPressed!(context) : null;
           },
           style: ButtonStyle(
               splashFactory: InkRipple.splashFactory,
-              textStyle: MaterialStateProperty.all(Theme
-                  .of(context)
-                  .textTheme
-                  .headline3
-                  ?.copyWith(fontSize: 14.sp))),
+              textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
           child: Text(
             'Cancel',
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline3
-                ?.copyWith(color: Theme
-                .of(context)
-                .primaryColor, fontSize: 14.sp),
+            style: Theme.of(context).textTheme.headline3?.copyWith(color: Theme.of(context).primaryColor, fontSize: 14.sp),
           ),
         ),
         TextButton(
@@ -154,20 +136,10 @@ class OTPPreview extends StatelessWidget {
           },
           style: ButtonStyle(
               splashFactory: InkRipple.splashFactory,
-              textStyle: MaterialStateProperty.all(Theme
-                  .of(context)
-                  .textTheme
-                  .headline3
-                  ?.copyWith(fontSize: 14.sp))),
+              textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
           child: Text(
             'Activate',
-            style: Theme
-                .of(context)
-                .textTheme
-                .headline3
-                ?.copyWith(color: Theme
-                .of(context)
-                .primaryColor, fontSize: 14.sp),
+            style: Theme.of(context).textTheme.headline3?.copyWith(color: Theme.of(context).primaryColor, fontSize: 14.sp),
           ),
         )
       ],

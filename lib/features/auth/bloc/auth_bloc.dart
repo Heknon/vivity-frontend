@@ -9,6 +9,7 @@ import 'package:vivity/features/auth/service/authentication_service.dart';
 import 'package:vivity/features/business/repo/user_business_repository.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/cart/repo/cart_repository.dart';
+import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/storage/storage_service.dart';
@@ -113,6 +114,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       UserRepository().dispose();
       AdminRepository().dispose();
       CartRepository().dispose();
+
+      event.exploreBloc.add(ExploreUnload());
 
       _renewTokenTimer.cancel();
       emit(AuthLoggedOutState());

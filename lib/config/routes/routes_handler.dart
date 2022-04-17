@@ -19,6 +19,7 @@ import 'package:vivity/features/checkout/shipping_page/bloc/shipping_bloc.dart';
 import 'package:vivity/features/checkout/shipping_page/pickup_page.dart';
 import 'package:vivity/features/checkout/shipping_page/shipping_page.dart';
 import 'package:vivity/features/home/bloc/home_bloc.dart';
+import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page/bloc/favorites_bloc.dart';
 import 'package:vivity/features/item/favorites_page/favorites_page.dart';
@@ -141,7 +142,7 @@ Handler logoutRoute = Handler(
   handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
     Navigator.popUntil(context!, (route) => route.isFirst);
     return BlocProvider(
-      create: (context) => AuthBloc()..add(AuthLogoutEvent()),
+      create: (context) => AuthBloc()..add(AuthLogoutEvent(context.read<ExploreBloc>())),
       child: AuthPage(),
     );
   },

@@ -12,6 +12,8 @@ import 'package:latlng/latlng.dart' as latlng;
 import 'location_service.dart';
 import 'map_widget.dart';
 
+final ValueKey<int> mapKey =  ValueKey(432543);
+
 class MapGui extends StatefulWidget {
   final bool useMapBox;
   final BoxConstraints? constraints;
@@ -90,55 +92,56 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   }
 
   Widget buildMapContents() {
-    return BlocBuilder<ExploreBloc, ExploreState>(builder: (context, state) {
-      List<MapWidget> widgets = List.empty(growable: true);
-      if (state is ExploreSearched && widget.transformDataToWidget != null) {
-        for (ItemModel item in state.itemsFound) {
-          MapWidget? result = widget.transformDataToWidget!(item);
-          if (result != null) widgets.add(result);
+    return BlocBuilder<ExploreBloc, ExploreState>(
+      builder: (context, state) {
+        List<MapWidget> widgets = List.empty(growable: true);
+        if (state is ExploreSearched && widget.transformDataToWidget != null) {
+          for (ItemModel item in state.itemsFound) {
+            MapWidget? result = widget.transformDataToWidget!(item);
+            if (result != null) widgets.add(result);
+          }
+
+          for (Business business in state.businessesFound) {
+            MapWidget? result = widget.transformDataToWidget!(business);
+            if (result != null) widgets.add(result);
+          }
         }
 
-        for (Business business in state.businessesFound) {
-          MapWidget? result = widget.transformDataToWidget!(business);
-          if (result != null) widgets.add(result);
-        }
-      }
-
-      return FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          center: isMapWasInitialized ? _mapController.center : LatLng(fallbackLocation.latitude, fallbackLocation.longitude),
-          zoom: isMapWasInitialized ? _mapController.zoom : 13,
-          controller: _mapController,
-          maxZoom: 20,
-          minZoom: 4,
-          rotationThreshold: 0,
-          interactiveFlags: widget.flags,
-        ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
-            additionalOptions: {'accessToken': widget.mapBoxToken},
-            maxNativeZoom: 18,
+        return FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            center: isMapWasInitialized ? _mapController.center : LatLng(fallbackLocation.latitude, fallbackLocation.longitude),
+            zoom: isMapWasInitialized ? _mapController.zoom : 13,
             maxZoom: 20,
             minZoom: 4,
-            minNativeZoom: 4,
+            rotationThreshold: 0,
+            interactiveFlags: widget.flags,
           ),
-          MarkerLayerOptions(
-            markers: widgets
-                .map(
-                  (e) => Marker(
-                    width: e.size.width,
-                    height: e.size.height,
-                    point: e.location,
-                    builder: (ctx) => e.child,
-                  ),
-                )
-                .toList(),
-          )
-        ],
-      );
-    });
+          layers: [
+            TileLayerOptions(
+              urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}',
+              additionalOptions: {'accessToken': widget.mapBoxToken},
+              maxNativeZoom: 18,
+              maxZoom: 20,
+              minZoom: 4,
+              minNativeZoom: 4,
+            ),
+            MarkerLayerOptions(
+              markers: widgets
+                  .map(
+                    (e) => Marker(
+                      width: e.size.width,
+                      height: e.size.height,
+                      point: e.location,
+                      builder: (ctx) => e.child,
+                    ),
+                  )
+                  .toList(),
+            )
+          ],
+        );
+      },
+    );
   }
 
   @override

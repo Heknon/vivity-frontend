@@ -28,10 +28,8 @@ class SettingsUpdatePasswordEvent extends SettingsEvent {
 
 class SettingsEnableOTPEvent extends SettingsEvent {}
 
-class SettingsDisableOTPEvent extends SettingsEvent {
-  final bool shouldPop;
-
-  SettingsDisableOTPEvent({this.shouldPop = false});
-}
+class SettingsDisableOTPEvent extends SettingsEvent {}
 
 class SettingsUnloadOTPSeedEvent extends SettingsEvent {}
+
+class SettingsResetMessageEvent extends SettingsEvent {}

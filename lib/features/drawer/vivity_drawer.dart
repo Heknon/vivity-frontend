@@ -122,7 +122,12 @@ class _VivityDrawerState extends State<VivityDrawer> {
                   buildMenuButton(
                     text: 'Home',
                     context: context,
-                    onPressed: () => Navigator.pushNamed(context, '/home/explore'),
+                    onPressed: () {
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                      if (Scaffold.of(context).isDrawerOpen) {
+                        Navigator.pop(context);
+                      }
+                    },
                   ),
                   const Divider(thickness: 0),
                   buildMenuButton(text: 'Favorites list', onPressed: () => Navigator.of(context).pushNamed('/favorites'), context: context),

@@ -33,4 +33,8 @@ class AuthConfirmationEvent extends AuthEvent {
   AuthConfirmationEvent(this.isSilentLogin);
 }
 
-class AuthLogoutEvent extends AuthEvent {}
+class AuthLogoutEvent extends AuthEvent {
+  final ExploreBloc exploreBloc;
+
+  AuthLogoutEvent(this.exploreBloc);
+}

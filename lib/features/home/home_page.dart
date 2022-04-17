@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:no_interaction_dialog/load_dialog.dart';
+import 'package:vivity/constants/blocs.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/home/bloc/home_bloc.dart';
 import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
@@ -61,14 +62,7 @@ class _HomePageState extends State<HomePage> {
           body: TabBarView(
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              BlocProvider(
-                create: (ctx) {
-                  ExploreBloc bloc = ExploreBloc();
-                  bloc.add(ExploreLoad());
-                  return bloc;
-                },
-                child: Explore(),
-              ),
+              Explore(),
               Feed(),
             ],
           ),

@@ -93,6 +93,7 @@ class AuthenticationRepository {
       );
     }
 
+    _hasOTP = snapshot.data != null;
     return snapshot.data!;
   }
 
@@ -100,12 +101,14 @@ class AuthenticationRepository {
     AsyncSnapshot<bool> snapshot = await _authService.disableOTP();
 
     if (snapshot.hasError || !snapshot.hasData) {
+      bool isResponse = snapshot.error is Response;
       throw AuthFailedException(
         response: snapshot.error is Response ? snapshot.error as Response : null,
-        message: snapshot.error is Response ? (snapshot.error as Response).data['error'] : null,
+        message: isResponse ? (snapshot.error as Response).data['error'] : null,
       );
     }
 
+    _hasOTP = snapshot.data!;
     return snapshot.data!;
   }
 

@@ -8,6 +8,7 @@ import 'package:vivity/config/routes/routes.dart';
 import 'package:vivity/config/routes/routes_config.dart';
 import 'package:vivity/config/themes/light_theme.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/features/splash_screen.dart';
 import 'package:vivity/features/user/models/user.dart';
@@ -48,6 +49,9 @@ class Vivity extends StatelessWidget {
         BlocProvider<LikedBloc>(
           create: (BuildContext context) => LikedBloc(),
         ),
+        BlocProvider<ExploreBloc>(
+          create: (BuildContext context) => ExploreBloc(),
+        ),
       ],
       child: Sizer(
         builder: (ctx, orientation, type) {
@@ -64,6 +68,7 @@ class Vivity extends StatelessWidget {
                 onComplete: (ctx, snapshot) {
                   CartBloc cartBloc = BlocProvider.of<CartBloc>(ctx);
                   LikedBloc likedBloc = BlocProvider.of<LikedBloc>(ctx);
+                  ExploreBloc exploreBloc = BlocProvider.of<ExploreBloc>(ctx);
 
                   if (snapshot.hasError || !snapshot.hasData) {
                     Navigator.pushReplacementNamed(ctx, '/auth');
@@ -73,6 +78,7 @@ class Vivity extends StatelessWidget {
 
                   cartBloc.add(CartSyncEvent());
                   likedBloc.add(LikedLoadEvent());
+                  exploreBloc.add(ExploreLoad());
 
                   Navigator.pushReplacementNamed(ctx, '/home/explore');
                   loginResult = null;
