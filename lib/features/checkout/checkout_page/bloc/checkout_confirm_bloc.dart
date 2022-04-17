@@ -23,12 +23,7 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
           return emit(CheckoutConfirmUnloaded());
         }
 
-        if (cartState is! CartLoaded || state is! CheckoutConfirmLoaded) return;
-        CheckoutConfirmLoaded s = (state as CheckoutConfirmLoaded).copyWith(items: cartState.items);
-        emit(s.copyWith(
-          cuponDiscount: calculateCupon(s),
-          deliveryCost: calculateDelivery(s),
-        ));
+        if (!isClosed) add(CheckoutConfirmUpdateCartStateEvent(cartState));
       });
 
       CheckoutConfirmLoaded s = CheckoutConfirmLoaded(
@@ -69,6 +64,15 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
 
       emit(s.copyWith(
         cuponDiscount: calculateCupon(s),
+      ));
+    });
+
+    on<CheckoutConfirmUpdateCartStateEvent>((event, emit) {
+      if (event.state is! CartLoaded || state is! CheckoutConfirmLoaded) return;
+      CheckoutConfirmLoaded s = (state as CheckoutConfirmLoaded).copyWith(items: (event.state as CartLoaded).items);
+      emit(s.copyWith(
+        cuponDiscount: calculateCupon(s),
+        deliveryCost: calculateDelivery(s),
       ));
     });
   }

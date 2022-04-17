@@ -9,6 +9,14 @@ class ShippingLoadEvent extends ShippingEvent {
   ShippingLoadEvent(this.confirmationStageBloc);
 }
 
-class ShippingAddAddressEvent extends ShippingEvent {}
+class ShippingReplaceAddressesEvent extends ShippingEvent {
+  final List<Address> addresses;
 
-class ShippingRemoveAddressEvent extends ShippingEvent {}
+  ShippingReplaceAddressesEvent(this.addresses);
+}
+
+class ShippingConfirmStageStateUpdateEvent extends ShippingEvent {
+  final CheckoutConfirmState state;
+
+  ShippingConfirmStageStateUpdateEvent(this.state);
+}

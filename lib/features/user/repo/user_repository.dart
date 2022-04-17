@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
@@ -68,6 +69,17 @@ class UserRepository {
     return _user!;
   }
 
+  Future<User> replaceRepositoryUserAddresses({
+    required List<Address> addresses,
+  }) async {
+    User user = await getUser();
+    _user = user.copyWith(
+      addresses: addresses,
+    );
+
+    return _user!;
+  }
+
   Future<User> updateProfilePicture({
     required File? file,
     bool updateDatabase = true,
@@ -80,7 +92,8 @@ class UserRepository {
       }
 
       _user = await getUser();
-      _user = _user?.copyWith(profilePicture: (snapshot.data?.length ?? 0) < 100 ? null : snapshot.data!);
+      Uint8List? pfp = (snapshot.data?.length ?? 0) < 100 ? null : snapshot.data!;
+      _user = _user?.copyWith(profilePicture: pfp, deleteProfilePicture: pfp == null);
 
       return _user!;
     }

@@ -18,7 +18,7 @@ class MapGui extends StatefulWidget {
   final String mapBoxToken;
   final int flags;
   final MapControllerImpl? controller;
-  final MapWidget Function(dynamic data)? transformDataToWidget;
+  final MapWidget? Function(dynamic data)? transformDataToWidget;
 
   MapGui({
     Key? key,
@@ -26,7 +26,7 @@ class MapGui extends StatefulWidget {
     this.constraints,
     required this.mapBoxToken,
     this.flags =
-    InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
+        InteractiveFlag.doubleTapZoom | InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.pinchMove | InteractiveFlag.flingAnimation,
     this.controller,
     this.transformDataToWidget,
   }) : super(key: key);
@@ -94,15 +94,18 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
       List<MapWidget> widgets = List.empty(growable: true);
       if (state is ExploreSearched && widget.transformDataToWidget != null) {
         for (ItemModel item in state.itemsFound) {
-          widgets.add(widget.transformDataToWidget!(item));
+          MapWidget? result = widget.transformDataToWidget!(item);
+          if (result != null) widgets.add(result);
         }
 
         for (Business business in state.businessesFound) {
-          widgets.add(widget.transformDataToWidget!(business));
+          MapWidget? result = widget.transformDataToWidget!(business);
+          if (result != null) widgets.add(result);
         }
       }
 
       return FlutterMap(
+        mapController: _mapController,
         options: MapOptions(
           center: isMapWasInitialized ? _mapController.center : LatLng(fallbackLocation.latitude, fallbackLocation.longitude),
           zoom: isMapWasInitialized ? _mapController.zoom : 13,
@@ -122,20 +125,16 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
             minNativeZoom: 4,
           ),
           MarkerLayerOptions(
-            markers: state is ExploreSearched && widget.transformDataToWidget != null
-                ? state.itemsFound
-                .map((e) => widget.transformDataToWidget!(e))
+            markers: widgets
                 .map(
-                  (e) =>
-                  Marker(
+                  (e) => Marker(
                     width: e.size.width,
                     height: e.size.height,
                     point: e.location,
                     builder: (ctx) => e.child,
                   ),
-            )
-                .toList()
-                : [],
+                )
+                .toList(),
           )
         ],
       );

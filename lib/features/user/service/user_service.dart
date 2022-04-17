@@ -41,12 +41,11 @@ class UserService extends ServiceProvider {
 
   Future<AsyncSnapshot<User>> getUser({
     bool includeCartItemModels = true,
+    bool includeLikedItems = true,
   }) async {
     try {
       String accessToken = await _authRepository.getAccessToken();
-      AsyncSnapshot<Response> snapshot = await get(token: accessToken, queryParameters: {
-        "include_cart_item_models": includeCartItemModels,
-      });
+      AsyncSnapshot<Response> snapshot = await get(token: accessToken);
 
       if (snapshot.hasError) {
         return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -130,7 +129,7 @@ class UserService extends ServiceProvider {
 
       return AsyncSnapshot.withData(
         ConnectionState.done,
-        base64Decode(response.data['image']),
+          response.data['image'] != null ? base64Decode(response.data['image']) : Uint8List.fromList([]),
       );
     } on Exception catch (e) {
       return AsyncSnapshot.withError(ConnectionState.done, e);

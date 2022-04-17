@@ -15,7 +15,7 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   FavoritesBloc() : super(FavoritesUnloaded()) {
     on<FavoritesLoadEvent>((event, emit) async {
       emit(FavoritesLoading());
-      List<ItemModel> likedItems = (await _userRepository.getUser()).likedItems;
+      List<ItemModel> likedItems = (await _userRepository.getUser(update: true)).likedItems;
       emit(FavoritesLoaded(likedItems));
     });
 

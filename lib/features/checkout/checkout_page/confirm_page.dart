@@ -65,7 +65,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
             CartItemList(
               items: state.items,
               listSize: listSize,
-              itemsToFitInList: 2.4,
+              itemsToFitInList: 2.2,
               emptyCartWidget: Center(
                 child: Text(
                   "Start adding items to your cart!",
@@ -123,7 +123,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
                   return;
                 }
 
-                Navigator.pushReplacementNamed(context, '/checkout/shipping', arguments: state);
+                Navigator.pushNamed(context, '/checkout/shipping', arguments: _bloc);
               },
             ),
             const SizedBox(height: 10),

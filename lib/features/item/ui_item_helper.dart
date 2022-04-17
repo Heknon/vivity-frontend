@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/like_button.dart';
+import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
 
@@ -63,7 +64,6 @@ Widget buildItemCoupling(
     onEditTap: onEditTap != null ? () => onEditTap(modelLeft) : null,
     onTap: onTap != null ? () => onTap(modelLeft) : null,
     onLongTap: onLongTap != null ? () => onLongTap(modelLeft) : null,
-    initialLiked: likedItemIds.contains(modelLeft.id.hexString),
   );
 
   ClassicItem? rightItem = modelRight != null
@@ -73,7 +73,6 @@ Widget buildItemCoupling(
           onEditTap: onEditTap != null ? () => onEditTap(modelRight) : null,
           onTap: onTap != null ? () => onTap(modelRight) : null,
           onLongTap: onLongTap != null ? () => onLongTap(modelRight) : null,
-          initialLiked: likedItemIds.contains(modelRight.id.hexString),
         )
       : null;
   return Row(
@@ -135,7 +134,8 @@ Widget buildDatabaseLikeButton(
   ItemModel item,
   LikeButtonController controller,
   BuildContext context,
-  bool initialLiked, {
+  String itemId,
+  LikedBloc bloc, {
   Color? color,
   Color? backgroundColor,
   Color? splashColor,
@@ -143,26 +143,31 @@ Widget buildDatabaseLikeButton(
   BorderRadius? borderRadius,
   EdgeInsets? padding,
 }) {
-  UserRepository userRepository = UserRepository();
+  return BlocConsumer<LikedBloc, LikedState>(
+    listener: (context, state) {
+      if (state is! LikedLoaded) return;
 
-  return LikeButton(
-    color: color ?? Theme.of(context).primaryColor,
-    controller: controller,
-    // TODO: Connect to user liked items using onClick
-    initialLiked: initialLiked,
-    backgroundColor: backgroundColor,
-    splashColor: splashColor,
-    radius: radius,
-    borderRadius: borderRadius,
-    padding: padding,
-    onClick: (liked) {
-      if (liked) {
-        userRepository.addLikedItem(likedItemId: item.id.hexString);
-      } else {
-        userRepository.removeLikedItem(likedItemId: item.id.hexString);
-      }
-      controller.setLiked(!liked);
+      controller.setLiked(state.likedItems.contains(itemId));
     },
+    builder: (ctx, state) => state is! LikedLoaded
+        ? CircularProgressIndicator()
+        : LikeButton(
+            color: color ?? Theme.of(context).primaryColor,
+            controller: controller,
+            initialLiked: state.likedItems.contains(itemId),
+            backgroundColor: backgroundColor,
+            splashColor: splashColor,
+            radius: radius,
+            borderRadius: borderRadius,
+            padding: padding,
+            onClick: (liked) {
+              if (liked) {
+                bloc.add(LikedAddItemEvent(itemId));
+              } else {
+                bloc.add(LikedRemoveItemEvent(itemId));
+              }
+            },
+          ),
   );
 }
 

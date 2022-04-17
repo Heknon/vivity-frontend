@@ -7,7 +7,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/app_constants.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:latlng/latlng.dart';
+import 'package:latlong2/latlong.dart' as latlng2;
 import 'package:vivity/features/cart/shopping_cart.dart';
 import 'package:vivity/features/home/bloc/home_bloc.dart';
 import 'package:vivity/features/item/map_preview_icon.dart';
@@ -69,6 +70,7 @@ class _ExploreState extends State<Explore> {
                   mapBoxToken: mapBoxToken,
                   controller: _bloc.mapController,
                   transformDataToWidget: (data) {
+                    if (data is! ItemModel) return null;
                     Size textSize = MapPreviewIcon.getTextSize(data.price, context);
                     double added1 = getRandomSign(random) * doubleInRange(random, 0.00001, 0.00015);
                     double added2 = getRandomSign(random) * doubleInRange(random, 0.00001, 0.00015);
@@ -93,12 +95,10 @@ class _ExploreState extends State<Explore> {
                     bottom: 100,
                     left: (100 - 80).w / 2,
                     child: ConstrainedBox(
-                      child: GestureDetector(
-                        onTap: () => Navigator.pushReplacementNamed(context, '/item', arguments: ItemPageNavigation(item: _selectedData!)),
-                        child: PreviewItem(
-                          item: _selectedData!,
-                          initialLiked: likedItemIds.contains(_selectedData?.id.hexString),
-                        ),
+                      child: PreviewItem(
+                        item: _selectedData!,
+                        onTap: () => Navigator.pushNamed(context, '/item', arguments: ItemPageNavigation(item: _selectedData!)),
+                        initialLiked: likedItemIds.contains(_selectedData?.id.hexString),
                       ),
                       constraints: BoxConstraints(maxWidth: 80.w, minHeight: 80, maxHeight: 100),
                     ),
@@ -132,9 +132,7 @@ class _ExploreState extends State<Explore> {
                 ),
                 Positioned(
                   child: ConstrainedBox(
-                    child: SlideableItemTab(
-                      likedItemIds: likedItemIds,
-                    ),
+                    child: SlideableItemTab(),
                     constraints: constraints,
                   ),
                 ),
@@ -152,7 +150,7 @@ class _ExploreState extends State<Explore> {
     Size size = const Size(50, 25),
   }) {
     return MapWidget(
-      location: location,
+      location: latlng2.LatLng(location.latitude, location.longitude),
       size: size,
       child: child,
     );

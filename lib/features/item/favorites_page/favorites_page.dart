@@ -30,7 +30,7 @@ class FavoritesPage extends StatelessWidget {
                 return CircularProgressIndicator();
               }
 
-              Size gridSize = Size(100.w, 30.h);
+              Size gridSize = Size(100.w, 70.h);
               return state.favoritedItems.isNotEmpty
                   ? SizedBox.fromSize(
                       size: gridSize,

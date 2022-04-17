@@ -5,7 +5,7 @@ abstract class PaymentEvent {}
 
 class PaymentLoadEvent extends PaymentEvent {
   final ShippingBloc shippingBloc;
-  final Address address;
+  final Address? address;
 
   PaymentLoadEvent(this.shippingBloc, this.address);
 }
@@ -26,4 +26,10 @@ class PaymentPayEvent extends PaymentEvent {
     required this.year,
     required this.total,
   });
+}
+
+class PaymentShippingStateUpdate extends PaymentEvent {
+  final ShippingState state;
+
+  PaymentShippingStateUpdate(this.state);
 }

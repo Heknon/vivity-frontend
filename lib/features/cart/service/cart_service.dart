@@ -49,9 +49,10 @@ class CartService extends ServiceProvider {
     required bool fetchImages,
   }) async {
     String accessToken = await _authRepository.getAccessToken();
+    List<Map<String, dynamic>> body = cartItems.map((e) => e.toMap()).toList();
     AsyncSnapshot<Response> snapshot = await post(
       token: accessToken,
-      data: cartItems.map((e) => e.toMap()),
+      data: body,
     );
     snapshot = faultyResponseShouldReturn(snapshot);
     if (snapshot.hasError) {

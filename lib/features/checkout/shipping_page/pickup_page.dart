@@ -32,7 +32,7 @@ class _PickupPageState extends State<PickupPage> {
       body: BlocBuilder<ShippingBloc, ShippingState>(
         builder: (context, state) {
           if (state is! ShippingPickupLoaded) {
-            return CircularProgressIndicator();
+            return Center(child: CircularProgressIndicator());
           }
 
           Map<Address, List<CartItemModel>> swappedData = {};
@@ -82,7 +82,7 @@ class _PickupPageState extends State<PickupPage> {
                 buildPaymentButton(
                   context,
                   onPressed: () {
-                    Navigator.pushNamed(context, '/checkout/payment', arguments: state);
+                    Navigator.pushNamed(context, '/checkout/payment', arguments: [context.read<ShippingBloc>(), null]);
                   },
                 ),
                 SizedBox(height: 20),

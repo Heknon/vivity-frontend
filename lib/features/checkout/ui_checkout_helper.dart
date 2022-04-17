@@ -12,6 +12,7 @@ Widget buildShippingAddressList(
   bool canHighlight = true,
   void Function(int)? onTap,
   void Function(int)? onDeleteTap,
+  bool canDelete = false,
   Color highlightedColor = Colors.white,
   Color unselectedColor = Colors.white70,
   Widget Function(BuildContext, Address)? expandedBuilder,
@@ -22,7 +23,18 @@ Widget buildShippingAddressList(
           expansionCallback: onExpandTap,
           children: List.generate(addresses.length, (index) {
             Address curr = addresses[index];
-            address_widget.Address widget = buildAddress(curr, context, canHighlight: canHighlight, index: index, onDeleteTap: onDeleteTap);
+            address_widget.Address widget = buildAddress(
+              curr,
+              context,
+              canHighlight: canHighlight,
+              index: index,
+              onDeleteTap: onDeleteTap,
+              onTap: onTap,
+              highlightIndex: highlightIndex,
+              highlightedColor: highlightedColor,
+              unselectedColor: unselectedColor,
+              canDelete: canDelete,
+            );
 
             return ExpansionPanel(
               headerBuilder: (ctx, isOpen) => widget,
@@ -36,7 +48,18 @@ Widget buildShippingAddressList(
           itemCount: addresses.length,
           itemBuilder: (ctx, i) {
             Address curr = addresses[i];
-            address_widget.Address widget = buildAddress(curr, context, canHighlight: canHighlight, index: i, onDeleteTap: onDeleteTap);
+            address_widget.Address widget = buildAddress(
+              curr,
+              context,
+              canHighlight: canHighlight,
+              index: i,
+              onDeleteTap: onDeleteTap,
+              onTap: onTap,
+              highlightIndex: highlightIndex,
+              highlightedColor: highlightedColor,
+              unselectedColor: unselectedColor,
+              canDelete: canDelete,
+            );
 
             return widget;
           },
@@ -71,6 +94,7 @@ address_widget.Address buildAddress(
             : highlightedColor,
     onTap: onTap != null ? () => onTap(index) : null,
     onDeleteTap: () => onDeleteTap != null ? onDeleteTap(index) : null,
+    canDelete: canDelete,
   );
 }
 

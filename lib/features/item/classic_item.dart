@@ -3,11 +3,15 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/item/like_button.dart';
+import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
+import 'package:vivity/features/user/models/user.dart';
+import 'package:vivity/features/user/repo/user_repository.dart';
 import 'package:vivity/widgets/simple_card.dart';
 import '../../config/themes/themes_config.dart';
 import 'package:vivity/widgets/rating.dart';
@@ -16,7 +20,6 @@ import 'models/item_model.dart';
 
 class ClassicItem extends StatefulWidget {
   final ItemModel item;
-  final bool initialLiked;
   final Size? size;
   final bool editButton;
   final VoidCallback? onEditTap;
@@ -26,7 +29,6 @@ class ClassicItem extends StatefulWidget {
   const ClassicItem({
     Key? key,
     required this.item,
-    required this.initialLiked,
     this.size,
     this.editButton = false,
     this.onEditTap,
@@ -39,6 +41,7 @@ class ClassicItem extends StatefulWidget {
 }
 
 class _ClassicItemState extends State<ClassicItem> {
+  final UserRepository _userRepository = UserRepository();
   late LikeButtonController _likeButtonController;
 
   @override
@@ -49,10 +52,6 @@ class _ClassicItemState extends State<ClassicItem> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.editButton) {
-      _likeButtonController.setLiked(widget.initialLiked);
-    }
-
     return LayoutBuilder(builder: (ctx, constraints) {
       Size size = widget.size ?? Size(constraints.maxWidth, constraints.maxHeight);
       return SimpleCard(
@@ -114,16 +113,18 @@ class _ClassicItemState extends State<ClassicItem> {
                     Spacer(),
                     !widget.editButton
                         ? buildDatabaseLikeButton(
-                            widget.item,
-                            _likeButtonController,
-                            context,
-                            widget.initialLiked,
-                            color: primaryComplementaryColor,
-                            backgroundColor: Colors.transparent,
-                            splashColor: Colors.grey[600]!.withOpacity(0.6),
-                            borderRadius: const BorderRadius.all(Radius.circular(15)),
-                            padding: const EdgeInsets.all(4),
-                          )
+                                widget.item,
+                                _likeButtonController,
+                                context,
+                                widget.item.id.hexString,
+                                context.read<LikedBloc>(),
+                                color: primaryComplementaryColor,
+                                backgroundColor: Colors.transparent,
+                                splashColor: Colors.grey[600]!.withOpacity(0.6),
+                                borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                padding: const EdgeInsets.all(4),
+                              )
+
                         : IconButton(
                             padding: EdgeInsets.zero,
                             constraints: BoxConstraints(),

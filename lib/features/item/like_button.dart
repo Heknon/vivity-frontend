@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -35,6 +37,8 @@ class _LikeButtonState extends State<LikeButton> {
   late Widget _likedSvg;
   late Widget _notLikedSvg;
 
+  bool built = false;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +62,11 @@ class _LikeButtonState extends State<LikeButton> {
 
   @override
   Widget build(BuildContext context) {
+    if (!built) {
+      _controller._registeredCompleter.complete();
+      built = true;
+    }
+
     return Material(
       color: widget.backgroundColor ?? Theme.of(context).primaryColor,
       child: InkWell(
@@ -82,9 +91,14 @@ class _LikeButtonState extends State<LikeButton> {
 }
 
 class LikeButtonController extends ChangeNotifier {
-  bool liked;
+  Completer _registeredCompleter = Completer();
 
-  LikeButtonController({this.liked = false});
+  bool liked;
+  late Future<void> registered;
+
+  LikeButtonController({this.liked = false}) {
+    registered = _registeredCompleter.future;
+  }
 
   void setLiked(bool liked) {
     this.liked = liked;

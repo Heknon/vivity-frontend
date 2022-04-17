@@ -8,6 +8,7 @@ import 'package:vivity/config/routes/routes.dart';
 import 'package:vivity/config/routes/routes_config.dart';
 import 'package:vivity/config/themes/light_theme.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/features/splash_screen.dart';
 import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
@@ -15,6 +16,8 @@ import 'package:vivity/features/user/repo/user_repository.dart';
 import 'constants/asset_path.dart';
 
 Future<User>? loginResult;
+
+// TODO: Fix forgot password not returning error message (maybe not checking old password)
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +45,9 @@ class Vivity extends StatelessWidget {
         BlocProvider<CartBloc>(
           create: (BuildContext context) => CartBloc(),
         ),
+        BlocProvider<LikedBloc>(
+          create: (BuildContext context) => LikedBloc(),
+        ),
       ],
       child: Sizer(
         builder: (ctx, orientation, type) {
@@ -57,6 +63,7 @@ class Vivity extends StatelessWidget {
                 future: loginResult!,
                 onComplete: (ctx, snapshot) {
                   CartBloc cartBloc = BlocProvider.of<CartBloc>(ctx);
+                  LikedBloc likedBloc = BlocProvider.of<LikedBloc>(ctx);
 
                   if (snapshot.hasError || !snapshot.hasData) {
                     Navigator.pushReplacementNamed(ctx, '/auth');
@@ -65,6 +72,8 @@ class Vivity extends StatelessWidget {
                   }
 
                   cartBloc.add(CartSyncEvent());
+                  likedBloc.add(LikedLoadEvent());
+
                   Navigator.pushReplacementNamed(ctx, '/home/explore');
                   loginResult = null;
                 },

@@ -54,8 +54,8 @@ class CartItemModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'item_id': this.item,
-      'modifiers_chosen': this.modifiersChosen.map((e) => e.toMap()),
+      'item_id': this.item.id.hexString,
+      'modifiers_chosen': this.modifiersChosen.map((e) => e.toMap()).toList(),
       'quantity': this.quantity,
     };
   }
@@ -68,7 +68,7 @@ class CartItemModel {
 
     return CartItemModel(
       item: item,
-      modifiersChosen: (map['modifiers_chosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)),
+      modifiersChosen: (map['modifiers_chosen'] as List<dynamic>).map((e) => ModificationButtonDataHost.fromMap(e)).toList(),
       quantity: (map['quantity'] as num).toInt(),
     );
   }

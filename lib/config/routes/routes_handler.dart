@@ -10,11 +10,18 @@ import 'package:vivity/features/business/business_page.dart';
 import 'package:vivity/features/business/create_business/bloc/create_business_bloc.dart';
 import 'package:vivity/features/business/create_business/create_business.dart';
 import 'package:vivity/features/business/unapproved_business_page.dart';
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/checkout/checkout_page/bloc/checkout_confirm_bloc.dart';
+import 'package:vivity/features/checkout/checkout_page/confirm_page.dart';
+import 'package:vivity/features/checkout/payment_page/bloc/payment_bloc.dart';
+import 'package:vivity/features/checkout/payment_page/payment_page.dart';
+import 'package:vivity/features/checkout/shipping_page/bloc/shipping_bloc.dart';
+import 'package:vivity/features/checkout/shipping_page/pickup_page.dart';
+import 'package:vivity/features/checkout/shipping_page/shipping_page.dart';
 import 'package:vivity/features/home/bloc/home_bloc.dart';
 import 'package:vivity/features/home/home_page.dart';
 import 'package:vivity/features/item/favorites_page/bloc/favorites_bloc.dart';
 import 'package:vivity/features/item/favorites_page/favorites_page.dart';
-import 'package:vivity/features/item/item_page/bloc/item_page_bloc.dart';
 import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/settings/bloc/settings_bloc.dart';
@@ -23,6 +30,7 @@ import 'package:vivity/features/splash_screen.dart';
 import 'package:vivity/features/user/profile_bloc/profile_bloc.dart';
 import 'package:vivity/features/user/profile_page.dart';
 import 'package:vivity/models/navigation_models.dart';
+import 'package:vivity/models/shipping_method.dart';
 
 import '../../features/admin/admin_page.dart';
 import '../../features/error_page.dart';
@@ -76,10 +84,7 @@ Handler itemRouteHandler = Handler(
     }
 
     ItemPageNavigation nav = context?.settings?.arguments as ItemPageNavigation;
-    return BlocProvider(
-      create: (context) => ItemPageBloc()..add(ItemPageLoadEvent(item: nav.item)),
-      child: ItemPage(item: nav.item, registerView: nav.isView),
-    );
+    return ItemPage(item: nav.item, registerView: nav.isView);
   },
 );
 
@@ -138,6 +143,39 @@ Handler logoutRoute = Handler(
     return BlocProvider(
       create: (context) => AuthBloc()..add(AuthLogoutEvent()),
       child: AuthPage(),
+    );
+  },
+);
+
+Handler checkoutConfirmRoute = Handler(
+  handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
+    return BlocProvider(
+      create: (context) => CheckoutConfirmBloc()..add(CheckoutConfirmLoadEvent(context.read<CartBloc>())),
+      child: ConfirmPage(),
+    );
+  },
+);
+
+Handler checkoutShippingRoute = Handler(
+  handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
+    CheckoutConfirmBloc bloc = context?.settings?.arguments! as CheckoutConfirmBloc;
+    CheckoutConfirmLoaded loadedConfirm = bloc.state as CheckoutConfirmLoaded;
+
+    return BlocProvider(
+      create: (context) => ShippingBloc()..add(ShippingLoadEvent(bloc)),
+      child: loadedConfirm.shippingMethod == ShippingMethod.pickup ? PickupPage() : ShippingPage(),
+    );
+  },
+);
+
+Handler checkoutPaymentRoute = Handler(
+  handlerFunc: (BuildContext? context, Map<String, dynamic> params) {
+    List<dynamic> arguments = context?.settings?.arguments! as List<dynamic>;
+    ShippingBloc bloc = arguments[0] as ShippingBloc;
+
+    return BlocProvider(
+      create: (context) => PaymentBloc()..add(PaymentLoadEvent(bloc, arguments[1] ?? null)),
+      child: PaymentPage(),
     );
   },
 );

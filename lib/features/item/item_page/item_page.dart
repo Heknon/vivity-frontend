@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:advanced_panel/panel.dart';
@@ -13,10 +14,13 @@ import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/cart/models/modification_button_data_host.dart';
 import 'package:vivity/features/cart/repo/cart_repository.dart';
 import 'package:vivity/features/item/item_edit_panel.dart';
-import 'package:vivity/features/item/item_page/bloc/item_page_bloc.dart';
+import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/features/item/models/modification_button.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
+import 'package:vivity/features/user/models/business_user.dart';
+import 'package:vivity/features/user/models/user.dart';
+import 'package:vivity/features/user/repo/user_repository.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 import '../../base_page.dart';
 import '../../cart/shopping_cart.dart';
@@ -50,8 +54,8 @@ class ItemPage extends StatefulWidget {
 
 class _ItemPageState extends State<ItemPage> {
   late final ItemRepository _itemRepository = ItemRepository();
-  late final ItemPageBloc _bloc;
-  late final CartBloc _cartBloc;
+  late final UserRepository _userRepository = UserRepository();
+  late CartBloc _cartBloc;
 
   late List<ItemModifierSelectorController> _selectorControllers;
   late QuantityController _quantityController;
@@ -66,6 +70,10 @@ class _ItemPageState extends State<ItemPage> {
   bool openedEditorPreviously = false;
   bool _loadDialogOpen = false;
 
+  late Future<ItemModel> displayedItemFuture;
+  late ItemModel displayedItem;
+  late bool ownsItem;
+
   @override
   void initState() {
     super.initState();
@@ -73,26 +81,39 @@ class _ItemPageState extends State<ItemPage> {
     _likeController = LikeButtonController();
     _panelController = PanelController();
 
-    _selectorControllers = List.generate(
-      widget.item.itemStoreFormat.modificationButtons.length,
-      (index) => ItemModifierSelectorController(),
-    );
+    Completer<ItemModel> displayedItemCompleter = Completer();
+    displayedItemFuture = displayedItemCompleter.future;
+    _itemRepository.getItemFromId(itemId: widget.item.id.hexString, update: true, fetchImagesOnUpdate: true).then((value) async {
+      User user = await _userRepository.getUser();
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        setState(() {
+          displayedItemCompleter.complete(value ?? displayedItem);
+          displayedItem = value ?? widget.item;
+          ownsItem = user is BusinessUser && user.businessId == displayedItem.businessId;
 
-    for (var controller in _selectorControllers) {
-      controller.addListener(() {
-        setState(() {});
-        if (controller.lastToggle != null && controller.isShown) {
-          for (var element in _selectorControllers) {
-            if (identical(controller, element)) continue;
-            if (!element.isShown || element.lastToggle == null) continue;
+          _selectorControllers = List.generate(
+            displayedItem.itemStoreFormat.modificationButtons.length,
+                (index) => ItemModifierSelectorController(),
+          );
 
-            if (controller.lastToggle!.isAfter(element.lastToggle!)) {
-              element.toggle();
-            }
+          for (var controller in _selectorControllers) {
+            controller.addListener(() {
+              setState(() {});
+              if (controller.lastToggle != null && controller.isShown) {
+                for (var element in _selectorControllers) {
+                  if (identical(controller, element)) continue;
+                  if (!element.isShown || element.lastToggle == null) continue;
+
+                  if (controller.lastToggle!.isAfter(element.lastToggle!)) {
+                    element.toggle();
+                  }
+                }
+              }
+            });
           }
-        }
+        });
       });
-    }
+    });
 
     if (widget.registerView) _itemRepository.addView(id: widget.item.id.hexString);
     _quantityController = QuantityController();
@@ -103,7 +124,7 @@ class _ItemPageState extends State<ItemPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _bloc = context.read<ItemPageBloc>();
+    _cartBloc = context.read<CartBloc>();
   }
 
   @override
@@ -119,10 +140,10 @@ class _ItemPageState extends State<ItemPage> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) => defaultGradientBackground(
-          child: BlocBuilder<ItemPageBloc, ItemPageState>(
-            builder: (context, state) {
-              ItemPageState pageState = state;
-              if (pageState is! ItemPageLoaded)
+          child: FutureBuilder<ItemModel>(
+            future: displayedItemFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasError || !snapshot.hasData)
                 return Center(
                   child: CircularProgressIndicator(),
                 );
@@ -139,15 +160,15 @@ class _ItemPageState extends State<ItemPage> {
                             alignment: Alignment.topCenter,
                             children: [
                               Carousel(
-                                images: widget.item.images,
+                                images: displayedItem.images,
                                 bottomRightRadius: 30,
                                 bottomLeftRadius: 30,
-                                showAddImage: pageState.ownsItem,
-                                initialPage: widget.item.previewImageIndex,
+                                showAddImage: ownsItem,
+                                initialPage: displayedItem.previewImageIndex,
                                 imageSize: Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.5),
-                                onImageTap: pageState.ownsItem
+                                onImageTap: ownsItem
                                     ? (index) async {
-                                        await handleImageTap(index, widget.item.images.length);
+                                        await handleImageTap(index, displayedItem.images.length);
                                       }
                                     : null,
                               ),
@@ -176,24 +197,25 @@ class _ItemPageState extends State<ItemPage> {
                       constraints: BoxConstraints(
                         minWidth: 50,
                         maxWidth: MediaQuery.of(context).size.width,
-                        minHeight: pageState.ownsItem ? 90 : 55,
-                        maxHeight: pageState.ownsItem ? 90 : 55,
+                        minHeight: ownsItem ? 90 : 55,
+                        maxHeight: ownsItem ? 90 : 55,
                       ),
                       child: FilterSideBar(
                         controller: _widgetSwapController,
                         customBody: [
                           buildDatabaseLikeButton(
-                            widget.item,
+                            displayedItem,
                             _likeController,
                             context,
-                            pageState.isLiked,
+                            displayedItem.id.hexString,
+                            context.read<LikedBloc>(),
                             color: primaryComplementaryColor,
                             backgroundColor: Theme.of(context).primaryColor,
                             splashColor: Colors.white.withOpacity(0.6),
                             borderRadius: const BorderRadius.all(Radius.circular(15)),
                             padding: const EdgeInsets.all(4),
                           ),
-                          if (pageState.ownsItem)
+                          if (ownsItem)
                             Material(
                               color: Theme.of(context).primaryColor,
                               child: IconButton(
@@ -213,11 +235,11 @@ class _ItemPageState extends State<ItemPage> {
                       ),
                     ),
                   ),
-                  if (pageState.ownsItem)
+                  if (ownsItem)
                     Positioned(
                       bottom: -100.w * 0.2,
                       child: ConstrainedBox(
-                        child: ItemEditPanel(item: widget.item, panelController: _panelController),
+                        child: ItemEditPanel(item: displayedItem, panelController: _panelController),
                         constraints: BoxConstraints(minWidth: 100.w, maxHeight: 100.h, maxWidth: 100.w, minHeight: 100.h),
                       ),
                     ),
@@ -279,7 +301,7 @@ class _ItemPageState extends State<ItemPage> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '\$${widget.item.price.toStringAsFixed(2)}',
+                      '\$${displayedItem.price.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 16.sp, color: Colors.white),
                     ),
                   ),
@@ -290,7 +312,7 @@ class _ItemPageState extends State<ItemPage> {
                         initialCount: 1,
                         color: Colors.white,
                         controller: _quantityController,
-                        max: widget.item.stock,
+                        max: displayedItem.stock,
                       ),
                     ),
                   ),
@@ -339,7 +361,7 @@ class _ItemPageState extends State<ItemPage> {
           _cartBloc.add(CartAddItemEvent(CartItemModel(
             quantity: _quantityController.quantity,
             modifiersChosen: generateChosenData(),
-            item: widget.item,
+            item: displayedItem,
           )));
           await _cartBloc.stream.first;
 
@@ -371,7 +393,7 @@ class _ItemPageState extends State<ItemPage> {
           color: Colors.white,
         ),
         Text(
-          '(${widget.item.reviews.length} reviews)',
+          '(${displayedItem.reviews.length} reviews)',
           style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 8.sp),
         )
       ],
@@ -383,7 +405,7 @@ class _ItemPageState extends State<ItemPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          widget.item.itemStoreFormat.title,
+          displayedItem.itemStoreFormat.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.headline4?.copyWith(color: Colors.white, fontSize: 16.sp),
@@ -392,7 +414,7 @@ class _ItemPageState extends State<ItemPage> {
           height: 4,
         ),
         Text(
-          "${widget.item.businessName}'s shop",
+          "${displayedItem.businessName}'s shop",
           style: Theme.of(context).textTheme.subtitle1?.copyWith(fontSize: 10.sp),
         ),
       ],
@@ -403,9 +425,9 @@ class _ItemPageState extends State<ItemPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(
-        widget.item.itemStoreFormat.modificationButtons.length,
+        displayedItem.itemStoreFormat.modificationButtons.length,
         (index) {
-          ModificationButton button = widget.item.itemStoreFormat.modificationButtons[index];
+          ModificationButton button = displayedItem.itemStoreFormat.modificationButtons[index];
           return ItemModifier(
             modificationButton: button,
             selectorController: _selectorControllers[index],
@@ -451,7 +473,7 @@ class _ItemPageState extends State<ItemPage> {
 
   List<ModificationButtonDataHost> generateChosenData() {
     List<ModificationButtonDataHost> dataHosts = List.empty(growable: true);
-    ItemModel item = widget.item;
+    ItemModel item = displayedItem;
 
     for (int i = 0; i < _selectorControllers.length; i++) {
       ItemModifierSelectorController controller = _selectorControllers[i];
@@ -470,11 +492,11 @@ class _ItemPageState extends State<ItemPage> {
   double calculateRating() {
     double sumRatings = 0;
 
-    widget.item.reviews.forEach((element) {
+    displayedItem.reviews.forEach((element) {
       sumRatings += element.rating;
     });
 
-    return sumRatings / (widget.item.reviews.isEmpty ? 1 : widget.item.reviews.length);
+    return sumRatings / (displayedItem.reviews.isEmpty ? 1 : displayedItem.reviews.length);
   }
 
   Future<File?> filePickRoutine() async {
@@ -495,7 +517,18 @@ class _ItemPageState extends State<ItemPage> {
 
       showDialog(context: context, builder: (ctx) => _loadDialog);
       _loadDialogOpen = true;
-      _bloc.add(ItemPageSwapImagesEvent(index: index, image: file));
+      ItemModel item = await _itemRepository.updateItemImage(
+        image: file,
+        index: index,
+        id: displayedItem.id.hexString,
+      );
+
+      displayedItemFuture = Future.value(item);
+      displayedItem = item;
+      if (_loadDialogOpen) {
+        Navigator.pop(context);
+        _loadDialogOpen = false;
+      }
       return;
     }
     showDialog(
@@ -511,7 +544,17 @@ class _ItemPageState extends State<ItemPage> {
               Navigator.pop(context);
               showDialog(context: context, builder: (ctx) => _loadDialog);
               _loadDialogOpen = true;
-              _bloc.add(ItemPageDeleteImageEvent(index: index));
+              ItemModel item = await _itemRepository.deleteItemImage(
+                index: index,
+                id: displayedItem.id.hexString,
+              );
+
+              displayedItemFuture = Future.value(item);
+              displayedItem = item;
+              if (_loadDialogOpen) {
+                Navigator.pop(context);
+                _loadDialogOpen = false;
+              }
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,
@@ -528,7 +571,18 @@ class _ItemPageState extends State<ItemPage> {
               Navigator.of(context).pop();
               showDialog(context: context, builder: (ctx) => _loadDialog);
               _loadDialogOpen = true;
-              _bloc.add(ItemPageSwapImagesEvent(index: index, image: file));
+              ItemModel item = await _itemRepository.updateItemImage(
+                image: file,
+                index: index,
+                id: displayedItem.id.hexString,
+              );
+
+              displayedItemFuture = Future.value(item);
+              displayedItem = item;
+              if (_loadDialogOpen) {
+                Navigator.pop(context);
+                _loadDialogOpen = false;
+              }
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,

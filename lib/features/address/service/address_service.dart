@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/services/service_provider.dart';
@@ -9,7 +10,7 @@ class AddressService extends ServiceProvider {
 
   final AuthenticationRepository _authRepository = AuthenticationRepository();
 
-  AddressService._() : super(baseRoute: '/address');
+  AddressService._() : super(baseRoute: addressRoute);
 
   factory AddressService() => _addressService;
 

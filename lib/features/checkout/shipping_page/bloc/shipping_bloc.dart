@@ -8,10 +8,9 @@ import 'package:place_picker/place_picker.dart';
 import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/checkout/checkout_page/bloc/checkout_confirm_bloc.dart';
-import 'package:vivity/features/item/cart_item.dart';
 import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
-import 'package:latlng/latlng.dart' as latlng;
+import 'package:vivity/helpers/list_utils.dart';
 import 'package:vivity/models/shipping_method.dart';
 
 part 'shipping_event.dart';
@@ -33,10 +32,7 @@ class ShippingBloc extends Bloc<ShippingEvent, ShippingState> {
           return emit(ShippingUnloaded());
         }
 
-        if (confirmationState is! CheckoutConfirmLoaded || state is! ShippingLoaded) return;
-
-        ShippingLoaded s = (state as ShippingLoaded).copyWith(confirmationStageState: confirmationState);
-        emit(s);
+        if (!isClosed) add(ShippingConfirmStageStateUpdateEvent(confirmationState));
       });
 
       if (confirmationStageState.shippingMethod == ShippingMethod.delivery) {
@@ -46,6 +42,20 @@ class ShippingBloc extends Bloc<ShippingEvent, ShippingState> {
         Map<CartItemModel, Address> addresses = await getAddresses(confirmationStageState.items, await getPlaces(confirmationStageState.items));
         emit(ShippingPickupLoaded(confirmationStageState: confirmationStageState, addresses: addresses));
       }
+    });
+
+    on<ShippingReplaceAddressesEvent>((event, emit) {
+      ShippingState s = state;
+      if (s is! ShippingDeliveryLoaded) return;
+
+      emit(ShippingDeliveryLoaded(confirmationStageState: s.confirmationStageState, addresses: event.addresses.map((e) => e).toList()));
+    });
+
+    on<ShippingConfirmStageStateUpdateEvent>((event, emit) {
+      if (event.state is! CheckoutConfirmLoaded || state is! ShippingLoaded) return;
+
+      ShippingLoaded s = (state as ShippingLoaded).copyWith(confirmationStageState: event.state as CheckoutConfirmLoaded);
+      emit(s);
     });
   }
 
@@ -67,7 +77,7 @@ class ShippingBloc extends Bloc<ShippingEvent, ShippingState> {
 
     for (var locItemsEntry in locToItem.entries) {
       for (var cartItem in locItemsEntry.value) {
-        Placemark mark = places[cartItem.item.location]!;
+        Placemark mark = places[LatLng(cartItem.item.location.latitude, cartItem.item.location.longitude)]!;
         result[cartItem] = Address(
           name: int.tryParse(mark.name ?? "f") != null ? null : mark.name,
           street: mark.street ?? "",

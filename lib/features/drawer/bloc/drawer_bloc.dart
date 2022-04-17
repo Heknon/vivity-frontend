@@ -33,15 +33,22 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
 
       emit((state as DrawerLoaded).copyWith(profilePicture: event.file.readAsBytesSync()));
       User user = await _userRepository.updateProfilePicture(file: event.file);
-      emit((state as DrawerLoaded).copyWith(ownsBusiness: user is BusinessUser, isAdmin: user.isAdmin, profilePicture: user.profilePicture, name: user.name));
+      emit((state as DrawerLoaded)
+          .copyWith(ownsBusiness: user is BusinessUser, isAdmin: user.isAdmin, profilePicture: user.profilePicture, name: user.name));
     });
 
     on<DrawerDeleteProfilePictureEvent>((event, emit) async {
       if (state is! DrawerLoaded) return;
 
-      emit((state as DrawerLoaded).copyWith(profilePicture: null));
+      emit((state as DrawerLoaded).copyWith(profilePicture: null, deleteProfilePicture: true));
       User user = await _userRepository.updateProfilePicture(file: null);
-      emit((state as DrawerLoaded).copyWith(ownsBusiness: user is BusinessUser, isAdmin: user.isAdmin, profilePicture: user.profilePicture, name: user.name));
+      emit((state as DrawerLoaded).copyWith(
+        ownsBusiness: user is BusinessUser,
+        isAdmin: user.isAdmin,
+        profilePicture: user.profilePicture,
+        name: user.name,
+        deleteProfilePicture: true,
+      ));
     });
   }
 }

@@ -47,11 +47,12 @@ class DrawerLoaded extends DrawerState {
     bool? isAdmin,
     Uint8List? profilePicture,
     String? name,
+    bool deleteProfilePicture = false,
   }) {
     return DrawerLoaded(
       ownsBusiness: ownsBusiness ?? this.ownsBusiness,
       isAdmin: isAdmin ?? this.isAdmin,
-      profilePicture: profilePicture ?? this.profilePicture,
+      profilePicture: deleteProfilePicture ? profilePicture : profilePicture ?? this.profilePicture,
       name: name ?? this.name,
     );
   }

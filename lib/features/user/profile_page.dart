@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/checkout/ui_checkout_helper.dart';
 import 'package:vivity/features/user/profile_bloc/profile_bloc.dart';
-import 'package:vivity/features/user/service/user_service.dart';
 import '../business/models/order.dart';
 import '../item/models/item_model.dart';
 import '../order/order.dart' as order_widget;
@@ -19,6 +19,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late final ProfileBloc _bloc;
+  bool _loadDialogOpen = false;
+  LoadDialog _loadDialog = LoadDialog();
 
   @override
   void initState() {
@@ -47,7 +49,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
                 ),
               ),
-              BlocBuilder<ProfileBloc, ProfileState>(
+              BlocConsumer<ProfileBloc, ProfileState>(
+                listener: (ctx, state) {
+                  if (_loadDialogOpen) {
+                    Navigator.pop(context);
+                    _loadDialogOpen = false;
+                  }
+                },
                 builder: (ctx, state) {
                   if (state is ProfileUnloaded) return CircularProgressIndicator();
 
@@ -69,15 +77,25 @@ class _ProfilePageState extends State<ProfilePage> {
                           addresses,
                           context,
                           canHighlight: false,
-                          onDeleteTap: (index) => _bloc.add(ProfileDeleteAddressEvent(index)),
+                          canDelete: true,
+                          onDeleteTap: (index) {
+                            showDialog(context: context, builder: (ctx) => _loadDialog);
+                            _loadDialogOpen = true;
+                            _bloc.add(ProfileDeleteAddressEvent(index));
+                          },
                         ),
-                        height: addresses.length > 1 ? 30.h : (addresses.length * 15).h,
+                        height: addresses.length > 1 ? 30.h : (addresses.length * 17).h,
                       ),
                       SizedBox(height: 10),
                       Center(
                         child: buildAddressCreationWidget(
                           context: context,
-                          onSubmit: (address) => _bloc.add(ProfileAddAddressEvent(address)),
+                          onSubmit: (address) {
+                            Navigator.pop(context);
+                            showDialog(context: context, builder: (ctx) => _loadDialog);
+                            _loadDialogOpen = true;
+                            _bloc.add(ProfileAddAddressEvent(address));
+                          },
                         ),
                       ),
                       SizedBox(height: 30),

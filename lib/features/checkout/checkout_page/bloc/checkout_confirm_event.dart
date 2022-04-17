@@ -20,3 +20,9 @@ class CheckoutConfirmUpdateCuponEvent extends CheckoutConfirmEvent {
 
   CheckoutConfirmUpdateCuponEvent(this.cupon);
 }
+
+class CheckoutConfirmUpdateCartStateEvent extends CheckoutConfirmEvent {
+  final CartState state;
+
+  CheckoutConfirmUpdateCartStateEvent(this.state);
+}

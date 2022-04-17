@@ -26,10 +26,10 @@ class SearchService extends ServiceProvider {
   }) async {
     String accessToken = await _authRepository.getAccessToken();
 
-    AsyncSnapshot<Response> snapshot = await get(baseRoute: exploreItemsRoute, token: accessToken, queryParameters: {
-      'radius': radius,
-      'radius_center': [position.latitude,  position.longitude],
-    });
+    AsyncSnapshot<Response> snapshot = await get(
+      baseRoute: exploreItemsRoute + "?radius_center=${position.latitude},${position.longitude}&radius=$radius",
+      token: accessToken,
+    );
 
     snapshot = faultyResponseShouldReturn(snapshot);
     if (snapshot.hasError || !snapshot.hasData) {
@@ -48,10 +48,10 @@ class SearchService extends ServiceProvider {
   }) async {
     String accessToken = await _authRepository.getAccessToken();
 
-    AsyncSnapshot<Response> snapshot = await get(baseRoute: exploreItemsRoute, token: accessToken, queryParameters: {
-      'radius': radius,
-      'radius_center': [position.latitude,  position.longitude],
-    });
+    AsyncSnapshot<Response> snapshot = await get(
+      baseRoute: exploreBusinessesRoute + "?radius_center=${position.latitude},${position.longitude}&radius=$radius",
+      token: accessToken,
+    );
 
     snapshot = faultyResponseShouldReturn(snapshot);
     if (snapshot.hasError || !snapshot.hasData) {

@@ -31,12 +31,16 @@ class _BusinessPageState extends State<BusinessPage> {
   Widget build(BuildContext context) {
     BusinessState state = _bloc.state;
     if (state is BusinessNoBusiness) {
-      Navigator.pushReplacementNamed(context, '/business/create');
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        Navigator.pushReplacementNamed(context, '/business/create');
+      });
       return CircularProgressIndicator();
     }
 
     if (state is BusinessLoaded && !state.business.approved) {
-      Navigator.pushReplacementNamed(context, '/business/unapproved');
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        Navigator.pushReplacementNamed(context, '/business/unapproved');
+      });
       return CircularProgressIndicator();
     }
 

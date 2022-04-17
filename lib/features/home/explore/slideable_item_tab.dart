@@ -4,17 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sizer/sizer.dart';
+import 'package:vivity/config/themes/themes_config.dart';
 import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
 import 'package:vivity/features/item/classic_item.dart';
 import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 
 class SlideableItemTab extends StatelessWidget {
-  final Set<String> likedItemIds;
-
   const SlideableItemTab({
     Key? key,
-    required this.likedItemIds,
   }) : super(key: key);
 
   @override
@@ -50,33 +48,43 @@ class SlideableItemTab extends StatelessWidget {
       width: itemViewSize.width,
       child: Container(
         color: Colors.white,
-        child: BlocBuilder<ExploreBloc, ExploreState>(builder: (context, state_) {
-          if (state_ is ExploreBlocked || state_ is ExploreSearchable) return const CircularProgressIndicator();
-          ExploreSearched state = state_ as ExploreSearched;
+        child: BlocBuilder<ExploreBloc, ExploreState>(
+          builder: (context, state) {
+            if (state is! ExploreSearched || state.itemsFound.isEmpty)
+              return Center(
+                child: Text(
+                  'No items in the area',
+                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 16.sp, color: primaryColor),
+                ),
+              );
 
-          return buildItemContentGrid(
-            state.itemsFound,
-            itemViewSize,
-            sc,
-            itemHeightMultiplier: 0.6,
-            onTap: null,
-            builder: (item, widget) => OpenContainer(
-              tappable: false,
-              closedElevation: 7,
-              transitionType: ContainerTransitionType.fade,
-              transitionDuration: Duration(milliseconds: 1000),
-              closedBuilder: (ctx, VoidCallback openContainer) => ClassicItem(
-                item: item,
-                key: widget.key,
-                editButton: widget.editButton,
-                onEditTap: widget.onEditTap,
-                onTap: openContainer,
-                initialLiked: likedItemIds.contains(item.id.hexString),
-              ),
-              openBuilder: (ctx, _) => ItemPage(item: item),
-            ),
-          );
-        }),
+            return buildItemContentGrid(
+              state.itemsFound,
+              itemViewSize,
+              sc,
+              itemHeightMultiplier: 0.6,
+              onTap: null,
+              builder: (item, widget) {
+                Widget itemPageWidget = ItemPage(item: item);
+
+                return OpenContainer(
+                  tappable: false,
+                  closedElevation: 7,
+                  transitionType: ContainerTransitionType.fade,
+                  transitionDuration: Duration(milliseconds: 1000),
+                  closedBuilder: (ctx, VoidCallback openContainer) => ClassicItem(
+                    item: item,
+                    key: widget.key,
+                    editButton: widget.editButton,
+                    onEditTap: widget.onEditTap,
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (ctx, _) => itemPageWidget,
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

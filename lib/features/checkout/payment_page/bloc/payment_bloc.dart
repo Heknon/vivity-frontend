@@ -27,9 +27,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           return emit(PaymentUnloaded());
         }
 
-        PaymentState s = state;
-        if (shippingState is! ShippingLoaded || s is! PaymentLoaded) return;
-        emit(s.copyWith(shippingState: shippingState));
+        if (!isClosed) add(PaymentShippingStateUpdate(shippingState));
       });
 
       emit(PaymentLoaded(shippingState: shippingState, selectedAddress: event.address));
@@ -43,6 +41,14 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
 
       Order order = buildOrderFromState(s);
       emit(PaymentSuccessPayment(order, s.shippingState.confirmationStageState.items.map((e) => e.item).toList()));
+    });
+
+    on<PaymentShippingStateUpdate>((event, emit) {
+      PaymentState s = state;
+
+      if (event.state is! ShippingLoaded || s is! PaymentLoaded) return;
+
+      emit(s.copyWith(shippingState: event.state as ShippingLoaded));
     });
   }
 

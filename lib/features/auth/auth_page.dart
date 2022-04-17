@@ -9,6 +9,8 @@ import 'package:vivity/features/auth/bloc/auth_bloc.dart';
 import 'package:vivity/features/auth/login_module.dart';
 import 'package:vivity/features/auth/register_module.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/item/liked/liked_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 
 class AuthPage extends StatefulWidget {
@@ -50,6 +52,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     AuthState state = _authBloc.state;
     if (state is AuthLoggedInState) {
       Navigator.pushReplacementNamed(context, "/home/explore");
+      BlocProvider.of<CartBloc>(context).add(CartSyncEvent());
+      BlocProvider.of<LikedBloc>(context).add(LikedLoadEvent());
     }
 
     return Scaffold(
@@ -63,6 +67,8 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               }
 
               Navigator.pushReplacementNamed(context, "/home/explore");
+              BlocProvider.of<CartBloc>(context).add(CartSyncEvent());
+              BlocProvider.of<LikedBloc>(context).add(LikedLoadEvent());
             } else if (state is AuthFailedState) {
               showSnackBar(state.message ?? "Authentication failed", context);
               _loginPasswordController.text = "";

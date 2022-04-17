@@ -97,13 +97,14 @@ class User {
     List<CartItemModel>? cart,
     List<Order>? orderHistory,
     bool? isAdmin,
+    bool deleteProfilePicture = false,
   }) {
     return User(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      profilePicture: profilePicture ?? this.profilePicture,
+      profilePicture: deleteProfilePicture ? profilePicture : profilePicture ?? this.profilePicture,
       userOptions: userOptions ?? this.userOptions,
       addresses: addresses ?? this.addresses,
       likedItems: likedItems ?? this.likedItems,

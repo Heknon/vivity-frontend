@@ -33,6 +33,7 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       List<ItemModel> items = await getItemsNearLocation(location: event.location, radius: event.radius);
       List<Business> businesses = await getBusinessesNearLocation(location: event.location, radius: event.radius);
 
+      lastUpdateLocation = event.location;
       emit(ExploreSearched(itemsFound: items, businessesFound: businesses));
     });
 
@@ -60,7 +61,8 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       throw SearchException(message: 'Failed to find items in vicinity');
     }
 
-    return snapshot.data!;
+    List<ItemModel> items = snapshot.data!;
+    return items;
   }
 
   Future<List<Business>> getBusinessesNearLocation({
@@ -81,7 +83,7 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       if (_timer.isActive) _timer.cancel();
       return;
     }
-    const int blockSearchBelowDistance = 10;
+    const int blockSearchBelowDistance = 60;
     if (mapController.ifInitialized() == null) {
       _timer.reset();
       return;

@@ -57,7 +57,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       if (state is! SettingsLoaded) return;
 
       User user = await _userRepository.updateUser(
-        email: event.phone,
+        phone: event.phone,
       );
 
       SettingsLoaded newState = (state as SettingsLoaded).copyWith(
