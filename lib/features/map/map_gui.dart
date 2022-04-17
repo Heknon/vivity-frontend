@@ -39,6 +39,8 @@ class MapGui extends StatefulWidget {
 
 class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
   bool createdMap = false;
+  late Future<void> mapCreated;
+  Completer<void> mapCreatedCompleter = Completer();
 
   latlng.LatLng fallbackLocation = latlng.LatLng(32.0668, 34.7649);
   late MapControllerImpl _mapController;
@@ -53,10 +55,11 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     _mapController = widget.controller ?? MapControllerImpl();
 
     LocationService _locationService = LocationService();
+    mapCreated = mapCreatedCompleter.future;
 
     _locationService.getLocationUpdateStream(defaultLocation: fallbackLocation).then((stream) {
-      stream.listen((loc) {
-        if (!createdMap) return;
+      stream.listen((loc) async {
+        if (!createdMap) await mapCreated;
         _mapController.move(LatLng(loc.latitude, loc.longitude), _mapController.zoom);
       });
     }).catchError((err) {
@@ -81,8 +84,9 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
     super.dispose();
   }
 
-  void onMapCreate(MapControllerImpl controllerImpl) {
+  void onMapCreate(MapController controllerImpl) {
     createdMap = true;
+    mapCreatedCompleter.complete();
   }
 
   @override
@@ -110,6 +114,7 @@ class _MapGuiState extends State<MapGui> with AutomaticKeepAliveClientMixin {
         return FlutterMap(
           mapController: _mapController,
           options: MapOptions(
+            onMapCreated: onMapCreate,
             center: isMapWasInitialized ? _mapController.center : LatLng(fallbackLocation.latitude, fallbackLocation.longitude),
             zoom: isMapWasInitialized ? _mapController.zoom : 13,
             maxZoom: 20,

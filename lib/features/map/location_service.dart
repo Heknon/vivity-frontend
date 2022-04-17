@@ -16,7 +16,7 @@ class LocationService {
 
   LocationService._internal();
 
-  Future<Stream<LatLng>> getLocationUpdateStream({bool getCountryIfFail = true, LatLng? defaultLocation}) async {
+  Future<Stream<Position>> getLocationUpdateStream({bool getCountryIfFail = true, LatLng? defaultLocation}) async {
     String? hasPermission = await getLocationPermission();
     if (hasPermission != null) {
       if (getCountryIfFail) {
@@ -30,9 +30,12 @@ class LocationService {
       }
     }
 
-    return Geolocator.getPositionStream(locationSettings: LocationSettings(accuracy: LocationAccuracy.bestForNavigation, distanceFilter: 10,)).map(
-      (event) => LatLng(event.latitude, event.longitude),
-    );
+    return Geolocator.getPositionStream(
+        locationSettings: LocationSettings(
+      accuracy: LocationAccuracy.bestForNavigation,
+      distanceFilter: 10,
+      timeLimit: Duration(seconds: 1),
+    ));
   }
 
   Future<LatLng> getPosition({bool getCountryIfFail = true, LatLng? defaultLocation}) async {
