@@ -52,7 +52,9 @@ class _BusinessPageState extends State<BusinessPage> {
             showDialog(
                 context: context,
                 builder: (ctx) {
-                  return ItemCreationDialog();
+                  return ItemCreationDialog(
+                    onCreateItem: (item) => _bloc.add(BusinessCreateItemEvent(item)),
+                  );
                 });
           },
           backgroundColor: primaryComplementaryColor,
@@ -84,6 +86,7 @@ class _BusinessPageState extends State<BusinessPage> {
               return CircularProgressIndicator();
             }
 
+            print(state.items.length);
             return TabBarView(
               children: [
                 BusinessItemPage(business: state.business, items: state.items, businessBloc: _bloc),

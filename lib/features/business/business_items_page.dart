@@ -9,6 +9,7 @@ import 'package:vivity/features/business/models/business.dart';
 import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
+import 'package:vivity/models/navigation_models.dart';
 
 import '../item/models/item_model.dart';
 import 'business_ui_helper.dart';
@@ -48,16 +49,7 @@ class BusinessItemPage extends StatelessWidget {
                 itemHeightMultiplier: 0.5,
                 hasEditButton: true,
                 onEditTapped: (item) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => ItemPage(
-                        item: item,
-                        editorOpened: true,
-                        registerView: false,
-                      ),
-                    ),
-                  );
+                  Navigator.pushNamed(context, '/item', arguments: ItemPageNavigation(item: item, shouldOpenEditor: true, isView: false));
                 },
                 onTap: (item) async {
                   int stock = await enterStockDialog(item, context);

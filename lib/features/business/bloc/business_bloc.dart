@@ -19,7 +19,6 @@ part 'business_state.dart';
 class BusinessBloc extends Bloc<BusinessEvent, BusinessState> {
   UserBusinessRepository _businessRepository = UserBusinessRepository();
   ItemRepository _itemRepository = ItemRepository();
-  OrderService _orderService = OrderService();
 
   BusinessBloc() : super(BusinessNoBusiness()) {
     on<BusinessLoadEvent>((event, emit) async {
@@ -54,6 +53,8 @@ class BusinessBloc extends Bloc<BusinessEvent, BusinessState> {
     on<BusinessCreateItemEvent>((event, emit) async {
       BusinessState s = state;
       if (s is! BusinessLoaded) return;
+
+      emit(s.copyWith(items: s.items.map((e) => e).toList()..add(event.item))); // instantly update UI and then send network request to validate
 
       Business business = await _businessRepository.getBusiness(update: true);
       if (business.businessId != event.item.businessId) return;

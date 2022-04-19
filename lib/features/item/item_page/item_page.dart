@@ -73,6 +73,7 @@ class _ItemPageState extends State<ItemPage> {
   late Future<ItemModel> displayedItemFuture;
   late ItemModel displayedItem;
   late bool ownsItem;
+  bool finishedInit = false;
 
   @override
   void initState() {
@@ -111,6 +112,8 @@ class _ItemPageState extends State<ItemPage> {
               }
             });
           }
+
+          finishedInit = true;
         });
       });
     });
@@ -129,8 +132,10 @@ class _ItemPageState extends State<ItemPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.editorOpened && !openedEditorPreviously) {
-      _panelController.open();
+    if (widget.editorOpened && !openedEditorPreviously && finishedInit) {
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        _panelController.open();
+      });
       openedEditorPreviously = true;
     }
 

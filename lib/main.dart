@@ -18,7 +18,10 @@ import 'constants/asset_path.dart';
 
 Future<User>? loginResult;
 
-// TODO: Fix forgot password not returning error message (maybe not checking old password)
+// TODO: Create the navigation fix function in Drawer class
+// TODO: Create a Refreshable argument in BasePage class
+// TODO: Fix multiple items stacking on top of each other on map
+// TODO: Fix favorites page not updating when unliking item
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

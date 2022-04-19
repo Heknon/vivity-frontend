@@ -38,8 +38,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   fluro: ^2.0.3
   flutter_secure_storage: ^5.0.2
-  flutter_svg: ^1.0.0
   cached_network_image: ^3.2.0
+  flutter_svg: ^1.0.0
   path_provider: ^2.0.8
   sizer: ^2.0.1
   google_fonts: ^2.2.0
@@ -48,7 +48,6 @@ dependencies:
   flutter_bloc: ^8.0.1
   bloc: ^8.0.2
   shared_preferences: ^2.0.13
-  uuid: ^3.0.5
   country_icons: ^2.0.2
   country_code_picker: ^2.0.2
   form_validator: ^1.0.2

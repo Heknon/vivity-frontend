@@ -40,58 +40,66 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     return BasePage(
       resizeToAvoidBottomInset: true,
-      body: LayoutBuilder(builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: SizedBox(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Center(
-                    child: Text(
-                      'Admin Controls',
-                      style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: SizedBox(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Center(
+                      child: Text(
+                        'Admin Controls',
+                        style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 24.sp),
+                      ),
                     ),
                   ),
-                ),
-                BlocConsumer<AdminPageBloc, AdminPageState>(
-                  listener: (context, state) {
-                    if (isLoadingOpen) {
-                      Navigator.pop(context);
-                      isLoadingOpen = false;
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is! AdminPageLoaded) {
-                      return Text(
-                        "There are no businesses in need\nof approval",
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp),
-                      );
-                    }
+                  BlocConsumer<AdminPageBloc, AdminPageState>(
+                    listener: (context, state) {
+                      if (isLoadingOpen) {
+                        Navigator.pop(context);
+                        isLoadingOpen = false;
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is! AdminPageLoaded) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                    return AdminUnapprovedList(
-                      businesses: state.unapprovedBusinesses,
-                      approvePressed: (business, note) {
-                        showDialog(context: context, builder: (ctx) => _loadDialog);
-                        isLoadingOpen = true;
-                        _bloc.add(AdminPageMoveToApprovedEvent(note: note, businessId: business.businessId.hexString));
-                        showSnackBar('Approved ${business.name}', context);
-                      },
-                      declinePressed: (business, note) {
-                        showDialog(context: context, builder: (ctx) => _loadDialog);
-                        isLoadingOpen = true;
-                        _bloc.add(AdminPageMoveToUnapprovedEvent(note: note, businessId: business.businessId.hexString));
-                        showSnackBar('Declined request and sent note to owner!', context);
-                      },
-                    );
-                  },
-                ),
-              ],
+                      if (state.unapprovedBusinesses.isEmpty) {
+                        return Text(
+                          "There are no businesses in need\nof approval",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 18.sp),
+                        );
+                      }
+
+                      return AdminUnapprovedList(
+                        businesses: state.unapprovedBusinesses,
+                        approvePressed: (business, note) {
+                          showDialog(context: context, builder: (ctx) => _loadDialog);
+                          isLoadingOpen = true;
+                          _bloc.add(AdminPageMoveToApprovedEvent(note: note, businessId: business.businessId.hexString));
+                          showSnackBar('Approved ${business.name}', context);
+                        },
+                        declinePressed: (business, note) {
+                          showDialog(context: context, builder: (ctx) => _loadDialog);
+                          isLoadingOpen = true;
+                          _bloc.add(AdminPageMoveToUnapprovedEvent(note: note, businessId: business.businessId.hexString));
+                          showSnackBar('Declined request and sent note to owner!', context);
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
     );
   }
 }

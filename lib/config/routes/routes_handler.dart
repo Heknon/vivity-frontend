@@ -85,7 +85,11 @@ Handler itemRouteHandler = Handler(
     }
 
     ItemPageNavigation nav = context?.settings?.arguments as ItemPageNavigation;
-    return ItemPage(item: nav.item, registerView: nav.isView);
+    return ItemPage(
+      item: nav.item,
+      registerView: nav.isView,
+      editorOpened: nav.shouldOpenEditor,
+    );
   },
 );
 

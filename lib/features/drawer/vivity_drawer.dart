@@ -110,11 +110,17 @@ class _VivityDrawerState extends State<VivityDrawer> {
                     ],
                   ),
                   const Divider(thickness: 0),
-                  buildMenuButton(text: 'Profile', onPressed: () => Navigator.of(context).pushNamed('/profile'), context: context),
+                  buildMenuButton(text: 'Profile', onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).pushNamed('/profile');
+                  }, context: context),
                   const Divider(thickness: 0),
                   buildMenuButton(
                     text: 'Settings',
-                    onPressed: () => Navigator.of(context).pushNamed('/settings'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).pushNamed('/settings');
+                    },
                     context: context,
                   ),
                   SizedBox(height: 7.h),
@@ -135,6 +141,7 @@ class _VivityDrawerState extends State<VivityDrawer> {
                   buildMenuButton(
                     text: state.ownsBusiness ? "My business" : "Create business",
                     onPressed: () {
+                      Navigator.pop(context);
                       state.ownsBusiness ? Navigator.pushNamed(context, '/business') : Navigator.pushNamed(context, '/business/create');
                     },
                     context: context,
@@ -143,7 +150,10 @@ class _VivityDrawerState extends State<VivityDrawer> {
                     const Divider(thickness: 0),
                     buildMenuButton(
                       text: 'Admin controls',
-                      onPressed: () => Navigator.of(context).pushNamed('/admin'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/admin');
+                      },
                       context: context,
                     ),
                   ],
@@ -152,8 +162,10 @@ class _VivityDrawerState extends State<VivityDrawer> {
                     text: 'Sign out',
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.pushReplacementNamed(context, '/logout');
                       showSnackBar('Signing out...', context);
+                      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                        Navigator.pushReplacementNamed(context, '/logout');
+                      });
                     },
                     context: context,
                     optionalStyle: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[400]?.withOpacity(0.6), fontSize: 14.sp),
@@ -198,5 +210,9 @@ class _VivityDrawerState extends State<VivityDrawer> {
     } else {
       // User canceled the picker
     }
+  }
+
+  void smartDrawerNavigation(String route) {
+    // TODO: Write function
   }
 }

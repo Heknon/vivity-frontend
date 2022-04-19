@@ -17,8 +17,8 @@ class AdminPageBloc extends Bloc<AdminPageEvent, AdminPageState> {
     on<AdminPageLoadEvent>((event, emit) async {
       emit(AdminPageLoading());
 
-      List<Business> unapprovedBusinesses = await _adminRepository.getUnapprovedBusinesses();
-      List<Business> approvedBusinesses = await _adminRepository.getApprovedBusinesses();
+      List<Business> unapprovedBusinesses = await _adminRepository.getUnapprovedBusinesses(update: true);
+      List<Business> approvedBusinesses = await _adminRepository.getApprovedBusinesses(update: true);
 
       emit(AdminPageLoaded(unapprovedBusinesses: unapprovedBusinesses, approvedBusinesses: approvedBusinesses));
     });
