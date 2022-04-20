@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:vivity/features/item/like_button.dart';
+import 'package:vivity/features/like/like_button.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/search_filter/widget_swapper.dart';
 

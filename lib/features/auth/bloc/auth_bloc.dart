@@ -10,7 +10,7 @@ import 'package:vivity/features/business/repo/user_business_repository.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/cart/repo/cart_repository.dart';
 import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
-import 'package:vivity/features/item/liked/liked_bloc.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/storage/storage_service.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';

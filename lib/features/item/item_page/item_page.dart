@@ -14,7 +14,7 @@ import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/cart/models/modification_button_data_host.dart';
 import 'package:vivity/features/cart/repo/cart_repository.dart';
 import 'package:vivity/features/item/item_edit_panel.dart';
-import 'package:vivity/features/item/liked/liked_bloc.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 import 'package:vivity/features/item/models/modification_button.dart';
 import 'package:vivity/features/item/repo/item_repository.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
@@ -33,7 +33,7 @@ import 'package:vivity/widgets/carousel.dart';
 import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/rating.dart';
 
-import '../like_button.dart';
+import '../../like/like_button.dart';
 import '../modifier/item_modifier.dart';
 
 class ItemPage extends StatefulWidget {
@@ -94,7 +94,7 @@ class _ItemPageState extends State<ItemPage> {
 
           _selectorControllers = List.generate(
             displayedItem.itemStoreFormat.modificationButtons.length,
-                (index) => ItemModifierSelectorController(),
+            (index) => ItemModifierSelectorController(),
           );
 
           for (var controller in _selectorControllers) {
@@ -528,12 +528,19 @@ class _ItemPageState extends State<ItemPage> {
         id: displayedItem.id.hexString,
       );
 
-      displayedItemFuture = Future.value(item);
-      displayedItem = item;
+
       if (_loadDialogOpen) {
         Navigator.pop(context);
         _loadDialogOpen = false;
       }
+
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        setState(() {
+          displayedItemFuture = Future.value(item);
+          displayedItem = item;
+          print(displayedItem.images.length);
+        });
+      });
       return;
     }
     showDialog(
@@ -554,12 +561,17 @@ class _ItemPageState extends State<ItemPage> {
                 id: displayedItem.id.hexString,
               );
 
-              displayedItemFuture = Future.value(item);
-              displayedItem = item;
               if (_loadDialogOpen) {
                 Navigator.pop(context);
                 _loadDialogOpen = false;
               }
+
+              WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                setState(() {
+                  displayedItemFuture = Future.value(item);
+                  displayedItem = item;
+                });
+              });
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,
@@ -582,12 +594,18 @@ class _ItemPageState extends State<ItemPage> {
                 id: displayedItem.id.hexString,
               );
 
-              displayedItemFuture = Future.value(item);
-              displayedItem = item;
+
               if (_loadDialogOpen) {
                 Navigator.pop(context);
                 _loadDialogOpen = false;
               }
+
+              WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                setState(() {
+                  displayedItemFuture = Future.value(item);
+                  displayedItem = item;
+                });
+              });
             },
             style: ButtonStyle(
                 splashFactory: InkRipple.splashFactory,

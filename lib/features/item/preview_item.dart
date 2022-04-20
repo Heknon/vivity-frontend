@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/asset_path.dart';
-import 'package:vivity/features/item/like_button.dart';
-import 'package:vivity/features/item/liked/liked_bloc.dart';
+import 'package:vivity/features/like/like_button.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
 import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';

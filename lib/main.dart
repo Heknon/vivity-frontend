@@ -9,7 +9,7 @@ import 'package:vivity/config/routes/routes_config.dart';
 import 'package:vivity/config/themes/light_theme.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
-import 'package:vivity/features/item/liked/liked_bloc.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 import 'package:vivity/features/splash_screen.dart';
 import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';

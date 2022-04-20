@@ -11,7 +11,7 @@ import 'package:vivity/features/auth/register_module.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/home/explore/bloc/explore_bloc.dart';
-import 'package:vivity/features/item/liked/liked_bloc.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 
 class AuthPage extends StatefulWidget {

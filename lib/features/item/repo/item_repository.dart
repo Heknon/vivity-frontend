@@ -132,13 +132,7 @@ class ItemRepository {
       }
 
       ItemModel updatedItem = snapshot.data!;
-      List<Uint8List?> nullImagesPlaceholders = List.generate(index + 1, (i) => index == i ? image.readAsBytesSync() : null);
-      List<Uint8List> nonNullImages = List.empty(growable: true);
-      for (Uint8List? image in nullImagesPlaceholders) {
-        if (image != null) nonNullImages.add(image);
-      }
-      updatedItem = updatedItem.copyWith(images: nonNullImages);
-      _registerNetworkItemModelToCache(updatedItem, false);
+      _registerNetworkItemModelToCache(updatedItem, true);
 
       return _itemModelCache[updatedItem.id.hexString]!;
     }
@@ -174,18 +168,8 @@ class ItemRepository {
       }
 
       ItemModel updatedItem = snapshot.data!;
-      _registerNetworkItemModelToCache(updatedItem, false);
-      ItemModel cachedItem = _itemModelCache[updatedItem.id.hexString]!;
-      List<Uint8List?> newImages = List.empty(growable: true);
-      for (int i = 0; i < cachedItem.images.length; i++) {
-        if (i != index) newImages.add(cachedItem.images[i]);
-      }
-      List<Uint8List> nonNullImages = List.empty(growable: true);
-      for (Uint8List? image in newImages) {
-        if (image != null) nonNullImages.add(image);
-      }
+      _registerNetworkItemModelToCache(updatedItem, true);
 
-      _itemModelCache[updatedItem.id.hexString] = cachedItem.copyWith(images: nonNullImages);
       return _itemModelCache[updatedItem.id.hexString]!;
     }
 

@@ -50,7 +50,7 @@ class _AppSystemManagerState extends State<AppSystemManager> with WidgetsBinding
         print('paused');
         break;
       case AppLifecycleState.resumed:
-        print('resumed');
+        _bloc.add(CartSyncEvent());
         break;
       case AppLifecycleState.detached:
         print('detached');

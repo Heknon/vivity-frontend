@@ -7,8 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
-import 'package:vivity/features/item/like_button.dart';
-import 'package:vivity/features/item/liked/liked_bloc.dart';
+import 'package:vivity/features/like/like_button.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
 
