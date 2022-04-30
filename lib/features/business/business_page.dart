@@ -34,14 +34,18 @@ class _BusinessPageState extends State<BusinessPage> {
       WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
         Navigator.pushReplacementNamed(context, '/business/create');
       });
-      return CircularProgressIndicator();
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
     if (state is BusinessLoaded && !state.business.approved) {
       WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
         Navigator.pushReplacementNamed(context, '/business/unapproved');
       });
-      return CircularProgressIndicator();
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
     return DefaultTabController(
@@ -86,7 +90,6 @@ class _BusinessPageState extends State<BusinessPage> {
               return CircularProgressIndicator();
             }
 
-            print(state.items.length);
             return TabBarView(
               children: [
                 BusinessItemPage(business: state.business, items: state.items, businessBloc: _bloc),

@@ -12,13 +12,14 @@ import 'package:vivity/widgets/simple_card.dart';
 
 import 'item_data_section.dart';
 
-class CartItem extends StatefulWidget {
+class CartItem extends StatelessWidget {
   final CartItemModel item;
   final double? width;
   final double? height;
   final void Function(QuantityController)? onQuantityIncrement;
   final void Function(QuantityController)? onQuantityDecrement;
   final void Function(QuantityController)? onQuantityDelete;
+  final QuantityController? quantityController;
   final double elevation;
   final bool includeQuantityControls;
   final bool onlyQuantity;
@@ -36,26 +37,22 @@ class CartItem extends StatefulWidget {
     this.elevation = 7,
     this.includeQuantityControls = true,
     this.onlyQuantity = false,
+    this.quantityController,
   }) : super(key: key);
 
-  @override
-  State<CartItem> createState() => _CartItemState();
-}
-
-class _CartItemState extends State<CartItem> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (ctx, constraints) {
-        double usedWidth = widget.width ?? constraints.maxWidth;
-        double usedHeight = widget.height ?? constraints.maxHeight;
+        double usedWidth = width ?? constraints.maxWidth;
+        double usedHeight = height ?? constraints.maxHeight;
 
         return SizedBox(
           width: usedWidth,
           height: usedHeight,
           child: SimpleCard(
-            elevation: widget.elevation,
-            borderRadius: widget.borderRadius,
+            elevation: elevation,
+            borderRadius: borderRadius,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -64,14 +61,14 @@ class _CartItemState extends State<CartItem> {
                   width: usedWidth * 0.4,
                   padding: const EdgeInsets.only(top: 5, bottom: 5, left: 8, right: 12),
                   child: buildPreviewImage(
-                    widget.item.item.previewImage ?? noImageAvailable,
+                    item.item.previewImage ?? noImageAvailable,
                     borderRadius: const BorderRadius.all(Radius.circular(50)),
                   ),
                 ),
                 Expanded(
                   flex: 2,
                   child: ItemDataSection(
-                    itemModel: widget.item,
+                    itemModel: item,
                     contextWidth: usedWidth,
                     contextHeight: usedHeight,
                   ),
@@ -82,21 +79,21 @@ class _CartItemState extends State<CartItem> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '\$${widget.item.item.price.toStringAsFixed(2)}',
+                        '\$${item.item.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                       ),
                       const Spacer(),
-                      if (widget.includeQuantityControls || widget.onlyQuantity)
+                      if (includeQuantityControls || onlyQuantity)
                         ConstrainedBox(
                           constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
                           child: Quantity(
-                            initialCount: widget.item.quantity,
                             color: Theme.of(context).primaryColor,
-                            onDecrement: widget.onQuantityDecrement,
-                            onIncrement: widget.onQuantityIncrement,
+                            onDecrement: onQuantityDecrement,
+                            onIncrement: onQuantityIncrement,
                             deletable: true,
-                            onDelete: widget.onQuantityDelete,
-                            onlyQuantity: widget.onlyQuantity,
+                            onDelete: onQuantityDelete,
+                            onlyQuantity: onlyQuantity,
+                            controller: quantityController,
                           ),
                         )
                     ],

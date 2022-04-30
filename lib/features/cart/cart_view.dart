@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
+import 'package:vivity/features/cart/models/cart_item_model.dart';
 
 import 'package:vivity/helpers/ui_helpers.dart';
 
@@ -107,25 +108,38 @@ class _CartViewState extends State<CartView> {
     );
   }
 
+  Map<CartItemModel, QuantityController> itemQuantityMap = {};
+
   Widget buildItemsList(double itemsPadding, Size itemSize, CartLoaded state) {
     return ListView.builder(
       itemCount: state.items.length,
       controller: widget.scrollController,
-      itemBuilder: (ctx, i) => Padding(
-        padding: i != 0 ? EdgeInsets.only(top: itemsPadding) : const EdgeInsets.only(),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: CartItem(
-            item: state.items[i],
-            width: itemSize.width,
-            height: itemSize.height,
-            onQuantityIncrement: (qc) => onQuantityIncrement(qc, i),
-            onQuantityDecrement: (qc) => onQuantityDecrement(qc, i),
-            onQuantityDelete: (qc) => onDelete(qc, i),
-            onlyQuantity: false,
+      itemBuilder: (ctx, i) {
+        CartItemModel item = state.items[i];
+        QuantityController controller;
+        if (itemQuantityMap.containsKey(item)) controller = itemQuantityMap[item]!;
+        else {
+          controller = QuantityController(quantity: item.quantity);
+          itemQuantityMap[item] = controller;
+        }
+
+        return Padding(
+          padding: i != 0 ? EdgeInsets.only(top: itemsPadding) : const EdgeInsets.only(),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: CartItem(
+              item: item,
+              quantityController: controller,
+              width: itemSize.width,
+              height: itemSize.height,
+              onQuantityIncrement: (qc) => onQuantityIncrement(qc, i),
+              onQuantityDecrement: (qc) => onQuantityDecrement(qc, i),
+              onQuantityDelete: (qc) => onDelete(qc, i, state),
+              onlyQuantity: false,
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -199,7 +213,8 @@ class _CartViewState extends State<CartView> {
     BlocProvider.of<CartBloc>(context).add(CartDecrementItemEvent(index));
   }
 
-  void onDelete(QuantityController quantityController, index) {
+  void onDelete(QuantityController quantityController, int index, CartLoaded state) {
+    itemQuantityMap.remove(state.items[index]);
     BlocProvider.of<CartBloc>(context).add(CartRemoveItemEvent(index));
     showSnackBar('Removing from cart...', context);
   }

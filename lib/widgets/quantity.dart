@@ -7,9 +7,6 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
 
 class Quantity extends StatefulWidget {
-  final int initialCount;
-  final int min;
-  final int max;
   final Color color;
   final SnackBar? maxFailSnackbar;
   final SnackBar? minFailSnackbar;
@@ -22,9 +19,6 @@ class Quantity extends StatefulWidget {
 
   const Quantity({
     Key? key,
-    this.initialCount = 1,
-    this.min = 1,
-    this.max = 10,
     this.controller,
     this.color = Colors.white,
     this.maxFailSnackbar = const SnackBar(
@@ -39,10 +33,10 @@ class Quantity extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _QuantityState createState() => _QuantityState();
+  QuantityState createState() => QuantityState();
 }
 
-class _QuantityState extends State<Quantity> {
+class QuantityState extends State<Quantity> {
   late QuantityController _controller;
   bool preparedToDelete = false;
 
@@ -51,7 +45,6 @@ class _QuantityState extends State<Quantity> {
     super.initState();
 
     _controller = widget.controller ?? QuantityController();
-    _controller.init(widget.initialCount, widget.min, widget.max);
 
     _controller.addListener(() {
       if (_controller.quantity > _controller.max) {
@@ -75,28 +68,36 @@ class _QuantityState extends State<Quantity> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      Text text = Text(_controller.quantity.toStringAsFixed(0), style: TextStyle(fontSize: 9.5.sp, color: widget.color));
-      Size textSize = getTextSize(text);
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: widget.color),
-          borderRadius: const BorderRadius.all(Radius.circular(20)),
-        ),
-        width: !widget.onlyQuantity ? constraints.maxWidth : max(constraints.maxHeight, textSize.width + 10.sp),
-        height: constraints.maxHeight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            !widget.onlyQuantity ? buildIcon(Icons.remove, false) : Container(),
-            text,
-            !widget.onlyQuantity ? buildIcon(Icons.add, true) : Container(),
-          ],
-        ),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        Text text = Text(_controller.quantity.toStringAsFixed(0), style: TextStyle(fontSize: 9.5.sp, color: widget.color));
+        Size textSize = getTextSize(text);
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: widget.color),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+          ),
+          width: !widget.onlyQuantity ? constraints.maxWidth : max(constraints.maxHeight, textSize.width + 10.sp),
+          height: constraints.maxHeight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              !widget.onlyQuantity ? buildIcon(Icons.remove, false) : Container(),
+              text,
+              !widget.onlyQuantity ? buildIcon(Icons.add, true) : Container(),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Expanded buildIcon(IconData icon, bool increment) {
@@ -154,44 +155,39 @@ class _QuantityState extends State<Quantity> {
 }
 
 class QuantityController extends ChangeNotifier {
-  late int _quantity;
-  late int _min;
-  late int _max;
+  int quantity;
+  int min;
+  int max;
 
-  int get min => _min;
-
-  int get max => _max;
-
-  int get quantity => _quantity;
-
-  void init(int initialQuantity, int min, int max) {
-    _quantity = initialQuantity;
-    _min = min;
-    _max = max;
-  }
+  QuantityController({this.quantity = 1, this.min = 1, this.max = 10});
 
   void updateMax(int max) {
-    _max = max;
+    this.max = max;
     notifyListeners();
   }
 
   void updateMin(int min) {
-    _min = min;
+    this.min = min;
     notifyListeners();
   }
 
   void updateCurrentQuantity(int quantity) {
-    _quantity = quantity;
+    this.quantity = quantity;
     notifyListeners();
   }
 
   void incrementQuantity() {
-    _quantity++;
+    this.quantity++;
     notifyListeners();
   }
 
   void decrementQuantity() {
-    _quantity--;
+    this.quantity--;
     notifyListeners();
+  }
+
+  @override
+  String toString() {
+    return 'QuantityController{quantity: $quantity, hash: $hashCode}';
   }
 }

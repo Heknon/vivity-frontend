@@ -112,14 +112,14 @@ class _VivityDrawerState extends State<VivityDrawer> {
                   const Divider(thickness: 0),
                   buildMenuButton(text: 'Profile', onPressed: () {
                     Navigator.pop(context);
-                    Navigator.of(context).pushNamed('/profile');
+                    smartDrawerNavigation('/profile');
                   }, context: context),
                   const Divider(thickness: 0),
                   buildMenuButton(
                     text: 'Settings',
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.of(context).pushNamed('/settings');
+                      smartDrawerNavigation('/settings');
                     },
                     context: context,
                   ),
@@ -136,13 +136,16 @@ class _VivityDrawerState extends State<VivityDrawer> {
                     },
                   ),
                   const Divider(thickness: 0),
-                  buildMenuButton(text: 'Favorites list', onPressed: () => Navigator.of(context).pushNamed('/favorites'), context: context),
+                  buildMenuButton(text: 'Favorites list', onPressed: () {
+                    Navigator.pop(context);
+                    smartDrawerNavigation('/favorites');
+                  }, context: context),
                   SizedBox(height: 7.h),
                   buildMenuButton(
                     text: state.ownsBusiness ? "My business" : "Create business",
                     onPressed: () {
                       Navigator.pop(context);
-                      state.ownsBusiness ? Navigator.pushNamed(context, '/business') : Navigator.pushNamed(context, '/business/create');
+                      state.ownsBusiness ? smartDrawerNavigation('/business') : smartDrawerNavigation('/business/create');
                     },
                     context: context,
                   ),
@@ -152,7 +155,8 @@ class _VivityDrawerState extends State<VivityDrawer> {
                       text: 'Admin controls',
                       onPressed: () {
                         Navigator.pop(context);
-                        Navigator.of(context).pushNamed('/admin');
+                        smartDrawerNavigation('/admin');
+                        // Navigator.of(context).pushNamed('/admin');
                       },
                       context: context,
                     ),
@@ -212,7 +216,31 @@ class _VivityDrawerState extends State<VivityDrawer> {
     }
   }
 
-  void smartDrawerNavigation(String route) {
-    // TODO: Write function
+  void smartDrawerNavigation(String route, {Object? arguments}) {
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      ModalRoute<Object?>? modalRoute = ModalRoute.of(context);
+      NavigatorState nav = Navigator.of(context);
+      const Set<String> homeRoutes = {"/home", "/home/explore", "/home/feed"};
+
+      if (modalRoute == null) {
+        nav.pushNamed(route, arguments: arguments);
+        return;
+      }
+
+      if (modalRoute.settings.name == route && modalRoute.settings.arguments == arguments) {
+        print(modalRoute.settings);
+        return;
+      } else if (modalRoute.settings.name == route) {
+        nav.pushReplacementNamed(route, arguments: arguments);
+        return;
+      }
+
+      if (homeRoutes.contains(modalRoute.settings.name)) {
+        nav.pushNamed(route, arguments: arguments);
+        return;
+      }
+
+      nav.pushReplacementNamed(route, arguments: arguments);
+    });
   }
 }

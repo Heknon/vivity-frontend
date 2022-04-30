@@ -162,6 +162,7 @@ class ItemModel {
   factory ItemModel.fromMap(Map<String, dynamic> map) {
     List<Uint8List> images = List.empty(growable: true);
     for (String? probableImage in map['images'] as List<dynamic>? ?? []) {
+      if (probableImage?.startsWith('items/') ?? true) continue;
       if (probableImage != null) images.add(base64Decode(probableImage));
     }
 

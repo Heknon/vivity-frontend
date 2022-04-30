@@ -29,7 +29,7 @@ class CartItemModel {
       identical(this, other) ||
       (other is CartItemModel &&
           runtimeType == other.runtimeType &&
-          item == other.item &&
+          item.id == other.item.id &&
           listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()));
 
   @override
@@ -37,7 +37,7 @@ class CartItemModel {
 
   @override
   String toString() {
-    return 'CartItemModel{' + ' item: $item,' + ' modifiersChosen: $modifiersChosen,' + ' quantity: $quantity,' + '}';
+    return 'CartItemModel{' + ' item: ${item.id},' + ' modifiersChosen: $modifiersChosen,' + ' quantity: $quantity,' + '}';
   }
 
   CartItemModel copyWith({

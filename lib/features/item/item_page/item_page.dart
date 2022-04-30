@@ -22,6 +22,7 @@ import 'package:vivity/features/user/models/business_user.dart';
 import 'package:vivity/features/user/models/user.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
 import 'package:vivity/helpers/ui_helpers.dart';
+import 'package:vivity/models/navigation_models.dart';
 import '../../base_page.dart';
 import '../../cart/shopping_cart.dart';
 import 'package:vivity/features/item/models/item_model.dart';
@@ -244,7 +245,32 @@ class _ItemPageState extends State<ItemPage> {
                     Positioned(
                       bottom: -100.w * 0.2,
                       child: ConstrainedBox(
-                        child: ItemEditPanel(item: displayedItem, panelController: _panelController),
+                        child: ItemEditPanel(
+                          item: displayedItem,
+                          panelController: _panelController,
+                          onSubmit: (item) async {
+                            showDialog(context: context, builder: (ctx) => _loadDialog);
+                            _loadDialogOpen = true;
+                            ItemModel updatedItem = await _itemRepository.updateItem(
+                              id: item.id.hexString,
+                              tags: item.tags.map((e) => e.trim()).toList(),
+                              title: item.itemStoreFormat.title.trim(),
+                              subtitle: item.itemStoreFormat.subtitle?.trim(),
+                              category: item.category.trim(),
+                              price: item.price,
+                              description: item.itemStoreFormat.description?.trim(),
+                              brand: item.brand,
+                              stock: item.stock,
+                              modificationButtons: item.itemStoreFormat.modificationButtons,
+                            );
+                            _itemRepository.gracefullyUpdateItems([updatedItem]);
+
+                            WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                              if (_loadDialogOpen) Navigator.pop(context);
+                                Navigator.pushReplacementNamed(context, '/item', arguments: ItemPageNavigation(item: updatedItem, isView: false));
+                            });
+                          },
+                        ),
                         constraints: BoxConstraints(minWidth: 100.w, maxHeight: 100.h, maxWidth: 100.w, minHeight: 100.h),
                       ),
                     ),
@@ -314,10 +340,8 @@ class _ItemPageState extends State<ItemPage> {
                     child: ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.25, maxHeight: constraints.maxWidth * 0.25 / 3),
                       child: Quantity(
-                        initialCount: 1,
                         color: Colors.white,
                         controller: _quantityController,
-                        max: displayedItem.stock,
                       ),
                     ),
                   ),
@@ -528,7 +552,6 @@ class _ItemPageState extends State<ItemPage> {
         id: displayedItem.id.hexString,
       );
 
-
       if (_loadDialogOpen) {
         Navigator.pop(context);
         _loadDialogOpen = false;
@@ -538,7 +561,6 @@ class _ItemPageState extends State<ItemPage> {
         setState(() {
           displayedItemFuture = Future.value(item);
           displayedItem = item;
-          print(displayedItem.images.length);
         });
       });
       return;
@@ -593,7 +615,6 @@ class _ItemPageState extends State<ItemPage> {
                 index: index,
                 id: displayedItem.id.hexString,
               );
-
 
               if (_loadDialogOpen) {
                 Navigator.pop(context);

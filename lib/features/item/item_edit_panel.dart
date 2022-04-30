@@ -22,11 +22,13 @@ import 'models/item_model.dart';
 class ItemEditPanel extends StatefulWidget {
   final ItemModel item;
   final PanelController panelController;
+  final void Function(ItemModel)? onSubmit;
 
   const ItemEditPanel({
     Key? key,
     required this.item,
     required this.panelController,
+    this.onSubmit,
   }) : super(key: key);
 
   @override
@@ -34,11 +36,8 @@ class ItemEditPanel extends StatefulWidget {
 }
 
 class _ItemEditPanelState extends State<ItemEditPanel> {
-  ItemRepository _itemRepository = ItemRepository();
-
   late ItemModel clonedItem;
   late final TextEditingController _descriptionController;
-  final LoadDialog _loadDialog = LoadDialog();
 
   @override
   void initState() {
@@ -254,23 +253,13 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
   }
 
   void submit() async {
-    showDialog(context: context, builder: (ctx) => _loadDialog);
-    // TODO: Create bloc for edit panel
-    ItemModel updatedItem = await _itemRepository.updateItem(
-      id: widget.item.id.hexString,
-      tags: clonedItem.tags.map((e) => e.trim()).toList(),
-      title: clonedItem.itemStoreFormat.title.trim(),
-      subtitle: clonedItem.itemStoreFormat.subtitle?.trim(),
-      category: clonedItem.category.trim(),
-      price: clonedItem.price,
-      description: _descriptionController.text.trim(),
-      brand: clonedItem.brand,
-      stock: clonedItem.stock,
-      modificationButtons: clonedItem.itemStoreFormat.modificationButtons,
-    );
-    Navigator.pop(context);
-    Navigator.pushReplacementNamed(context, "/item", arguments: ItemPageNavigation(item: updatedItem, isView: false));
     widget.panelController.close();
+    if (widget.onSubmit != null)
+      widget.onSubmit!(
+        clonedItem.copyWith(
+          itemStoreFormat: clonedItem.itemStoreFormat.copyWith(description: _descriptionController.text),
+        ),
+      );
   }
 
   Widget buildTitleText(String title, BuildContext context) {

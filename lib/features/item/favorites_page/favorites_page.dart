@@ -8,9 +8,24 @@ import 'package:vivity/features/item/classic_item.dart';
 import 'package:vivity/features/item/favorites_page/bloc/favorites_bloc.dart';
 import 'package:vivity/features/item/item_page/item_page.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
+import 'package:vivity/features/like/bloc/liked_bloc.dart';
 
-class FavoritesPage extends StatelessWidget {
+class FavoritesPage extends StatefulWidget {
   const FavoritesPage({Key? key}) : super(key: key);
+
+  @override
+  State<FavoritesPage> createState() => _FavoritesPageState();
+}
+
+class _FavoritesPageState extends State<FavoritesPage> {
+  late final FavoritesBloc _bloc;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bloc = context.read<FavoritesBloc>();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -34,41 +49,47 @@ class FavoritesPage extends StatelessWidget {
               }
 
               Size gridSize = Size(100.w, 70.h);
-              return state.favoritedItems.isNotEmpty
-                  ? SizedBox.fromSize(
-                      size: gridSize,
-                      child: buildItemContentGrid(
-                        state.favoritedItems,
-                        gridSize,
-                        ScrollController(),
-                        itemHeightMultiplier: 0.55,
-                        builder: (item, widget) {
-                          Widget itemPageWidget = ItemPage(item: item);
+              return BlocListener<LikedBloc, LikedState>(
+                listener: (ctx, state) {
+                  if (state is! LikedLoaded) return;
+                  _bloc.add(FavoritesLoadEvent());
+                },
+                child: state.favoritedItems.isNotEmpty
+                    ? SizedBox.fromSize(
+                        size: gridSize,
+                        child: buildItemContentGrid(
+                          state.favoritedItems,
+                          gridSize,
+                          ScrollController(),
+                          itemHeightMultiplier: 0.55,
+                          builder: (item, widget) {
+                            Widget itemPageWidget = ItemPage(item: item);
 
-                          return OpenContainer(
-                            tappable: false,
-                            closedElevation: 7,
-                            transitionType: ContainerTransitionType.fade,
-                            transitionDuration: Duration(milliseconds: 1000),
-                            closedBuilder: (ctx, VoidCallback openContainer) => ClassicItem(
-                              item: item,
-                              key: widget.key,
-                              editButton: widget.editButton,
-                              onEditTap: widget.onEditTap,
-                              onTap: openContainer,
-                            ),
-                            openBuilder: (ctx, _) => itemPageWidget,
-                          );
-                        },
+                            return OpenContainer(
+                              tappable: false,
+                              closedElevation: 7,
+                              transitionType: ContainerTransitionType.fade,
+                              transitionDuration: Duration(milliseconds: 1000),
+                              closedBuilder: (ctx, VoidCallback openContainer) => ClassicItem(
+                                item: item,
+                                key: widget.key,
+                                editButton: widget.editButton,
+                                onEditTap: widget.onEditTap,
+                                onTap: openContainer,
+                              ),
+                              openBuilder: (ctx, _) => itemPageWidget,
+                            );
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          'Start by adding an item to your favorites',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
+                        ),
                       ),
-                    )
-                  : Center(
-                      child: Text(
-                        'Start by adding an item to your favorites',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 20.sp),
-                      ),
-                    );
+              );
             },
           ),
         ],
