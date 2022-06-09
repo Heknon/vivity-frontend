@@ -7,9 +7,11 @@ import 'package:sizer/sizer.dart';
 import 'package:vivity/constants/asset_path.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/ui_item_helper.dart';
+import 'package:vivity/models/navigation_models.dart';
 import 'package:vivity/widgets/quantity.dart';
 import 'package:vivity/widgets/simple_card.dart';
 
+import '../../config/routes/routes_config.dart';
 import 'item_data_section.dart';
 
 class CartItem extends StatelessWidget {
@@ -51,6 +53,18 @@ class CartItem extends StatelessWidget {
           width: usedWidth,
           height: usedHeight,
           child: SimpleCard(
+            onTap: () {
+              ModalRoute<Object?>? modalRoute = ModalRoute.of(context);
+              NavigatorState nav = Navigator.of(context);
+
+              var arguments = modalRoute?.settings.arguments;
+              var name = modalRoute?.settings.name;
+              if (name == "/item") {
+                nav.pushReplacementNamed("/item", arguments: ItemPageNavigation(item: item.item));
+                return;
+              } else if (arguments is ItemPageNavigation && arguments.item == item.item) return;
+              nav.pushNamed("/item", arguments: ItemPageNavigation(item: item.item));
+            },
             elevation: elevation,
             borderRadius: borderRadius,
             child: Row(

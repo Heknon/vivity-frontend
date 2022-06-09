@@ -14,8 +14,8 @@ class PaymentPayEvent extends PaymentEvent {
   final String cardNumber;
   final String cvv;
   final String name;
-  final String month;
-  final String year;
+  final int month;
+  final int year;
   final double total;
 
   PaymentPayEvent({

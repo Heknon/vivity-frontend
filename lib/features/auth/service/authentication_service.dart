@@ -140,7 +140,7 @@ class AuthenticationService extends ServiceProvider {
 
   Future<AsyncSnapshot<String>> enableOTP() async {
     AsyncSnapshot<Response> snapshot = await post(subRoute: otpSubRoute, token: await _authRepository.getAccessToken());
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -157,7 +157,7 @@ class AuthenticationService extends ServiceProvider {
 
   Future<AsyncSnapshot<bool>> disableOTP() async {
     AsyncSnapshot<Response> snapshot = await delete(subRoute: otpSubRoute, token: await _authRepository.getAccessToken());
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);

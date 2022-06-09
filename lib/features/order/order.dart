@@ -14,7 +14,7 @@ class Order extends StatefulWidget {
   final business_model.Order order;
   final List<ItemModel> orderItems;
   final bool dropdownStatus;
-  final Future<void> Function(business_model.OrderStatus?)? onDropdownChange;
+  final Future<void> Function(OrderItem, business_model.OrderStatus?)? onDropdownChange;
 
   const Order({
     Key? key,
@@ -29,7 +29,7 @@ class Order extends StatefulWidget {
 }
 
 class _OrderState extends State<Order> {
-  late business_model.OrderStatus dropdownValue;
+  Map<OrderItem, business_model.OrderStatus> dropdownValue = {};
 
   late final Map<String, ItemModel> _idToItemMap;
 
@@ -37,11 +37,16 @@ class _OrderState extends State<Order> {
   void initState() {
     super.initState();
 
-    dropdownValue = widget.order.status;
     _idToItemMap = {};
     for (var item in widget.orderItems) {
       _idToItemMap[item.id.hexString] = item;
     }
+
+    for (var item in widget.order.items) {
+      dropdownValue[item] = item.status;
+    }
+
+    print(dropdownValue);
   }
 
   @override
@@ -50,6 +55,7 @@ class _OrderState extends State<Order> {
     EdgeInsets padding = const EdgeInsets.all(8);
     List<business_model.OrderStatus> statusValues = business_model.OrderStatus.values;
     List<CartItemModel> orderItemsList = List.empty(growable: true);
+
     for (OrderItem orderItem in widget.order.items) {
       ItemModel? item = orderItem.itemId != null ? _idToItemMap[orderItem.itemId?.hexString] : null;
       if (item != null)
@@ -87,7 +93,7 @@ class _OrderState extends State<Order> {
           ),
           buildCartItemList(
             orderItemsList,
-            gridSize,
+            Size(gridSize.width, 60.h),
             context,
             hasQuantity: false,
             itemBorderRadius: BorderRadius.all(Radius.circular(8)),
@@ -96,6 +102,21 @@ class _OrderState extends State<Order> {
             includeQuantityControls: false,
             onlyQuantity: true,
             itemSize: Size(gridSize.width * 0.7, ((gridSize.height) - (widget.order.items.length - 1) * padding.bottom) / 2.2),
+            builder: (ctx, item, i) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: !widget.dropdownStatus
+                      ? Text(
+                          "Status: ${dropdownValue[widget.order.items[i]]?.getName() ?? "N/A"}",
+                          style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
+                        )
+                      : buildDropdown(widget.order.items[i], statusValues, context),
+                ),
+                item,
+              ],
+            ),
           ),
         ],
       ),
@@ -106,15 +127,6 @@ class _OrderState extends State<Order> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: !widget.dropdownStatus
-              ? Text(
-                  "Status: ${widget.order.status.getName()}",
-                  style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
-                )
-              : buildDropdown(statusValues, context),
-        ),
         if (widget.order.address != null)
           Address(
             name: widget.order.address!.name,
@@ -172,9 +184,9 @@ class _OrderState extends State<Order> {
     );
   }
 
-  DropdownButton<business_model.OrderStatus> buildDropdown(List<business_model.OrderStatus> statusValues, BuildContext context) {
+  DropdownButton<business_model.OrderStatus> buildDropdown(OrderItem item, List<business_model.OrderStatus> statusValues, BuildContext context) {
     return DropdownButton<business_model.OrderStatus>(
-      value: dropdownValue,
+      value: dropdownValue[item] ?? item.status, //dropdownValue,
       items: List.generate(
         statusValues.length,
         (index) => DropdownMenuItem(
@@ -193,9 +205,9 @@ class _OrderState extends State<Order> {
         ),
       ),
       onChanged: (status) async {
-        if (widget.onDropdownChange != null) await widget.onDropdownChange!(status);
+        if (widget.onDropdownChange != null) await widget.onDropdownChange!(item, status);
         setState(() {
-          dropdownValue = status ?? widget.order.status;
+          dropdownValue[item] = status ?? item.status;
         });
       },
     );

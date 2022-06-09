@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/business/models/order.dart';
 import 'package:vivity/features/business/models/order_item.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
+import 'package:vivity/features/checkout/service/checkout_service.dart';
 import 'package:vivity/features/checkout/shipping_page/bloc/shipping_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 
@@ -15,6 +17,8 @@ part 'payment_event.dart';
 part 'payment_state.dart';
 
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
+  final CheckoutService _checkoutService = CheckoutService();
+
   PaymentBloc() : super(PaymentUnloaded()) {
     on<PaymentLoadEvent>((event, emit) {
       emit(PaymentLoading());
@@ -33,14 +37,29 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       emit(PaymentLoaded(shippingState: shippingState, selectedAddress: event.address));
     });
 
-    on<PaymentPayEvent>((event, emit) {
+    on<PaymentPayEvent>((event, emit) async {
       PaymentState s = state;
       if (s is! PaymentLoaded) return;
 
       emit(PaymentProcessingPayment(selectedAddress: s.selectedAddress, shippingState: s.shippingState));
 
       Order order = buildOrderFromState(s);
-      emit(PaymentSuccessPayment(order, s.shippingState.confirmationStageState.items.map((e) => e.item).toList()));
+      print('sending payment');
+      AsyncSnapshot<Order> processedOrder = await _checkoutService.processOrder(
+        order: order,
+        cupon: s.shippingState.confirmationStageState.cupon,
+        creditCardNumber: event.cardNumber,
+        year: event.year,
+        month: event.month,
+        cvv: event.cvv,
+        name: event.name,
+      );
+
+      if (processedOrder.hasError || !processedOrder.hasData) {
+        return emit(PaymentFailedPayment(processedOrder.error?.toString() ?? 'Failed to process order.'));
+      }
+
+      emit(PaymentSuccessPayment(processedOrder.data!, s.shippingState.confirmationStageState.items.map((e) => e.item).toList()));
     });
 
     on<PaymentShippingStateUpdate>((event, emit) {
@@ -63,7 +82,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       cuponDiscount: payment.shippingState.confirmationStageState.cuponDiscount,
       total: payment.shippingState.confirmationStageState.total,
       address: payment.selectedAddress,
-      status: OrderStatus.processing,
       orderId: ObjectId(),
     );
   }

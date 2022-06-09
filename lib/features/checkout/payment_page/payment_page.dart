@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:form_validator/form_validator.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/checkout/checkout_page/bloc/checkout_confirm_bloc.dart';
 import 'package:vivity/features/checkout/payment_page/bloc/payment_bloc.dart';
@@ -34,9 +35,13 @@ class _PaymentPageState extends State<PaymentPage> {
   final TextEditingController dateController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
 
+  final LoadDialog _loadDialog = LoadDialog();
+
   bool deletePressed = false;
 
   bool saveCardInfo = false;
+
+  bool loadDialogOpen = false;
 
   @override
   void didChangeDependencies() {
@@ -133,14 +138,37 @@ class _PaymentPageState extends State<PaymentPage> {
               ),
               Form(
                 key: _formKey,
-                child: BlocBuilder<PaymentBloc, PaymentState>(
+                child: BlocConsumer<PaymentBloc, PaymentState>(
+                  listenWhen: (prev, curr) => curr is PaymentSuccessPayment || curr is PaymentFailedPayment,
+                  listener: (context, state) {
+                    if (loadDialogOpen) {
+                      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+                        Navigator.pop(context);
+                      });
+                    }
+
+                    if (state is PaymentSuccessPayment) {
+                      showSnackBar('Payment processed.', context);
+                    } else {
+                      showSnackBar('Payment failed.', context);
+                    }
+                  },
                   builder: (context, state) {
                     if (state is PaymentSuccessPayment) {
-                      return Order(order: state.order, orderItems: state.items);
+                      return WillPopScope(
+                          onWillPop: () async {
+                            Navigator.popUntil(context, (route) => route.isFirst);
+                            return false;
+                          },
+                          child: Center(
+                            child: Order(order: state.order, orderItems: state.items),
+                          ));
                     } else if (state is PaymentFailedPayment) {
-                      return Text(
-                        "Failed payment\n${state.failedReason}",
-                        style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp, color: fillerColor, fontWeight: FontWeight.bold),
+                      return Center(
+                        child: Text(
+                          "Failed payment\n${state.failedReason}",
+                          style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp, color: fillerColor, fontWeight: FontWeight.bold),
+                        ),
                       );
                     }
 
@@ -202,8 +230,10 @@ class _PaymentPageState extends State<PaymentPage> {
                                 saveCardInfo,
                                 total,
                               );
-                              Navigator.pop(context);
+
                               showSnackBar('Handling transaction!', context);
+                              showDialog(context: context, builder: (ctx) => _loadDialog);
+                              loadDialogOpen = true;
                             },
                           ),
                         ),
@@ -364,7 +394,11 @@ class _PaymentPageState extends State<PaymentPage> {
       obscuringCharacter: '*',
       onChanged: (String? value) {
         if (value == null) return;
-        if (value.length > 3) dateController.text = dateController.text.substring(0, dateController.text.length - 1);
+        if (value.length > 3) {
+          int loc = cvvController.selection.base.offset;
+          cvvController.text = cvvController.text.substring(0, cvvController.text.length - 1);
+          cvvController.selection = TextSelection.fromPosition(TextPosition(offset: min(3, max(0, loc))));
+        }
       },
       decoration: InputDecoration(
         contentPadding: EdgeInsets.all(10),
@@ -431,8 +465,8 @@ class _PaymentPageState extends State<PaymentPage> {
       cardNumber: cardNumber,
       cvv: cvv,
       name: holderName,
-      month: expirationMonth,
-      year: expirationYear,
+      month: int.parse(expirationMonth),
+      year: int.parse(expirationYear),
       total: total,
     ));
   }

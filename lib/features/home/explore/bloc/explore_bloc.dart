@@ -85,7 +85,7 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
       if (_timer.isActive) _timer.cancel();
       return;
     }
-    const int blockSearchBelowDistance = 60;
+    const int blockSearchBelowDistance = 100;
     if (mapController.ifInitialized() == null) {
       _timer.reset();
       return;

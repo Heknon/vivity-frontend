@@ -139,9 +139,10 @@ abstract class ServiceProvider {
   }
 
   /// if response is has error or no data return.
-  AsyncSnapshot<Response> faultyResponseShouldReturn(
+  AsyncSnapshot<T> checkFaultyAndTransformResponse<T>(
     AsyncSnapshot<Response> snapshot, {
     int maximumStatusCodeForNoError = 300,
+    T map(Response response)?,
   }) {
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -154,7 +155,29 @@ abstract class ServiceProvider {
       return AsyncSnapshot.withError(ConnectionState.done, response);
     }
 
-    return AsyncSnapshot.withData(ConnectionState.done, response);
+    return AsyncSnapshot.withData(ConnectionState.done, map != null ? map(response) : response as T);
+  }
+
+  /// if response is has error or no data return.
+  Future<AsyncSnapshot<T>> checkFaultyAndTransformResponseAsync<T>(
+      AsyncSnapshot<Response> snapshot, {
+        int maximumStatusCodeForNoError = 300,
+        Future<T> map(Response response)?,
+      }) async {
+    assert(T is Response || map != null, "If dataTransformer is not specified T must be Response type");
+
+    if (snapshot.hasError) {
+      return Future.value(AsyncSnapshot.withError(ConnectionState.done, snapshot.error!));
+    } else if (!snapshot.hasData) {
+      return Future.value(AsyncSnapshot.nothing());
+    }
+
+    Response response = snapshot.data!;
+    if (response.statusCode! > maximumStatusCodeForNoError) {
+      return Future.value(AsyncSnapshot.withError(ConnectionState.done, response));
+    }
+
+    return AsyncSnapshot.withData(ConnectionState.done, map != null ? await map(response) : response as T);
   }
 
   Future<AsyncSnapshot<Response>> _sendRequest({

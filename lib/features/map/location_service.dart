@@ -30,12 +30,7 @@ class LocationService {
       }
     }
 
-    return Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-      accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 10,
-      timeLimit: Duration(seconds: 1),
-    ));
+    return Geolocator.getPositionStream(locationSettings: LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10));
   }
 
   Future<LatLng> getPosition({bool getCountryIfFail = true, LatLng? defaultLocation}) async {

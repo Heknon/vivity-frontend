@@ -178,6 +178,7 @@ Widget buildCartItemList(
   Size? itemSize,
   bool hasQuantity = true,
   void Function(QuantityController, int)? onQuantityDelete,
+  Widget Function(BuildContext, CartItem, int)? builder,
   BorderRadius? itemBorderRadius,
   EdgeInsets? itemPadding,
   Widget? emptyCart,
@@ -185,9 +186,10 @@ Widget buildCartItemList(
   bool includeQuantityControls = true,
   bool onlyQuantity = false,
 }) {
-  List<CartItem> cartItems = List.generate(
+  Widget Function(BuildContext, CartItem, int) buildFunc = builder ?? (ctx, item, i) => item;
+  List<Widget> cartItems = List.generate(
     items.length,
-    (i) => CartItem(
+    (i) => buildFunc(context, CartItem(
       item: items[i],
       width: itemSize?.width,
       height: itemSize?.height,
@@ -200,7 +202,7 @@ Widget buildCartItemList(
       elevation: elevation,
       includeQuantityControls: includeQuantityControls,
       onlyQuantity: onlyQuantity,
-    ),
+    ), i),
   );
   return SizedBox(
     width: size.width,

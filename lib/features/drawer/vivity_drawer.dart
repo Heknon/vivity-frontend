@@ -47,67 +47,68 @@ class _VivityDrawerState extends State<VivityDrawer> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: () => filePickRoutine().then((value) {
-                          if (value != null) {
-                            _bloc.add(DrawerUpdateProfilePictureEvent(value));
-                          }
-                        }),
-                        onLongPress: () => showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: Text(
-                              'Delete profile picture',
-                              style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () => filePickRoutine().then((value) {
+                            if (value != null) {
+                              _bloc.add(DrawerUpdateProfilePictureEvent(value));
+                            }
+                          }),
+                          onLongPress: () => showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text(
+                                'Delete profile picture',
+                                style: Theme.of(context).textTheme.headline3?.copyWith(fontSize: 16.sp),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _bloc.add(DrawerDeleteProfilePictureEvent());
+                                  },
+                                  style: ButtonStyle(
+                                      splashFactory: InkRipple.splashFactory,
+                                      textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+                                  child: Text(
+                                    'DELETE',
+                                    style: Theme.of(context).textTheme.headline3?.copyWith(color: primaryComplementaryColor, fontSize: 14.sp),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: ButtonStyle(
+                                      splashFactory: InkRipple.splashFactory,
+                                      textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
+                                  child: Text(
+                                    'CANCEL',
+                                    style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
+                                  ),
+                                ),
+                              ],
                             ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  _bloc.add(DrawerDeleteProfilePictureEvent());
-                                },
-                                style: ButtonStyle(
-                                    splashFactory: InkRipple.splashFactory,
-                                    textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
-                                child: Text(
-                                  'DELETE',
-                                  style: Theme.of(context).textTheme.headline3?.copyWith(color: primaryComplementaryColor, fontSize: 14.sp),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: ButtonStyle(
-                                    splashFactory: InkRipple.splashFactory,
-                                    textStyle: MaterialStateProperty.all(Theme.of(context).textTheme.headline3?.copyWith(fontSize: 14.sp))),
-                                child: Text(
-                                  'CANCEL',
-                                  style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.grey[600]!.withOpacity(0.7), fontSize: 14.sp),
-                                ),
-                              ),
-                            ],
                           ),
+                          child: state.profilePicture != null
+                              ? CircleAvatar(
+                                  backgroundImage: Image.memory(state.profilePicture!).image,
+                                  radius: 48.sp,
+                                )
+                              : placeholderPfp,
                         ),
-                        child: state.profilePicture != null
-                            ? CircleAvatar(
-                                backgroundImage: Image.memory(state.profilePicture!).image,
-                                radius: 48.sp,
-                              )
-                            : placeholderPfp,
-                      ),
-                      SizedBox(
-                        width: 40.w,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Hello,\n${state.name}',
-                            style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.white, fontSize: 16.sp),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Hello,\n${state.name}',
+                              style: Theme.of(context).textTheme.headline3?.copyWith(color: Colors.white, fontSize: 16.sp),
+                            ),
                           ),
-                        ),
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
                   const Divider(thickness: 0),
                   buildMenuButton(text: 'Profile', onPressed: () {
@@ -228,7 +229,6 @@ class _VivityDrawerState extends State<VivityDrawer> {
       }
 
       if (modalRoute.settings.name == route && modalRoute.settings.arguments == arguments) {
-        print(modalRoute.settings);
         return;
       } else if (modalRoute.settings.name == route) {
         nav.pushReplacementNamed(route, arguments: arguments);

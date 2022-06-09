@@ -16,13 +16,15 @@ class OrderService extends ServiceProvider {
 
   Future<AsyncSnapshot<Order>> updateOrderStatus({
     required String orderId,
+    required int index,
     required OrderStatus status,
   }) async {
     AsyncSnapshot<Response> snapshot = await post(subRoute: '/status', token: await _authRepository.getAccessToken(), data: {
       'order_id': orderId,
       'status': status.index,
+      'item_index': index,
     });
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);

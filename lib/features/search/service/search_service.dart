@@ -31,7 +31,7 @@ class SearchService extends ServiceProvider {
       token: accessToken,
     );
 
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
     if (snapshot.hasError || !snapshot.hasData) {
       return snapshot.error != null ? AsyncSnapshot.withError(snapshot.connectionState, snapshot.error!) : AsyncSnapshot.nothing();
     }
@@ -53,7 +53,7 @@ class SearchService extends ServiceProvider {
       token: accessToken,
     );
 
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
     if (snapshot.hasError || !snapshot.hasData) {
       return snapshot.error != null ? AsyncSnapshot.withError(snapshot.connectionState, snapshot.error!) : AsyncSnapshot.nothing();
     }
@@ -72,7 +72,7 @@ class SearchService extends ServiceProvider {
       'query': query,
     });
 
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
     if (snapshot.hasError || !snapshot.hasData) {
       return snapshot.error != null ? AsyncSnapshot.withError(snapshot.connectionState, snapshot.error!) : AsyncSnapshot.nothing();
     }

@@ -297,7 +297,7 @@ class ItemService extends ServiceProvider {
   }) async {
     String accessToken = await _authRepository.getAccessToken();
     AsyncSnapshot<Response> snapshot = await post(subRoute: itemViewRoute.replaceFirst("{item_id}", id), token: accessToken);
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
 
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);

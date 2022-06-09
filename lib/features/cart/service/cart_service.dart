@@ -23,7 +23,7 @@ class CartService extends ServiceProvider {
   }) async {
     String accessToken = await _authRepository.getAccessToken();
     AsyncSnapshot<Response> snapshot = await get(token: accessToken);
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(snapshot.connectionState, snapshot.error!);
     } else if (!snapshot.hasData) {
@@ -54,7 +54,7 @@ class CartService extends ServiceProvider {
       token: accessToken,
       data: body,
     );
-    snapshot = faultyResponseShouldReturn(snapshot);
+    snapshot = checkFaultyAndTransformResponse(snapshot);
     if (snapshot.hasError) {
       return AsyncSnapshot.withError(snapshot.connectionState, snapshot.error!);
     } else if (!snapshot.hasData) {

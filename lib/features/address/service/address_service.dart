@@ -18,7 +18,7 @@ class AddressService extends ServiceProvider {
     try {
       String accessToken = await _authRepository.getAccessToken();
       AsyncSnapshot<Response> snapshot = await get(token: accessToken);
-      snapshot = faultyResponseShouldReturn(snapshot);
+      snapshot = checkFaultyAndTransformResponse(snapshot);
 
       if (snapshot.hasError) {
         return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -42,7 +42,7 @@ class AddressService extends ServiceProvider {
     try {
       String accessToken = await _authRepository.getAccessToken();
       AsyncSnapshot<Response> snapshot = await post(token: accessToken, data: address.toMap());
-      snapshot = faultyResponseShouldReturn(snapshot);
+      snapshot = checkFaultyAndTransformResponse(snapshot);
 
       if (snapshot.hasError) {
         return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
@@ -72,7 +72,7 @@ class AddressService extends ServiceProvider {
         },
       );
 
-      snapshot = faultyResponseShouldReturn(snapshot);
+      snapshot = checkFaultyAndTransformResponse(snapshot);
       if (snapshot.hasError) {
         return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
       } else if (!snapshot.hasData) {

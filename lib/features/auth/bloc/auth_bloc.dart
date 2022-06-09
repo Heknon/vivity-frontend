@@ -23,7 +23,7 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
+  // late final RestartableTimer _renewTokenTimer = RestartableTimer(const Duration(minutes: 5), tokenRenewalRoutine);
 
   final AuthenticationRepository _authRepository = AuthenticationRepository();
   final AuthenticationService _authService = AuthenticationService();
@@ -44,10 +44,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (event.stayLoggedIn) _storageService.storeRefreshToken(loginResult.refreshToken);
 
         emit(AuthLoggedInState(loginResult));
-        _renewTokenTimer.reset();
-      } on NetworkException catch (e) {
+        // _renewTokenTimer.reset();
+      } on Exception catch (e) {
         return emit(
-          AuthFailedState(message: e.message ?? e.response?.data['error'] ?? 'Authorization failed.'),
+          AuthFailedState(message: e is! NetworkException ? "NETWORK ERROR" : e.message ?? e.response?.data['error'] ?? 'Authorization failed.'),
         );
       }
     });
@@ -117,13 +117,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       event.exploreBloc.add(ExploreUnload());
 
-      _renewTokenTimer.cancel();
+      // _renewTokenTimer.cancel();
       emit(AuthLoggedOutState());
     });
   }
 
-  void tokenRenewalRoutine() {
-    add(AuthConfirmationEvent(true));
-    _renewTokenTimer.reset();
-  }
+  // void tokenRenewalRoutine() {
+  //   add(AuthConfirmationEvent(true));
+  //   _renewTokenTimer.reset();
+  // }
 }

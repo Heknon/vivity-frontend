@@ -1,4 +1,4 @@
-const String host = "http://10.0.2.2:20200"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
+const String host = "http://10.0.2.2:80"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
 const userRoute = "/user";
 const authRoute = "/auth";
 const cartRoute = "/user/cart";
@@ -17,7 +17,7 @@ const itemUpdateRoute = '/business/item/{item_id}';
 const itemImageRoute = '/business/item/{item_id}/image';
 const itemViewMetricRoute = '/business/item/{item_id}/view';
 const businessViewMetricRoute = '/business/{business_id}/view';
-const businessOrdersRoute = '/business/orders';
+const businessOrdersRoute = '/business/order';
 const businessOrderStatusRoute = '/business/order/status';
 const businessAdminApproval = '/business/approve';
 const businessAdminUnapproved = '/business/unapproved';

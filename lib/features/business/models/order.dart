@@ -13,7 +13,6 @@ class Order {
   final double total;
   final Address? address;
   final List<OrderItem> items;
-  final OrderStatus status;
 
   const Order({
     required this.orderDate,
@@ -23,7 +22,6 @@ class Order {
     required this.cuponDiscount,
     required this.total,
     required this.address,
-    required this.status,
     required this.orderId,
   });
 
@@ -37,7 +35,6 @@ class Order {
       shippingCost: (map['shipping_cost'] as num).toDouble(),
       subtotal: (map['subtotal'] as num).toDouble(),
       total: (map['total'] as num).toDouble(),
-      status: OrderStatus.values[map['status']],
     );
   }
 
@@ -51,7 +48,6 @@ class Order {
       'shipping_cost': shippingCost,
       'subtotal': subtotal,
       'total': total,
-      'status': status.index,
       '_id': orderId.hexString,
     } as Map<String, dynamic>;
   }
@@ -86,7 +82,6 @@ class Order {
       address: address ?? this.address,
       items: items ?? this.items,
       orderId: orderId ?? this.orderId,
-      status: status ?? this.status,
     );
   }
 
@@ -107,9 +102,7 @@ class Order {
           cuponDiscount == other.cuponDiscount &&
           total == other.total &&
           address == other.address &&
-          listEquals(items, other.items) &&
-          status == other.status;
-
+          listEquals(items, other.items);
   @override
   int get hashCode =>
       orderDate.hashCode ^
@@ -119,7 +112,6 @@ class Order {
       total.hashCode ^
       address.hashCode ^
       items.hashCode ^
-      status.index ^
       orderId.hashCode;
 }
 

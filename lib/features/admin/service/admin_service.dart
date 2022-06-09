@@ -25,21 +25,7 @@ class AdminService extends ServiceProvider {
       "get_images": getImages,
     });
 
-    if (snapshot.hasError) {
-      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
-    } else if (!snapshot.hasData) {
-      return AsyncSnapshot.nothing();
-    }
-
-    Response response = snapshot.data!;
-    if (response.statusCode! > 300) {
-      return AsyncSnapshot.withError(ConnectionState.done, response);
-    }
-
-    return AsyncSnapshot.withData(
-      ConnectionState.done,
-      (response.data! as List<dynamic>).map((e) => Business.fromMap(e)).toList(),
-    );
+    return this.checkFaultyAndTransformResponse(snapshot, map: (response) => (response.data! as List<dynamic>).map((e) => Business.fromMap(e)).toList());
   }
 
   Future<AsyncSnapshot<List<Business>>> getApprovedBusinesses({
@@ -50,21 +36,7 @@ class AdminService extends ServiceProvider {
       "get_images": getImages,
     });
 
-    if (snapshot.hasError) {
-      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
-    } else if (!snapshot.hasData) {
-      return AsyncSnapshot.nothing();
-    }
-
-    Response response = snapshot.data!;
-    if (response.statusCode! > 300) {
-      return AsyncSnapshot.withError(ConnectionState.done, response);
-    }
-
-    return AsyncSnapshot.withData(
-      ConnectionState.done,
-      (response.data! as List<dynamic>).map((e) => Business.fromMap(e)).toList(),
-    );
+    return this.checkFaultyAndTransformResponse(snapshot, map: (response) => (response.data! as List<dynamic>).map((e) => Business.fromMap(e)).toList());
   }
 
   Future<AsyncSnapshot<Business>> updateBusinessApproval({
@@ -79,20 +51,6 @@ class AdminService extends ServiceProvider {
       'business_id': businessId,
     });
 
-    if (snapshot.hasError) {
-      return AsyncSnapshot.withError(ConnectionState.done, snapshot.error!);
-    } else if (!snapshot.hasData) {
-      return AsyncSnapshot.nothing();
-    }
-
-    Response response = snapshot.data!;
-    if (response.statusCode! > 300) {
-      return AsyncSnapshot.withError(ConnectionState.done, response);
-    }
-
-    return AsyncSnapshot.withData(
-      ConnectionState.done,
-      Business.fromMap(response.data!),
-    );
+    return this.checkFaultyAndTransformResponse<Business>(snapshot, map: (response) => Business.fromMap(response.data!));
   }
 }
