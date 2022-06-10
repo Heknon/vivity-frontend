@@ -14,6 +14,7 @@ import 'package:vivity/features/checkout/service/checkout_service.dart';
 import 'package:vivity/features/checkout/shipping_page/bloc/shipping_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
+import 'package:vivity/models/shipping_method.dart';
 
 import '../../../../helpers/helper.dart';
 
@@ -88,10 +89,13 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       subtotal: roundDouble(payment.shippingState.confirmationStageState.subtotal, 3),
       shippingCost: roundDouble(payment.shippingState.confirmationStageState.deliveryCost, 3),
       cuponDiscount: roundDouble(payment.shippingState.confirmationStageState.cuponDiscount, 3),
-      total: roundDouble(payment.shippingState.confirmationStageState.deliveryCost +
-          (1 - payment.shippingState.confirmationStageState.cuponDiscount) * payment.shippingState.confirmationStageState.subtotal, 3),
+      total: roundDouble(
+          payment.shippingState.confirmationStageState.deliveryCost +
+              (1 - payment.shippingState.confirmationStageState.cuponDiscount) * payment.shippingState.confirmationStageState.subtotal,
+          3),
       address: payment.selectedAddress,
       orderId: ObjectId(),
+      shippingMethod: payment.shippingState.confirmationStageState.shippingMethod,
     );
   }
 }

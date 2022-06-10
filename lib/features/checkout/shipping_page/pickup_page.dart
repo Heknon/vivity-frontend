@@ -64,12 +64,13 @@ class _PickupPageState extends State<PickupPage> {
                   expandedBuilder: (ctx, address) {
                     Size gridSize = Size(100.w, 30.h);
                     EdgeInsets padding = const EdgeInsets.all(8);
-                    List<CartItemModel> models = state.addresses.keys.toList();
+                    List<CartItemModel> models = swappedData[address] ?? [];
                     return buildCartItemList(
                       models,
                       gridSize,
                       context,
-                      hasQuantity: false,
+                      hasQuantity: true,
+                      onlyQuantity: true,
                       itemBorderRadius: BorderRadius.all(Radius.circular(8)),
                       itemPadding: padding,
                       elevation: 2,

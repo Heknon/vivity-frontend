@@ -32,7 +32,7 @@ class BusinessBloc extends Bloc<BusinessEvent, BusinessState> {
       ))
           .removeNull();
 
-      List<Order> orders = await _businessRepository.getBusinessOrders();
+      List<Order> orders = await _businessRepository.getBusinessOrders(update: true);
       List<String> orderItemIds = List.empty(growable: true);
       for (Order order in orders) {
         for (OrderItem orderItem in order.items) {

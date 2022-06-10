@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/business/models/order_item.dart';
+import 'package:vivity/models/shipping_method.dart';
 
 import '../../address/models/address.dart';
 
@@ -12,6 +13,7 @@ class Order {
   final double cuponDiscount;
   final double total;
   final Address? address;
+  final ShippingMethod shippingMethod;
   final List<OrderItem> items;
 
   const Order({
@@ -23,6 +25,7 @@ class Order {
     required this.total,
     required this.address,
     required this.orderId,
+    required this.shippingMethod,
   });
 
   factory Order.fromMap(Map<String, dynamic> map) {
@@ -30,11 +33,12 @@ class Order {
       orderId: ObjectId.fromHexString(map['_id']),
       orderDate: DateTime.fromMillisecondsSinceEpoch((map['order_date'] as num).toInt() * 1000),
       items: (map['items'] as List<dynamic>).map((e) => OrderItem.fromMap(e)).toList(),
-      address: map.containsKey('shipping_address') ? Address.fromMap(map['shipping_address']) : null,
+      address: map['shipping_address'] != null ? Address.fromMap(map['shipping_address']) : null,
       cuponDiscount: (map['cupon_discount'] as num).toDouble(),
       shippingCost: (map['shipping_cost'] as num).toDouble(),
       subtotal: (map['subtotal'] as num).toDouble(),
       total: (map['total'] as num).toDouble(),
+      shippingMethod: ShippingMethod.values[(map['shipping_method'] as num).toInt()],
     );
   }
 
@@ -49,6 +53,7 @@ class Order {
       'subtotal': subtotal,
       'total': total,
       '_id': orderId.hexString,
+      'shipping_method': shippingMethod.index,
     } as Map<String, dynamic>;
   }
 
@@ -62,6 +67,7 @@ class Order {
     List<OrderItem>? items,
     OrderStatus? status,
     ObjectId? orderId,
+    ShippingMethod? shippingMethod,
   }) {
     if ((orderDate == null || identical(orderDate, this.orderDate)) &&
         (subtotal == null || identical(subtotal, this.subtotal)) &&
@@ -82,6 +88,7 @@ class Order {
       address: address ?? this.address,
       items: items ?? this.items,
       orderId: orderId ?? this.orderId,
+      shippingMethod: shippingMethod ?? this.shippingMethod,
     );
   }
 
@@ -102,7 +109,9 @@ class Order {
           cuponDiscount == other.cuponDiscount &&
           total == other.total &&
           address == other.address &&
+          shippingMethod == other.shippingMethod &&
           listEquals(items, other.items);
+
   @override
   int get hashCode =>
       orderDate.hashCode ^
@@ -112,7 +121,8 @@ class Order {
       total.hashCode ^
       address.hashCode ^
       items.hashCode ^
-      orderId.hashCode;
+      orderId.hashCode ^
+      shippingMethod.hashCode;
 }
 
 enum OrderStatus { processing, processed, shipping, shipped, readyForPickup, complete }

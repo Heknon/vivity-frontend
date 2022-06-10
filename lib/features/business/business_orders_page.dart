@@ -47,38 +47,41 @@ class BusinessOrdersPage extends StatelessWidget {
           ),
           SizedBox(height: 20),
           orders.isNotEmpty
-              ? SingleChildScrollView(
-                child: Column(
-                    children: List.generate(orders.length, (i) {
-                      final int index = i;
-                      order_widget.Order order = order_widget.Order(
-                        order: orders[i],
-                        orderItems: orderItems,
-                        dropdownStatus: true,
-                        onDropdownChange: (item, status) async {
-                          if (status == null) {
-                            showSnackBar('An error occurred and status cannot be updated', context);
+              ? SizedBox(
+                  height: 65.h,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: List.generate(orders.length, (i) {
+                        final int index = i;
+                        order_widget.Order order = order_widget.Order(
+                          order: orders[i],
+                          orderItems: orderItems,
+                          dropdownStatus: true,
+                          onDropdownChange: (item, status) async {
+                            if (status == null) {
+                              showSnackBar('An error occurred and status cannot be updated', context);
+                              return;
+                            }
+
+                            AsyncSnapshot<Order> snapshot =
+                                await _orderService.updateOrderStatus(status: status, orderId: orders[i].orderId.hexString, item: item);
+
+                            if (snapshot.hasError || !snapshot.hasData) {
+                              showSnackBar('An error occurred and status cannot be updated\n${snapshot.error}', context);
+                            } else {
+                              Order order = snapshot.data!;
+                              businessBloc.add(BusinessChangeOrderEvent(order));
+                              showSnackBar('Updated order status to ${status.getName()}', context);
+                            }
+
                             return;
-                          }
-
-                          AsyncSnapshot<Order> snapshot =
-                              await _orderService.updateOrderStatus(status: status, orderId: orders[i].orderId.hexString, index: index);
-
-                          if (snapshot.hasError || !snapshot.hasData) {
-                            showSnackBar('An error occurred and status cannot be updated', context);
-                          } else {
-                            Order order = snapshot.data!;
-                            businessBloc.add(BusinessChangeOrderEvent(order));
-                            showSnackBar('Updated order status to ${status.getName()}', context);
-                          }
-
-                          return;
-                        },
-                      );
-                      return order;
-                    }),
+                          },
+                        );
+                        return order;
+                      }),
+                    ),
                   ),
-              )
+                )
               : Text(
                   "Sadly, no one has made any orders\n😞",
                   textAlign: TextAlign.center,

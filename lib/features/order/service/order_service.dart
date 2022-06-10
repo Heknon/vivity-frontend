@@ -5,6 +5,8 @@ import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/business/models/order.dart';
 import 'package:vivity/services/service_provider.dart';
 
+import '../../business/models/order_item.dart';
+
 class OrderService extends ServiceProvider {
   static final OrderService _orderService = OrderService._();
 
@@ -16,13 +18,13 @@ class OrderService extends ServiceProvider {
 
   Future<AsyncSnapshot<Order>> updateOrderStatus({
     required String orderId,
-    required int index,
+    required OrderItem item,
     required OrderStatus status,
   }) async {
     AsyncSnapshot<Response> snapshot = await post(subRoute: '/status', token: await _authRepository.getAccessToken(), data: {
       'order_id': orderId,
       'status': status.index,
-      'item_index': index,
+      'item': item.toMap(),
     });
     snapshot = checkFaultyAndTransformResponse(snapshot);
 
