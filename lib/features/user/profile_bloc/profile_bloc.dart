@@ -25,7 +25,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc() : super(ProfileUnloaded()) {
     on<ProfileLoadEvent>((event, emit) async {
       emit(ProfileLoading());
-      User user = await _userRepository.getUser();
+      User user = await _userRepository.getUser(update: true);
       List<String> orderItemIds = List.empty(growable: true);
       for (Order order in user.orderHistory) {
         for (OrderItem orderItem in order.items) {

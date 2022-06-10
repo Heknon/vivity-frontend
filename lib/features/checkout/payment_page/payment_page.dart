@@ -17,6 +17,7 @@ import 'package:vivity/helpers/ui_helpers.dart';
 import '../../../config/themes/themes_config.dart';
 import '../../../widgets/appbar/appbar.dart';
 import '../../base_page.dart';
+import '../../cart/bloc/cart_bloc.dart';
 import '../checkout_progress.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -175,7 +176,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     if (state is! PaymentLoaded) return CircularProgressIndicator();
 
                     CheckoutConfirmLoaded confirmationStage = state.shippingState.confirmationStageState;
-                    double total = confirmationStage.subtotal + confirmationStage.deliveryCost - confirmationStage.cuponDiscount;
+                    double total = confirmationStage.subtotal + confirmationStage.deliveryCost - confirmationStage.cuponDiscount * confirmationStage.subtotal;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -468,6 +469,7 @@ class _PaymentPageState extends State<PaymentPage> {
       month: int.parse(expirationMonth),
       year: int.parse(expirationYear),
       total: total,
+      cartBloc: context.read<CartBloc>(),
     ));
   }
 

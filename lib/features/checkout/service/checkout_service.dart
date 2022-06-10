@@ -11,9 +11,8 @@ import '../../business/models/order.dart';
 class CheckoutService extends ServiceProvider {
   final AuthenticationRepository _authRepository = AuthenticationRepository();
 
-  static const String orderRoute = '/business/order';
-  static const String shippingCostRoute = '/business/shipping';
-  static const String cuponDiscountRoute = '/business/cupon';
+  static const String shippingCostRoute = '/shipping';
+  static const String cuponDiscountRoute = '/cupon';
 
   static final CheckoutService _checkoutService = CheckoutService._();
 
@@ -35,7 +34,6 @@ class CheckoutService extends ServiceProvider {
     orderMap.remove("order_date");
     orderMap['cupon'] = cupon;
 
-    print(orderMap);
     AsyncSnapshot<Response> snapshot = await post(token: accessToken, data: {
       "credit_card_number": creditCardNumber,
       "year": year,
@@ -45,7 +43,6 @@ class CheckoutService extends ServiceProvider {
       'name': name,
     });
 
-    print(snapshot);
     return this.checkFaultyAndTransformResponse(snapshot, map: (response) => Order.fromMap(response.data));
   }
 
@@ -54,18 +51,21 @@ class CheckoutService extends ServiceProvider {
   }) async {
     String accessToken = await _authRepository.getAccessToken();
 
-    AsyncSnapshot<Response> snapshot = await post(subRoute: cuponDiscountRoute, token: accessToken);
+    AsyncSnapshot<Response> snapshot = await get(subRoute: cuponDiscountRoute, token: accessToken, queryParameters: {'cupon': cupon});
 
     return this.checkFaultyAndTransformResponse(snapshot, map: (response) => response.data['discount']);
   }
 
   Future<AsyncSnapshot<double>> getShippingCost({
-    required Address address,
+    required Address? address,
     required List<OrderItem> items,
   }) async {
     String accessToken = await _authRepository.getAccessToken();
 
-    AsyncSnapshot<Response> snapshot = await post(subRoute: shippingCostRoute, token: accessToken);
+    AsyncSnapshot<Response> snapshot = await post(subRoute: shippingCostRoute, token: accessToken, data: {
+      'items': items.map((e) => e.toMap()).toList(),
+      'address': address?.toMap()
+    });
 
     return this.checkFaultyAndTransformResponse(snapshot, map: (response) => response.data['cost']);
   }

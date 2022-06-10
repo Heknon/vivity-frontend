@@ -26,8 +26,7 @@ class ItemService extends ServiceProvider {
   factory ItemService() => _itemService;
 
   Future<AsyncSnapshot<List<ItemModel>>> getItems({required List<String> itemIds, required bool getItemImages}) async {
-    AsyncSnapshot<Response> snapshot = await get(queryParameters: {
-      "item_ids": itemIds,
+    AsyncSnapshot<Response> snapshot = await post(baseRoute: '/business/items', data: itemIds, queryParameters: {
       'include_images': getItemImages,
     });
 

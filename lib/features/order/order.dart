@@ -45,8 +45,6 @@ class _OrderState extends State<Order> {
     for (var item in widget.order.items) {
       dropdownValue[item] = item.status;
     }
-
-    print(dropdownValue);
   }
 
   @override

@@ -126,7 +126,7 @@ class CartTotals extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: Text(
-                  "\$${(subtotal + deliveryCost - cuponDiscount).toStringAsFixed(2)}",
+                  "\$${(subtotal + deliveryCost - cuponDiscount * subtotal).toStringAsFixed(2)}",
                   style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.5.sp),
                 ),
               ),

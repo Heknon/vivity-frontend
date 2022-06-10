@@ -190,6 +190,13 @@ class _CartViewState extends State<CartView> {
           splashFactory: InkSplash.splashFactory,
         ),
         onPressed: () {
+          if (state is! CartLoaded) {
+            return showSnackBar('Please wait a few moments for the cart to sync.', context);
+          }
+
+          if (state.items.length <= 0) {
+            return showSnackBar('There must be items in the cart to proceed to checkout!', context);
+          }
           Navigator.pushNamed(context, '/checkout/confirm');
         },
         child: Text(

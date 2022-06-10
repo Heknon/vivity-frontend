@@ -107,7 +107,7 @@ class CartItem extends StatelessWidget {
                             deletable: true,
                             onDelete: onQuantityDelete,
                             onlyQuantity: onlyQuantity,
-                            controller: quantityController,
+                            controller: quantityController ?? QuantityController(quantity: item.quantity),
                           ),
                         )
                     ],

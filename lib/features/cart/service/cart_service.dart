@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/constants/api_path.dart';
 import 'package:vivity/features/auth/repo/authentication_repository.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
@@ -31,11 +32,15 @@ class CartService extends ServiceProvider {
     }
 
     Response response = snapshot.data!;
+    print("BEFORE (${response.data!.length}): ${response.data}");
     List<CartItemModel> cartItems = await _getCartItemModelsFromMap(
       response.data,
       update: update,
       fetchImages: fetchImages,
     );
+
+    print("AFTER (${cartItems.length}): ${cartItems}");
+
 
     return AsyncSnapshot.withData(
       ConnectionState.done,
@@ -79,27 +84,26 @@ class CartService extends ServiceProvider {
     required bool update,
     required bool fetchImages,
   }) async {
-    List<String> itemIds = List.generate(
+    List<String> itemIds = List<String>.generate(
       unparsedCart.length,
       (index) => unparsedCart[index]['item_id'],
-    );
+    ).toSet().toList();
 
     List<ItemModel?> cartItemModels = await _itemRepository.getItemModelsFromId(
       itemIds: itemIds,
       update: update,
       fetchImagesOnUpdate: fetchImages,
     );
+    Map<String, ItemModel> itemModels = {};
+    for (ItemModel? item in cartItemModels) {
+      if (item != null) itemModels[item.id.hexString] = item;
+    }
 
     List<CartItemModel> cartItemsResult = List.empty(growable: true);
-    Map<String, ItemModel> itemIdModelMap = {};
-
-    for (ItemModel? item in cartItemModels) {
-      if (item != null) itemIdModelMap[item.id.hexString] = item;
-    }
 
     for (dynamic cartItem in unparsedCart) {
       String itemId = cartItem['item_id'];
-      ItemModel? model = itemIdModelMap[itemId];
+      ItemModel? model = itemModels[itemId];
       if (model == null) continue;
 
       cartItemsResult.add(CartItemModel.fromMap(cartItem, model));

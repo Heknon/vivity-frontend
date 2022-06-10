@@ -7,10 +7,15 @@ import 'package:objectid/objectid/objectid.dart';
 import 'package:vivity/features/address/models/address.dart';
 import 'package:vivity/features/business/models/order.dart';
 import 'package:vivity/features/business/models/order_item.dart';
+import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
+import 'package:vivity/features/cart/repo/cart_repository.dart';
 import 'package:vivity/features/checkout/service/checkout_service.dart';
 import 'package:vivity/features/checkout/shipping_page/bloc/shipping_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/features/user/repo/user_repository.dart';
+
+import '../../../../helpers/helper.dart';
 
 part 'payment_event.dart';
 
@@ -18,6 +23,8 @@ part 'payment_state.dart';
 
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final CheckoutService _checkoutService = CheckoutService();
+  final UserRepository _userRepository = UserRepository();
+  final CartRepository _cartRepository = CartRepository();
 
   PaymentBloc() : super(PaymentUnloaded()) {
     on<PaymentLoadEvent>((event, emit) {
@@ -44,7 +51,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       emit(PaymentProcessingPayment(selectedAddress: s.selectedAddress, shippingState: s.shippingState));
 
       Order order = buildOrderFromState(s);
-      print('sending payment');
       AsyncSnapshot<Order> processedOrder = await _checkoutService.processOrder(
         order: order,
         cupon: s.shippingState.confirmationStageState.cupon,
@@ -59,6 +65,8 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         return emit(PaymentFailedPayment(processedOrder.error?.toString() ?? 'Failed to process order.'));
       }
 
+      await _userRepository.getUser(update: true);
+      event.cartBloc.add(CartSyncEvent());
       emit(PaymentSuccessPayment(processedOrder.data!, s.shippingState.confirmationStageState.items.map((e) => e.item).toList()));
     });
 
@@ -77,10 +85,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     return Order(
       orderDate: DateTime.now(),
       items: items.map((e) => OrderItem.fromCartItem(e)).toList(),
-      subtotal: payment.shippingState.confirmationStageState.subtotal,
-      shippingCost: payment.shippingState.confirmationStageState.deliveryCost,
-      cuponDiscount: payment.shippingState.confirmationStageState.cuponDiscount,
-      total: payment.shippingState.confirmationStageState.total,
+      subtotal: roundDouble(payment.shippingState.confirmationStageState.subtotal, 3),
+      shippingCost: roundDouble(payment.shippingState.confirmationStageState.deliveryCost, 3),
+      cuponDiscount: roundDouble(payment.shippingState.confirmationStageState.cuponDiscount, 3),
+      total: roundDouble(payment.shippingState.confirmationStageState.deliveryCost +
+          (1 - payment.shippingState.confirmationStageState.cuponDiscount) * payment.shippingState.confirmationStageState.subtotal, 3),
       address: payment.selectedAddress,
       orderId: ObjectId(),
     );

@@ -11,6 +11,7 @@ class PaymentLoadEvent extends PaymentEvent {
 }
 
 class PaymentPayEvent extends PaymentEvent {
+  final CartBloc cartBloc;
   final String cardNumber;
   final String cvv;
   final String name;
@@ -25,6 +26,7 @@ class PaymentPayEvent extends PaymentEvent {
     required this.month,
     required this.year,
     required this.total,
+    required this.cartBloc,
   });
 }
 

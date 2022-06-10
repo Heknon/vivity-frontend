@@ -5,8 +5,9 @@ import 'package:sizer/sizer.dart';
 class Cupon extends StatelessWidget {
   final TextEditingController? cuponTextController;
   final VoidCallback? onApplyClicked;
+  final FocusNode? focusNode;
 
-  const Cupon({Key? key, this.cuponTextController, this.onApplyClicked}) : super(key: key);
+  const Cupon({Key? key, this.cuponTextController, this.onApplyClicked, this.focusNode,}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +17,7 @@ class Cupon extends StatelessWidget {
         height: 10.sp * 3.5,
         child: TextField(
           controller: cuponTextController,
+          focusNode: focusNode,
           style: TextStyle(fontSize: 12.sp, color: Colors.black),
           decoration: InputDecoration(
             contentPadding: EdgeInsets.all(10),

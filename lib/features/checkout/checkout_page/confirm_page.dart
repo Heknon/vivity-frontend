@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:no_interaction_dialog/load_dialog.dart';
 import 'package:sizer/sizer.dart';
 import 'package:vivity/features/base_page.dart';
 import 'package:vivity/features/checkout/checkout_page/bloc/checkout_confirm_bloc.dart';
@@ -13,7 +16,6 @@ import '../cart_totals.dart';
 import '../checkout_progress.dart';
 
 class ConfirmPage extends StatefulWidget {
-
   ConfirmPage({Key? key}) : super(key: key);
 
   @override
@@ -23,6 +25,7 @@ class ConfirmPage extends StatefulWidget {
 class _ConfirmPageState extends State<ConfirmPage> {
   final TextEditingController _cuponController = TextEditingController();
   late final CheckoutConfirmBloc _bloc;
+  final FocusNode _cuponFocusNode = FocusNode();
 
   @override
   void didChangeDependencies() {
@@ -75,14 +78,29 @@ class _ConfirmPageState extends State<ConfirmPage> {
               ),
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: itemSize.width,
-              child: Cupon(
-                cuponTextController: _cuponController,
-                onApplyClicked: () {
-                  _bloc.add(CheckoutConfirmUpdateCuponEvent(_cuponController.text));
-                },
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: itemSize.width,
+                  child: Cupon(
+                    cuponTextController: _cuponController,
+                    focusNode: _cuponFocusNode,
+                    onApplyClicked: () {
+                      _cuponFocusNode.unfocus();
+                      _bloc.add(CheckoutConfirmUpdateCuponEvent(_cuponController.text));
+                    },
+                  ),
+                ),
+                if (state.cuponDiscount > 0)
+                  Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Cupon applied: ${min(state.cuponDiscount * 100, 100)}% off',
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -97,14 +115,18 @@ class _ConfirmPageState extends State<ConfirmPage> {
               padding: EdgeInsets.all(8),
               child: SizedBox(
                 width: listSize.width - 20,
-                child: CartTotals(
-                  subtotal: state.subtotal,
-                  shippingCost: _bloc.calculateShipping(state),
-                  cuponDiscount: state.cuponDiscount,
-                  deliveryCost: state.deliveryCost,
-                  shippingMethod: state.shippingMethod,
-                  onShippingChange: (method) => _bloc.add(CheckoutConfirmUpdateShippingEvent(method)),
-                ),
+                child: FutureBuilder<double>(
+                    future: _bloc.calculateShipping(state),
+                    builder: (context, snapshot) {
+                      return CartTotals(
+                        subtotal: state.subtotal,
+                        shippingCost: snapshot.hasError || !snapshot.hasData ? 0 : snapshot.data!,
+                        cuponDiscount: state.cuponDiscount,
+                        deliveryCost: state.deliveryCost,
+                        shippingMethod: state.shippingMethod,
+                        onShippingChange: (method) => _bloc.add(CheckoutConfirmUpdateShippingEvent(method)),
+                      );
+                    }),
               ),
             ),
             const SizedBox(height: 20),

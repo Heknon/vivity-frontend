@@ -1,18 +1,24 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
+import 'package:vivity/features/business/models/order_item.dart';
 import 'package:vivity/features/cart/bloc/cart_bloc.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/models/shipping_method.dart';
+
+import '../../service/checkout_service.dart';
 
 part 'checkout_confirm_event.dart';
 
 part 'checkout_confirm_state.dart';
 
 class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmState> {
+  final CheckoutService _checkoutService = CheckoutService();
+
   CheckoutConfirmBloc() : super(CheckoutConfirmUnloaded()) {
-    on<CheckoutConfirmLoadEvent>((event, emit) {
+    on<CheckoutConfirmLoadEvent>((event, emit) async {
       emit(CheckoutConfirmLoading());
       CartBloc bloc = event.cartBloc;
       CartState cartState = bloc.state;
@@ -26,8 +32,9 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
         if (!isClosed) add(CheckoutConfirmUpdateCartStateEvent(cartState));
       });
 
+      List<CartItemModel> items = cartState.items.map((e) => e.copyWith()).toList();
       CheckoutConfirmLoaded s = CheckoutConfirmLoaded(
-        items: cartState.items.map((e) => e.copyWith()).toList(),
+        items: items,
         shippingMethod: ShippingMethod.delivery,
         cupon: "",
         deliveryCost: 0,
@@ -36,12 +43,12 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
       );
 
       emit(s.copyWith(
-        cuponDiscount: calculateCupon(s),
-        deliveryCost: calculateDelivery(s),
+        cuponDiscount: await calculateCupon(s),
+        deliveryCost: await calculateDelivery(s),
       ));
     });
 
-    on<CheckoutConfirmUpdateShippingEvent>((event, emit) {
+    on<CheckoutConfirmUpdateShippingEvent>((event, emit) async {
       CheckoutConfirmState s = state;
       if (s is! CheckoutConfirmLoaded) return;
 
@@ -50,11 +57,11 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
       );
 
       emit(s.copyWith(
-        deliveryCost: calculateDelivery(s),
+        deliveryCost: await calculateDelivery(s),
       ));
     });
 
-    on<CheckoutConfirmUpdateCuponEvent>((event, emit) {
+    on<CheckoutConfirmUpdateCuponEvent>((event, emit) async {
       CheckoutConfirmState s = state;
       if (s is! CheckoutConfirmLoaded) return;
 
@@ -62,22 +69,23 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
         cupon: event.cupon,
       );
 
-      emit(s.copyWith(
-        cuponDiscount: calculateCupon(s),
-      ));
+      s = s.copyWith(
+        cuponDiscount: await calculateCupon(s),
+      );
+      emit(s);
     });
 
-    on<CheckoutConfirmUpdateCartStateEvent>((event, emit) {
+    on<CheckoutConfirmUpdateCartStateEvent>((event, emit) async {
       if (event.state is! CartLoaded || state is! CheckoutConfirmLoaded) return;
       CheckoutConfirmLoaded s = (state as CheckoutConfirmLoaded).copyWith(items: (event.state as CartLoaded).items);
       emit(s.copyWith(
-        cuponDiscount: calculateCupon(s),
-        deliveryCost: calculateDelivery(s),
+        cuponDiscount: await calculateCupon(s),
+        deliveryCost: await calculateDelivery(s),
       ));
     });
   }
 
-  double calculateDelivery(CheckoutConfirmLoaded state) {
+  Future<double> calculateDelivery(CheckoutConfirmLoaded state) async {
     if (state.shippingMethod == ShippingMethod.delivery) {
       return calculateShipping(state);
     }
@@ -85,15 +93,18 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
     return 0;
   }
 
-  double calculateShipping(CheckoutConfirmLoaded state) {
-    return state.items.length * 1.25;
+  Future<double> calculateShipping(CheckoutConfirmLoaded state) async {
+    AsyncSnapshot<double> deliverySnapshot =
+        await _checkoutService.getShippingCost(address: null, items: state.items.map((e) => OrderItem.fromCartItem(e)).toList());
+    double deliveryCost = deliverySnapshot.hasError || !deliverySnapshot.hasData ? 0 : deliverySnapshot.data!;
+
+    return deliveryCost;
   }
 
-  double calculateCupon(CheckoutConfirmLoaded state) {
-    if (state.cupon.isEmpty) {
-      return 0;
-    } else {
-      return state.subtotal * 0.1;
-    }
+  Future<double> calculateCupon(CheckoutConfirmLoaded state) async {
+    AsyncSnapshot<double> cuponSnapshot = await _checkoutService.getCuponDiscount(cupon: state.cupon);
+    double cuponDiscount = cuponSnapshot.hasError || !cuponSnapshot.hasData ? 0 : cuponSnapshot.data!;
+
+    return cuponDiscount;
   }
 }
