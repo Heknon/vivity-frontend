@@ -32,15 +32,11 @@ class CartService extends ServiceProvider {
     }
 
     Response response = snapshot.data!;
-    print("BEFORE (${response.data!.length}): ${response.data}");
     List<CartItemModel> cartItems = await _getCartItemModelsFromMap(
       response.data,
       update: update,
       fetchImages: fetchImages,
     );
-
-    print("AFTER (${cartItems.length}): ${cartItems}");
-
 
     return AsyncSnapshot.withData(
       ConnectionState.done,

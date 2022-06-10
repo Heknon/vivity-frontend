@@ -29,7 +29,9 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
           return emit(CheckoutConfirmUnloaded());
         }
 
-        if (!isClosed) add(CheckoutConfirmUpdateCartStateEvent(cartState));
+        if (!isClosed) {
+          add(CheckoutConfirmUpdateCartStateEvent(cartState));
+        }
       });
 
       List<CartItemModel> items = cartState.items.map((e) => e.copyWith()).toList();
@@ -79,6 +81,7 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
       if (event.state is! CartLoaded || state is! CheckoutConfirmLoaded) return;
       CheckoutConfirmLoaded s = (state as CheckoutConfirmLoaded).copyWith(items: (event.state as CartLoaded).items);
       emit(s.copyWith(
+        subtotal: (event.state as CartLoaded).total,
         cuponDiscount: await calculateCupon(s),
         deliveryCost: await calculateDelivery(s),
       ));
