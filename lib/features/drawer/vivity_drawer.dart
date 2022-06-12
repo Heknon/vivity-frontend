@@ -166,9 +166,8 @@ class _VivityDrawerState extends State<VivityDrawer> {
                   buildMenuButton(
                     text: 'Sign out',
                     onPressed: () {
-                      showSnackBar('Signing out...', context);
                       WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-                        Navigator.pop(context);
+                        Navigator.popUntil(context, (route) => route.isFirst);
                         Navigator.pushReplacementNamed(context, '/logout');
                       });
                     },

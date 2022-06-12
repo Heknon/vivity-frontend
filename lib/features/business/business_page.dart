@@ -87,7 +87,7 @@ class _BusinessPageState extends State<BusinessPage> {
           },
           builder: (context, state) {
             if (state is! BusinessLoaded) {
-              return CircularProgressIndicator();
+              return Center(child: CircularProgressIndicator());
             }
 
             return TabBarView(

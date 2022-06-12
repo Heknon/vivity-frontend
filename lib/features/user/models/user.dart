@@ -135,7 +135,9 @@ class User {
       addresses: (map['shipping_addresses'] as List<dynamic>).map((e) => Address.fromMap(e)).toList(),
       likedItems: (map['liked_items'] as List<dynamic>).map((e) => ItemModel.fromMap(e)).toList(),
       cart: cartItems,
-      orderHistory: (map['order_history'] as List<dynamic>).map((e) => Order.fromMap(e)).toList(),
+      orderHistory: (map['order_history'] as List<dynamic>).map((e) {
+        return Order.fromMap(e);
+      }).toList(),
       isAdmin: map['is_system_admin'] ?? false
     );
   }

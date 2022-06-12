@@ -7,6 +7,7 @@ import 'package:vivity/features/address/address.dart';
 import 'package:vivity/features/business/models/order_item.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
 import 'package:vivity/features/item/models/item_model.dart';
+import 'package:vivity/models/shipping_method.dart';
 import '../business/models/order.dart' as business_model;
 import '../item/ui_item_helper.dart';
 
@@ -73,7 +74,7 @@ class _OrderState extends State<Order> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "${addZero(widget.order.orderDate.day)}/${addZero(widget.order.orderDate.month)}/${widget.order.orderDate.year}",
+                  "${addZero(widget.order.orderDate.day)}/${addZero(widget.order.orderDate.month)}/${widget.order.orderDate.year} - For ${widget.order.shippingMethod == ShippingMethod.pickup ? 'Pickup' : 'Delivery'}",
                   style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 13.sp),
                 ),
               ],

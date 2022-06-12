@@ -51,8 +51,11 @@ class BusinessOrdersPage extends StatelessWidget {
                   height: 65.h,
                   child: SingleChildScrollView(
                     child: Column(
-                      children: List.generate(orders.length, (i) {
-                        final int index = i;
+                      children: List.generate(orders.length * 2 - 1, (i) {
+                        if (i % 2 == 1) {
+                          return SizedBox(height: 20);
+                        }
+                        i = i ~/ 2;
                         order_widget.Order order = order_widget.Order(
                           order: orders[i],
                           orderItems: orderItems,

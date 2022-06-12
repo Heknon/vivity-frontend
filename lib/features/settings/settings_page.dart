@@ -121,8 +121,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             );
 
                             await showDialog(context: context, builder: (ctx) => dialog);
-                            String? email = await completer.future;
-                            if (email == null) return;
+                            String? email = (await completer.future)?.trim().toLowerCase();
+                            if (email == null || state.email == email) return;
                             showDialog(context: context, builder: (ctx) => _loadDialog);
                             _loadDialogOpen = true;
                             _settingsBloc.add(SettingsUpdateEmailEvent(email));
@@ -143,8 +143,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             );
 
                             await showDialog(context: context, builder: (ctx) => dialog);
-                            String? phone = await completer.future;
-                            if (phone == null) return;
+                            String? phone = (await completer.future)?.trim();
+                            if (phone == null || state.phone == phone) return;
                             showDialog(context: context, builder: (ctx) => _loadDialog);
                             _loadDialogOpen = true;
                             _settingsBloc.add(SettingsUpdatePhoneEvent(phone));
@@ -175,13 +175,17 @@ class _SettingsPageState extends State<SettingsPage> {
                             "UNITS",
                             state.unit == Unit.metric ? "Metric" : "Empirical",
                             context,
-                            onPressed: () async {},
+                            onPressed: () async {
+                              showSnackBar("This is feature is under development", context);
+                            },
                           ),
                           buildPreferenceListTile(
                             "CURRENCY",
                             state.currency != null ? "${currency(state.currency!)} ${state.currency}" : "SELECT",
                             context,
-                            onPressed: () {},
+                            onPressed: () {
+                              showSnackBar("This is feature is under development", context);
+                            },
                           ),
                         ],
                       ),

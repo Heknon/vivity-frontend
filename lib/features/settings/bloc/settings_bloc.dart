@@ -38,9 +38,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<SettingsUpdateEmailEvent>((event, emit) async {
       if (state is! SettingsLoaded) return;
 
-      User user = await _userRepository.updateUser(
-        email: event.email,
-      );
+      User user;
+      try {
+        user = await _userRepository.updateUser(
+          email: event.email,
+        );
+      } on Exception catch (e) {
+        emit((state as SettingsLoaded).copyWith(
+            responseMessage:
+                e is NetworkException ? e.message ?? e.response?.data['error'] ?? "Failed to update email" : "Failed to update email",
+            resetResponseMessage: true));
+        return;
+      }
 
       SettingsLoaded newState = (state as SettingsLoaded).copyWith(
         email: user.email,
@@ -56,9 +65,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<SettingsUpdatePhoneEvent>((event, emit) async {
       if (state is! SettingsLoaded) return;
 
-      User user = await _userRepository.updateUser(
-        phone: event.phone,
-      );
+      User user;
+      try {
+        user = await _userRepository.updateUser(
+          phone: event.phone,
+        );
+      } on Exception catch (e) {
+        emit((state as SettingsLoaded).copyWith(
+            responseMessage:
+            e is NetworkException ? e.message ?? e.response?.data['error'] ?? "Failed to update email" : "Failed to update email",
+            resetResponseMessage: true));
+        return;
+      }
 
       SettingsLoaded newState = (state as SettingsLoaded).copyWith(
         email: user.email,
