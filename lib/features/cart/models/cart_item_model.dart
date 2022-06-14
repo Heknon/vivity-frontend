@@ -33,7 +33,7 @@ class CartItemModel {
           listEquals(modifiersChosen.toList(), other.modifiersChosen.toList()));
 
   @override
-  int get hashCode => item.hashCode ^ modifiersChosen.hashCode ^ quantity.hashCode;
+  int get hashCode => item.hashCode ^ modifiersChosen.hashCode;
 
   @override
   String toString() {

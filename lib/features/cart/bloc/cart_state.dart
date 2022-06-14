@@ -10,6 +10,7 @@ class CartLoading extends CartBlocked {}
 
 class CartLoaded extends CartState {
   final List<CartItemModel> items;
+  final Map<int, QuantityController> quantityControllersHash;
 
   double get total {
     double sum = 0;
@@ -21,9 +22,19 @@ class CartLoaded extends CartState {
 
 //<editor-fold desc="Data Methods">
 
-  const CartLoaded({
+  CartLoaded({
     required this.items,
-  });
+    required this.quantityControllersHash,
+  }) {
+    for (CartItemModel item in items) {
+      if (quantityControllersHash.containsKey(item.hashCode)) continue;
+      quantityControllersHash[item.hashCode] = new QuantityController(quantity: item.quantity);
+    }
+  }
+
+  QuantityController? getQuantityController(CartItemModel item) {
+    return quantityControllersHash[item.hashCode];
+  }
 
   @override
   bool operator ==(Object other) => identical(this, other) || (other is CartLoaded && runtimeType == other.runtimeType && items == other.items);
@@ -38,10 +49,11 @@ class CartLoaded extends CartState {
 
   CartLoaded copyWith({
     List<CartItemModel>? items,
-    ShippingMethod? shippingMethod,
+    Map<int, QuantityController>? quantityControllersHash,
   }) {
     return CartLoaded(
       items: items ?? this.items,
+      quantityControllersHash: quantityControllersHash ?? this.quantityControllersHash,
     );
   }
 

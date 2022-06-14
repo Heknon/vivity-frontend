@@ -34,7 +34,7 @@ class CheckoutConfirmBloc extends Bloc<CheckoutConfirmEvent, CheckoutConfirmStat
         }
       });
 
-      List<CartItemModel> items = cartState.items.map((e) => e.copyWith()).toList();
+      List<CartItemModel> items = cartState.items.map((e) => e).toList();
       CheckoutConfirmLoaded s = CheckoutConfirmLoaded(
         items: items,
         shippingMethod: ShippingMethod.delivery,

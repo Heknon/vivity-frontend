@@ -53,7 +53,7 @@ class BusinessOrdersPage extends StatelessWidget {
                     child: Column(
                       children: List.generate(orders.length * 2 - 1, (i) {
                         if (i % 2 == 1) {
-                          return SizedBox(height: 20);
+                          return Divider();
                         }
                         i = i ~/ 2;
                         order_widget.Order order = order_widget.Order(

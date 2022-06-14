@@ -15,6 +15,7 @@ import 'package:vivity/features/checkout/shipping_page/bloc/shipping_bloc.dart';
 import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/repo/user_repository.dart';
 import 'package:vivity/models/shipping_method.dart';
+import 'package:vivity/services/network_exception.dart';
 
 import '../../../../helpers/helper.dart';
 
@@ -63,7 +64,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       );
 
       if (processedOrder.hasError || !processedOrder.hasData) {
-        return emit(PaymentFailedPayment(processedOrder.error?.toString() ?? 'Failed to process order.'));
+        return emit(PaymentFailedPayment(processedOrder.error is NetworkException ? (processedOrder.error as NetworkException).response?.data['reason'] ?? 'Failed to process order.' : 'Failed to process order.'));
       }
 
       await _userRepository.getUser(update: true);

@@ -12,9 +12,9 @@ class CartAddItemEvent extends CartEvent {
 }
 
 class CartRemoveItemEvent extends CartEvent {
-  final int index;
+  final int hashcode;
 
-  CartRemoveItemEvent(this.index);
+  CartRemoveItemEvent(this.hashcode);
 }
 
 class CartIncrementItemEvent extends CartEvent {
@@ -27,10 +27,4 @@ class CartDecrementItemEvent extends CartEvent {
   final int index;
 
   CartDecrementItemEvent(this.index);
-}
-
-class CartShipmentMethodUpdateEvent extends CartEvent {
-  final ShippingMethod shippingMethod;
-
-  CartShipmentMethodUpdateEvent(this.shippingMethod);
 }

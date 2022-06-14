@@ -75,8 +75,7 @@ extension AuthResultMessages on AuthenticationStatus {
         // TODO: Handle this case.
         break;
       case AuthenticationStatus.emailExists:
-        // TODO: Handle this case.
-        break;
+        return "A user with this email already exists";
       case AuthenticationStatus.passwordIncorrect:
         return "Incorrect details";
       case AuthenticationStatus.presentInBlacklist:

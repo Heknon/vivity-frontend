@@ -107,7 +107,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       SizedBox(height: 10),
                       orders.isNotEmpty
                           ? Column(
-                              children: List.generate(orders.length, (index) {
+                              children: List.generate(orders.length * 2 - 1, (index) {
+                                if (index % 2 == 1) return Divider();
+                                index ~/= 2;
                                 order_widget.Order order = order_widget.Order(order: orders[index], orderItems: orderItems);
                                 return order;
                               }),

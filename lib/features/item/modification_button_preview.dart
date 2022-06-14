@@ -57,15 +57,17 @@ class ModificationButtonPreview extends StatelessWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      modifier!.name,
-                      overflow: TextOverflow.clip,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headline4!.copyWith(
-                            fontSize: textSize.sp,
-                            color: textColor,
-                          ),
+                    child: Center(
+                      child: Text(
+                        modifier!.name,
+                        overflow: TextOverflow.clip,
+                        maxLines: 1,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headline4!.copyWith(
+                              fontSize: textSize.sp,
+                              color: textColor,
+                            ),
+                      ),
                     ),
                   )
                 ],

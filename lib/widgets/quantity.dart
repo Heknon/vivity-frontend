@@ -70,13 +70,14 @@ class QuantityState extends State<Quantity> {
   @override
   void dispose() {
     super.dispose();
-    _controller.dispose();
+    // _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        print('rendering quantity ${_controller.quantity} - ${_controller.hashCode} - ${_controller.mounted}');
         Text text = Text(_controller.quantity.toStringAsFixed(0), style: TextStyle(fontSize: 9.5.sp, color: widget.color));
         Size textSize = getTextSize(text);
         return Container(
@@ -159,7 +160,12 @@ class QuantityController extends ChangeNotifier {
   int min;
   int max;
 
-  QuantityController({this.quantity = 1, this.min = 1, this.max = 10});
+  bool mounted = false;
+
+  QuantityController({this.quantity = 1, this.min = 1, this.max = 10}) {
+    print('created controller with quantity ${quantity} - ${hashCode}');
+    this.mounted = true;
+  }
 
   void updateMax(int max) {
     this.max = max;
@@ -184,6 +190,13 @@ class QuantityController extends ChangeNotifier {
   void decrementQuantity() {
     this.quantity--;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    mounted = false;
   }
 
   @override

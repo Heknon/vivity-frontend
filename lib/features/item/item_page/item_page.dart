@@ -388,11 +388,13 @@ class _ItemPageState extends State<ItemPage> {
 
           showDialog(context: context, builder: (ctx) => _loadDialog);
           _loadDialogOpen = true;
-          _cartBloc.add(CartAddItemEvent(CartItemModel(
+          CartItemModel itemModel = CartItemModel(
             quantity: _quantityController.quantity,
             modifiersChosen: generateChosenData(),
             item: displayedItem,
-          )));
+          );
+
+          _cartBloc.add(CartAddItemEvent(itemModel));
           await _cartBloc.stream.first;
 
           if (_loadDialogOpen) {

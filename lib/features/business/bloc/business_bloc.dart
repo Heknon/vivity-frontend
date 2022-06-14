@@ -24,7 +24,7 @@ class BusinessBloc extends Bloc<BusinessEvent, BusinessState> {
     on<BusinessLoadEvent>((event, emit) async {
       emit(BusinessLoading());
 
-      Business business = await _businessRepository.getBusiness();
+      Business business = await _businessRepository.getBusiness(update: true);
       List<ItemModel> businessItems = (await _itemRepository.getItemModelsFromId(
         itemIds: business.items.map((e) => e.hexString).toList(),
         fetchImagesOnUpdate: true,

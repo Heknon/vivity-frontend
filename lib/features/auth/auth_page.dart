@@ -43,9 +43,15 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    print('success');
     _authBloc = BlocProvider.of<AuthBloc>(context);
 
-    _authRepository.getPreviouslyLoggedIn().then((value) => _tabController.index = value ? 0 : 1);
+    _authRepository.getPreviouslyLoggedIn().then((value) {
+      _tabController.index = value ? 0 : 1;
+      if (this.mounted) {
+        _tabController.animateTo(_tabController.index);
+      }
+    });
   }
 
   @override

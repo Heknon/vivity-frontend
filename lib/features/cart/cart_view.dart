@@ -13,6 +13,7 @@ import 'package:vivity/helpers/ui_helpers.dart';
 import 'package:vivity/widgets/quantity.dart';
 import '../item/cart_item.dart';
 
+
 class CartView extends StatefulWidget {
   final ScrollController? scrollController;
 
@@ -26,6 +27,16 @@ FadeInController controller = FadeInController();
 
 class _CartViewState extends State<CartView> {
   double price = -1;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,20 +119,13 @@ class _CartViewState extends State<CartView> {
     );
   }
 
-  Map<CartItemModel, QuantityController> itemQuantityMap = {};
-
   Widget buildItemsList(double itemsPadding, Size itemSize, CartLoaded state) {
     return ListView.builder(
       itemCount: state.items.length,
       controller: widget.scrollController,
       itemBuilder: (ctx, i) {
         CartItemModel item = state.items[i];
-        QuantityController controller;
-        if (itemQuantityMap.containsKey(item)) controller = itemQuantityMap[item]!;
-        else {
-          controller = QuantityController(quantity: item.quantity);
-          itemQuantityMap[item] = controller;
-        }
+        QuantityController? controller = state.getQuantityController(item)!;
 
         return Padding(
           padding: i != 0 ? EdgeInsets.only(top: itemsPadding) : const EdgeInsets.only(),
@@ -132,9 +136,15 @@ class _CartViewState extends State<CartView> {
               quantityController: controller,
               width: itemSize.width,
               height: itemSize.height,
-              onQuantityIncrement: (qc) => onQuantityIncrement(qc, i),
-              onQuantityDecrement: (qc) => onQuantityDecrement(qc, i),
-              onQuantityDelete: (qc) => onDelete(qc, i, state),
+              onQuantityIncrement: (qc) {
+                onQuantityIncrement(qc, i);
+              },
+              onQuantityDecrement: (qc) {
+                onQuantityDecrement(qc, i);
+              },
+              onQuantityDelete: (qc) {
+                onDelete(qc, i, state);
+              },
               onlyQuantity: false,
             ),
           ),
@@ -221,8 +231,10 @@ class _CartViewState extends State<CartView> {
   }
 
   void onDelete(QuantityController quantityController, int index, CartLoaded state) {
-    itemQuantityMap.remove(state.items[index]);
-    BlocProvider.of<CartBloc>(context).add(CartRemoveItemEvent(index));
+    int deletedHashcode = state.items[index].hashCode;
+
+    quantityController.dispose();
+    BlocProvider.of<CartBloc>(context).add(CartRemoveItemEvent(deletedHashcode));
     showSnackBar('Removing from cart...', context);
   }
 
