@@ -45,7 +45,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           BlocBuilder<FavoritesBloc, FavoritesState>(
             builder: (ctx, state) {
               if (state is! FavoritesLoaded) {
-                return CircularProgressIndicator();
+                return Center(child: CircularProgressIndicator());
               }
 
               Size gridSize = Size(100.w, 70.h);

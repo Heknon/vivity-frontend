@@ -93,7 +93,7 @@ class CartItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '\$${item.item.price.toStringAsFixed(2)}',
+                        '₪${item.item.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                       ),
                       const Spacer(),

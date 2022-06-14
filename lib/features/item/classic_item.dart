@@ -103,7 +103,7 @@ class _ClassicItemState extends State<ClassicItem> {
                 child: Row(
                   children: [
                     Text(
-                      "\$${widget.item.price.toStringAsFixed(2)}",
+                      "₪${widget.item.price.toStringAsFixed(2)}",
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontFamily: "Hezaedrus",

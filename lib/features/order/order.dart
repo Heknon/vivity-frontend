@@ -147,11 +147,11 @@ class _OrderState extends State<Order> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Subtotal - \$${widget.order.subtotal.toStringAsFixed(2)}",
+                    "Subtotal - ₪${widget.order.subtotal.toStringAsFixed(2)}",
                     style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                   ),
                   Text(
-                    "Cupon - \$${widget.order.cuponDiscount.toStringAsFixed(2)}",
+                    "Cupon - ₪${widget.order.cuponDiscount.toStringAsFixed(2)}",
                     style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                   ),
                 ],
@@ -162,18 +162,18 @@ class _OrderState extends State<Order> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Shipping - \$${widget.order.shippingCost.toStringAsFixed(2)}",
+                      "Shipping - ₪${widget.order.shippingCost.toStringAsFixed(2)}",
                       style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                     ),
                     Text(
-                      "Total - \$${widget.order.total.toStringAsFixed(2)}",
+                      "Total - ₪${widget.order.total.toStringAsFixed(2)}",
                       style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                     ),
                   ],
                 ),
               if (widget.order.shippingCost == 0)
                 Text(
-                  "Total - \$${widget.order.total.toStringAsFixed(2)}",
+                  "Total - ₪${widget.order.total.toStringAsFixed(2)}",
                   style: Theme.of(context).textTheme.headline4?.copyWith(fontSize: 12.sp),
                 ),
             ],

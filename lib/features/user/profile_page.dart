@@ -57,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 },
                 builder: (ctx, state) {
-                  if (state is ProfileUnloaded) return CircularProgressIndicator();
+                  if (state is ProfileUnloaded) return Center(child: CircularProgressIndicator());
 
                   ProfileLoaded profileState = state as ProfileLoaded;
                   List<Address> addresses = profileState.addresses;

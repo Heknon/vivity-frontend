@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:advanced_panel/panel.dart';
 import 'package:file_picker/file_picker.dart';
@@ -151,7 +152,7 @@ class _ItemPageState extends State<ItemPage> {
             builder: (context, snapshot) {
               if (snapshot.hasError || !snapshot.hasData)
                 return Center(
-                  child: CircularProgressIndicator(),
+                  child: Center(child: CircularProgressIndicator()),
                 );
 
               return Stack(
@@ -297,7 +298,7 @@ class _ItemPageState extends State<ItemPage> {
       child: SizedBox(
         width: size.width * 0.8,
         height: size.height * 0.8,
-        child: const CircularProgressIndicator(),
+        child: Center(child: const CircularProgressIndicator()),
       ),
     );
   }
@@ -332,7 +333,7 @@ class _ItemPageState extends State<ItemPage> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '\$${displayedItem.price.toStringAsFixed(2)}',
+                      '₪${displayedItem.price.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 16.sp, color: Colors.white),
                     ),
                   ),
@@ -451,10 +452,12 @@ class _ItemPageState extends State<ItemPage> {
   }
 
   Row buildModificationButtons() {
+    int length = min(displayedItem.itemStoreFormat.modificationButtons.length, _selectorControllers.length);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(
-        displayedItem.itemStoreFormat.modificationButtons.length,
+        length,
         (index) {
           ModificationButton button = displayedItem.itemStoreFormat.modificationButtons[index];
           return ItemModifier(

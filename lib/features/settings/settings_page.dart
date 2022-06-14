@@ -91,7 +91,7 @@ class _SettingsPageState extends State<SettingsPage> {
               }
             },
             builder: (ctx, state) {
-              if (state is! SettingsLoaded) return CircularProgressIndicator();
+              if (state is! SettingsLoaded) return Center(child: CircularProgressIndicator());
 
               return Column(
                 children: [

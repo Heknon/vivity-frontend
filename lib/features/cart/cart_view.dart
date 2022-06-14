@@ -153,7 +153,7 @@ class _CartViewState extends State<CartView> {
             WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
               controller.swapCurrentWidget(
                 Text(
-                  'Total: \$' + priceTotal.toStringAsFixed(2),
+                  'Total: ₪' + priceTotal.toStringAsFixed(2),
                   style: GoogleFonts.raleway(fontSize: 18.sp),
                 ),
               );
@@ -165,7 +165,7 @@ class _CartViewState extends State<CartView> {
               duration: Duration(milliseconds: 500),
               controller: controller,
               initialWidget: Text(
-                'Total: \$' + priceTotal.toStringAsFixed(2),
+                'Total: ₪' + priceTotal.toStringAsFixed(2),
                 style: GoogleFonts.raleway(fontSize: 18.sp),
               ),
             ),
@@ -229,7 +229,7 @@ class _CartViewState extends State<CartView> {
   void updateCost(double priceTotal) {
     controller.gracefullySwapCurrentAnimatedWidget(
       Text(
-        'Total: \$' + priceTotal.toStringAsFixed(2),
+        'Total: ₪' + priceTotal.toStringAsFixed(2),
         style: GoogleFonts.raleway(fontSize: 18.sp),
       ),
     );

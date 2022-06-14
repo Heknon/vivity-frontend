@@ -173,7 +173,7 @@ class _PaymentPageState extends State<PaymentPage> {
                       );
                     }
 
-                    if (state is! PaymentLoaded) return CircularProgressIndicator();
+                    if (state is! PaymentLoaded) return Center(child: CircularProgressIndicator());
 
                     CheckoutConfirmLoaded confirmationStage = state.shippingState.confirmationStageState;
                     double total = confirmationStage.subtotal + confirmationStage.deliveryCost - confirmationStage.cuponDiscount * confirmationStage.subtotal;
@@ -196,7 +196,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                   Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp, color: fillerColor, fontWeight: FontWeight.normal),
                             ),
                             Text(
-                              '\$' + total.toStringAsFixed(2),
+                              '₪' + total.toStringAsFixed(2),
                               style:
                                   Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp, color: fillerColor, fontWeight: FontWeight.bold),
                             ),

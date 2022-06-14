@@ -27,7 +27,7 @@ class SearchService extends ServiceProvider {
     String accessToken = await _authRepository.getAccessToken();
 
     AsyncSnapshot<Response> snapshot = await get(
-      baseRoute: exploreItemsRoute + "?radius_center=${position.latitude},${position.longitude}&radius=$radius",
+      baseRoute: exploreItemsRoute + "?lat=${position.latitude}&lng=${position.longitude}&radius=$radius",
       token: accessToken,
     );
 
@@ -49,7 +49,7 @@ class SearchService extends ServiceProvider {
     String accessToken = await _authRepository.getAccessToken();
 
     AsyncSnapshot<Response> snapshot = await get(
-      baseRoute: exploreBusinessesRoute + "?radius_center=${position.latitude},${position.longitude}&radius=$radius",
+      baseRoute: exploreBusinessesRoute + "?lat=${position.latitude}&lng=${position.longitude}&radius=$radius",
       token: accessToken,
     );
 

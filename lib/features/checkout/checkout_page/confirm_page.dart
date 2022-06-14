@@ -55,7 +55,7 @@ class _ConfirmPageState extends State<ConfirmPage> {
     return BlocBuilder<CheckoutConfirmBloc, CheckoutConfirmState>(
       builder: (context, state) {
         if (state is! CheckoutConfirmLoaded) {
-          return const CircularProgressIndicator();
+          return Center(child: const CircularProgressIndicator());
         }
 
         return Column(

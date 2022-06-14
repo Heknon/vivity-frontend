@@ -46,7 +46,7 @@ class _ShippingPageState extends State<ShippingPage> {
         child: BlocBuilder<ShippingBloc, ShippingState>(
           builder: (context, state) {
             if (state is! ShippingDeliveryLoaded) {
-              return const CircularProgressIndicator();
+              return Center(child: const CircularProgressIndicator());
             }
 
             return Column(

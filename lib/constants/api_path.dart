@@ -1,4 +1,4 @@
-const String host = "http://10.0.2.2:80"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
+const String host = "https://vm118.hisham.ru"; //http://157.90.143.116:20200 , http://192.168.1.15:20200
 const userRoute = "/user";
 const authRoute = "/auth";
 const cartRoute = "/user/cart";

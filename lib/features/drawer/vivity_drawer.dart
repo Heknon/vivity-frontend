@@ -42,7 +42,7 @@ class _VivityDrawerState extends State<VivityDrawer> {
           padding: const EdgeInsets.all(8.0),
           child: BlocBuilder<DrawerBloc, DrawerState>(
             builder: (context, state) {
-              if (state is! DrawerLoaded) return CircularProgressIndicator();
+              if (state is! DrawerLoaded) return Center(child: CircularProgressIndicator());
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

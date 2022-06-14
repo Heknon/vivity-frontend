@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vivity/features/cart/models/cart_item_model.dart';
@@ -86,7 +88,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     for (CartItemModel cartItem in items) {
       if (item.looseEquals(cartItem)) {
-        newList.add(cartItem.copyWith(quantity: item.quantity + cartItem.quantity));
+        newList.add(cartItem.copyWith(quantity: min(item.quantity + cartItem.quantity, 10)));
         added = true;
         continue;
       }

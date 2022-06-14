@@ -47,7 +47,7 @@ class CartTotals extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 15, right: 20),
                 child: Text(
-                  "\$${subtotal.toStringAsFixed(2)}",
+                  "₪${subtotal.toStringAsFixed(2)}",
                   style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.5.sp),
                 ),
               ),
@@ -85,7 +85,7 @@ class CartTotals extends StatelessWidget {
                       style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 12.5.sp, fontWeight: FontWeight.normal),
                     ),
                     TextSpan(
-                      text: "\$${shippingCost.toStringAsFixed(2)}",
+                      text: "₪${shippingCost.toStringAsFixed(2)}",
                       style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.sp),
                     )
                   ]),
@@ -126,7 +126,7 @@ class CartTotals extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: Text(
-                  "\$${(subtotal + deliveryCost - cuponDiscount * subtotal).toStringAsFixed(2)}",
+                  "₪${(subtotal + deliveryCost - cuponDiscount * subtotal).toStringAsFixed(2)}",
                   style: Theme.of(context).textTheme.headline4!.copyWith(fontSize: 13.5.sp),
                 ),
               ),

@@ -86,7 +86,7 @@ class _ItemEditPanelState extends State<ItemEditPanel> {
     List<String> titles = ["Title", "Price", "Subtitle", "Tags", "Brand", "Category"];
     List<String> dataStrings = [
       clonedItem.itemStoreFormat.title,
-      '\$${clonedItem.price.toStringAsFixed(2)} USD',
+      '₪${clonedItem.price.toStringAsFixed(2)} USD',
       clonedItem.itemStoreFormat.subtitle ?? 'N/A',
       clonedItem.tags.join(', '),
       clonedItem.brand,

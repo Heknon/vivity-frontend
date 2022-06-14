@@ -8,6 +8,8 @@ import 'package:vivity/features/item/models/item_model.dart';
 import 'package:vivity/features/user/models/user_options.dart';
 import 'package:vivity/features/address/models/address.dart';
 
+import 'business_user.dart';
+
 class User {
   final ObjectId id;
   final String name;
@@ -87,6 +89,7 @@ class User {
 
   User copyWith({
     ObjectId? id,
+    ObjectId? businessId,
     String? name,
     String? email,
     String? phone,
@@ -99,7 +102,20 @@ class User {
     bool? isAdmin,
     bool deleteProfilePicture = false,
   }) {
-    return User(
+    return this is! BusinessUser ? User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      profilePicture: deleteProfilePicture ? profilePicture : profilePicture ?? this.profilePicture,
+      userOptions: userOptions ?? this.userOptions,
+      addresses: addresses ?? this.addresses,
+      likedItems: likedItems ?? this.likedItems,
+      cart: cart ?? this.cart,
+      orderHistory: orderHistory ?? this.orderHistory,
+      isAdmin: isAdmin ?? this.isAdmin,
+    ) : BusinessUser(
+      businessId: businessId ?? (this as BusinessUser).businessId,
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
