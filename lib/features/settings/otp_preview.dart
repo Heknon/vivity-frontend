@@ -20,7 +20,6 @@ class OTPPreview extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final FocusNode _focusNode = FocusNode();
   final AuthenticationRepository _authRepository = AuthenticationRepository();
-  final LoadDialog _loadDialog = LoadDialog();
   final void Function(BuildContext)? onCancelPressed;
 
   OTPPreview({
